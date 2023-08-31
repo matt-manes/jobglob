@@ -6,26 +6,9 @@ from pathlib import Path
 from databased import DataBased
 from printbuddies import ProgBar
 from seleniumuser import User
+from jobbased import JobBased
 
 root = Path(__file__).parent
-
-with DataBased("joblistings.db") as db:
-    db.create_table(
-        "listings",
-        [
-            "name text",
-            "company text",
-            "url text unique",
-            "applied int",
-            "rejected int",
-            "alive int",
-            "xpath text",
-            "date_added timestamp",
-            "date_applied timestamp",
-            "date_removed timestamp",
-            "date_rejected timestamp",
-        ],
-    )
 
 
 def is_alive(url: str, xpath: str) -> bool:
@@ -40,8 +23,8 @@ def is_alive(url: str, xpath: str) -> bool:
 
 
 def update_listings():
-    with DataBased("joblistings.db") as db:
-        listings = db.get_rows("listings", [("alive", 1)])
+    with JobBased() as db:
+        listings = db.live_listings
     bar = ProgBar(total=len(listings))
     with ThreadPoolExecutor() as pool:
         threads = [
@@ -66,7 +49,7 @@ def update_listings():
     if dead_listings:
         print("The following listings appear to be dead:")
         print(*[listing["url"] for listing in dead_listings], sep="\n")
-        with DataBased("joblistings.db") as db:
+        with JobBased() as db:
             for listing in dead_listings:
                 db.update("listings", "alive", 0, [("url", listing["url"])])
                 db.update(
@@ -75,17 +58,11 @@ def update_listings():
                     datetime.now(),
                     [("url", listing["url"])],
                 )
-            for row in db.get_rows("listings", {"applied": 1, "rejected": 0}):
-                if (datetime.now() - row["date_applied"]).days > 30:
-                    db.update("listings", "rejected", 1, [("url", row["url"])])
-                    db.update(
-                        "listings",
-                        "date_rejected",
-                        datetime.now(),
-                        [("url", row["url"])],
-                    )
     else:
         print("All previously live listings appear still live.")
+    # mark live applications older than 30 days as rejected
+    with JobBased() as db:
+        db.mark_applications_older_than_30days_as_rejected()
     input("...")
 
 

@@ -1,10 +1,11 @@
-import webbrowser
-from pathlib import Path
 import time
+import webbrowser
 
-root = Path(__file__).parent
+from jobbased import JobBased
 
-boards = (root / "jobBoards.txt").read_text().splitlines()
-for board in boards:
-    webbrowser.open(board)
-    time.sleep(1)
+if __name__ == "__main__":
+    with JobBased() as db:
+        urls = db.boards
+    for url in urls:
+        webbrowser.open(url)
+        time.sleep(1)

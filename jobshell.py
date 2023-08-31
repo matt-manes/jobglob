@@ -4,6 +4,8 @@ import argshell
 import os
 import time
 from pathier import Pathier
+from griddle import griddy
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
 
@@ -41,158 +43,113 @@ def get_add_parser() -> argshell.Namespace:
     return parser
 
 
+def get_add_board_parser() -> argshell.Namespace:
+    parser = argshell.ArgShellParser()
+    parser.add_argument("url", type=str, help=""" Job board url """)
+    parser.add_argument(
+        "company",
+        type=str,
+        nargs="?",
+        default=None,
+        help=""" Company name if applicable. """,
+    )
+    return parser
+
+
 class JobManager(DBShell):
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
-    dbpath = "joblistings.db"  # Replace None with a path to a .db file to set a default database
+    dbpath = (
+        "jobs.db"  # Replace None with a path to a .db file to set a default database
+    )
 
     def do_alive(self, arg: str):
         """Show listings that are still up."""
-        with DataBased(self.dbpath) as db:
-            rows = db.get_rows(
-                "listings",
-                [("alive", 1)],
-                columns_to_return=[
+        with JobBased(self.dbpath) as db:
+            rows = db.execute_script("live_listings.sql")
+        input(rows[0])
+        print(
+            griddy(
+                rows,
+                headers=[
+                    "listing_id",
                     "name",
                     "company",
                     "url",
-                    "applied",
-                    "rejected",
                     "date_added",
+                    "days_since_adding",
                 ],
-                order_by="date_added desc",
             )
-        for row in rows:
-            date_added = row.pop("date_added")
-            row["days_since_adding"] = num_days(date_added)
-        print(DataBased.data_to_string(rows))
+        )
 
     def do_dead(self, arg: str):
         """Show listings that are no longer up."""
-        with DataBased(self.dbpath) as db:
-            rows = db.get_rows(
-                "listings",
-                [("alive", 0)],
-                columns_to_return=[
+        with JobBased(self.dbpath) as db:
+            rows = db.execute_script("dead_listings.sql")
+        print(
+            griddy(
+                rows,
+                headers=[
+                    "listing_id",
                     "name",
                     "company",
                     "url",
-                    "applied",
-                    "rejected",
                     "date_added",
+                    "days_since_adding",
                 ],
-                order_by="date_added desc",
             )
-        for row in rows:
-            date_added = row.pop("date_added")
-            row["days_since_adding"] = num_days(date_added)
-        print(DataBased.data_to_string(rows))
+        )
 
     def do_applied(self, arg: str):
         """Show listings you applied for."""
-        with DataBased(self.dbpath) as db:
-            rows = db.get_rows(
-                "listings",
-                [("applied", 1)],
-                # sort_by_column="alive",
-                columns_to_return=[
-                    "name",
-                    "company",
-                    "url",
-                    "alive",
-                    "rejected",
-                    "date_applied",
-                    "date_rejected",
-                ],
-                order_by="rejected",
+        with JobBased(self.dbpath) as db:
+            rows = db.execute_script("applications.sql")
+            for i, row in enumerate(rows):
+                rows[i] = ["" if item is None else item for item in row]
+            print(
+                griddy(
+                    rows,
+                    headers=[
+                        "aid",
+                        "lid",
+                        "position",
+                        "company",
+                        "alive",
+                        "rejected",
+                        "days_since_applying",
+                        "days_since_rejection",
+                    ],
+                )
             )
-            rejected_rows = sorted(
-                [row for row in rows if row["rejected"]],
-                key=lambda r: r["date_applied"],
-                reverse=True,
-            )
-            not_yet_rejected_rows = sorted(
-                [row for row in rows if not row["rejected"]],
-                key=lambda r: r["date_applied"],
-                reverse=True,
-            )
-            rows = not_yet_rejected_rows + rejected_rows
-
-            for row in rows:
-                date_applied = row.pop("date_applied")
-                row["days_since_applying"] = (datetime.now() - date_applied).days
-                date_rejected = row.pop("date_rejected")
-                if date_rejected:
-                    row["days_since_rejection"] = (datetime.now() - date_rejected).days
-                else:
-                    row["days_since_rejection"] = None
-        grid = DataBased.data_to_string(rows)
-        print(grid)
-        print(f"Not yet rejected listings: {len(not_yet_rejected_rows)}")
-        print(f"Rejected listings: {len(rejected_rows)}")
-        print(
-            f"Applications in past 7 days: {len([row for row in rows if int(row['days_since_applying']) <= 7])}"
-        )
-        print(f"Total applications: {len(rows)}")
-
-    def do_rejected(self, arg: str):
-        """Show rejected applications."""
-        with DataBased(self.dbpath) as db:
-            rows = db.get_rows(
-                "listings",
-                {"rejected": 1},
-                order_by="date_rejected desc",
-                columns_to_return=[
-                    "name",
-                    "company",
-                    "url",
-                    "alive",
-                    "date_applied",
-                    "date_rejected",
-                ],
-            )
-            for row in rows:
-                date_applied = row.pop("date_applied")
-                row["days_since_applying"] = num_days(date_applied)
-                date_rejected = row.pop("date_rejected")
-                row["days_since_rejection"] = num_days(date_rejected)
-            print(DataBased.data_to_string(rows))
+            print(f"Not yet rejected: {len(db.live_applications)}")
+            print(f"Rejected: {len(db.rejected_applications)}")
+            print(f"Total applications: {len(db.applications)}")
+            last_seven_days = db.query(
+                "SELECT COUNT(*) FROM applications WHERE (JULIANDAY('now')-JULIANDAY(date_applied)) < 7;"
+            )[0][0]
+            print(f"Applications in last 7 days: {last_seven_days}")
 
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
         """Add a job listing to the database."""
-        with DataBased(self.dbpath) as db:
-            db.add_row(
-                "listings",
-                (
-                    args.name,
-                    args.company,
-                    args.url,
-                    int(args.applied),
-                    1,
-                    args.xpath,
-                    datetime.now(),
-                    datetime.now() if args.applied else None,
-                    None,
-                    args.found_on,
-                    0,
-                    None,
-                ),
+        with JobBased(self.dbpath) as db:
+            db.add_listing(
+                args.name, args.company, args.url.strip("/"), args.xpath, args.found_on
             )
+            if args.applied:
+                db.add_application(args.url.strip("/"))
 
-    def do_mark_applied(self, arg: str):
+    def do_mark_applied(self, url: str):
         """Mark a job as applied.
         The argument expected is the url of the listing."""
-        with DataBased(self.dbpath) as db:
-            db.update("listings", "applied", 1, {"url": arg})
-            db.update("listings", "date_applied", datetime.now(), {"url": arg})
+        with JobBased(self.dbpath) as db:
+            db.add_application(url.strip("/"))
 
-    def do_mark_rejected(self, arg: str):
+    def do_mark_rejected(self, application_id: str):
         """Mark a job as rejected.
         The argument expected is the url of the listing."""
-        with DataBased(self.dbpath) as db:
-            db.update("listings", "rejected", 1, {"url": arg})
-            db.update("listings", "date_rejected", datetime.now(), {"url": arg})
+        with JobBased(self.dbpath) as db:
+            db.mark_rejected(application_id)
 
     def do_open(self, arg: str):
         """Open job boards in browser."""
@@ -202,7 +159,7 @@ class JobManager(DBShell):
         delta = int((current_time - last_check) / (3600 * 24))
         print(f"Boards last checked {delta} days ago.")
         last_check_path.dumps({"time": current_time})
-        os.system("open.py")
+        os.system("open_boards.py")
 
     def do_reset_alive_status(self, args: str):
         """Reset the status of a listing to alive.
@@ -212,46 +169,35 @@ class JobManager(DBShell):
         `args`: A list of urls to reset.
         """
         urls = args.split()
-        with DataBased(self.dbpath) as db:
+        with JobBased(self.dbpath) as db:
             for url in urls:
-                db.update("listings", "alive", 1, {"url": url})
-                db.query(
-                    f'UPDATE listings SET date_removed = NULL where url = "{url}";'
-                )
+                db.reset_alive_status(url)
 
-    def do_add_to_boards(self, args: str):
-        """Add a list of urls to `jobBoards.txt`."""
-        urls = args.split()
-        path = root / "jobBoards.txt"
-        boards = path.split()
-        [boards.insert(-1, url) for url in urls]
-        path.join(boards)
+    @argshell.with_parser(get_add_board_parser)
+    def do_add_to_boards(self, args: argshell.Namespace):
+        """Add a url to boards list."""
+        with JobBased(self.dbpath) as db:
+            args.url = args.url.strip("/")
+            if args.url not in db.boards:
+                db.add_board(args.url, args.company)
 
     def do_remove_from_boards(self, args: str):
-        """Remove a list of urls from `jobBoards.txt`."""
-        urls = args.split()
-        path = root / "jobBoards.txt"
-        boards = path.split()
-        [boards.pop(boards.index(url)) for url in urls]
-        path.join(boards)
+        """Remove a url from boards list."""
+        with JobBased(self.dbpath) as db:
+            db.remove_board(args)
 
     def do_update_xpath(self, args: str):
         """Give a url and a new xpath."""
         args = args.strip()
         url, xpath = args[: args.find(" ")], args[args.find(" ") + 1 :]
-        with DataBased(self.dbpath) as db:
+        with JobBased(self.dbpath) as db:
             db.update("listings", "xpath", xpath, {"url": url})
 
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
         super().preloop()
-        with DataBased(self.dbpath) as db:
-            rows = db.get_rows("listings", {"applied": 1, "rejected": 0})
-            for row in rows:
-                if num_days(row["date_applied"]) > 30:
-                    matcher = [("url", row["url"])]
-                    db.update("listings", "rejected", 1, matcher)
-                    db.update("listings", "date_rejected", datetime.now(), matcher)
+        with JobBased(self.dbpath) as db:
+            db.mark_applications_older_than_30days_as_rejected()
 
 
 if __name__ == "__main__":
