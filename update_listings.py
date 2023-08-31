@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
-from databased import DataBased
+from gitbetter import Git
 from printbuddies import ProgBar
 from seleniumuser import User
 from jobbased import JobBased
@@ -63,6 +63,9 @@ def update_listings():
     # mark live applications older than 30 days as rejected
     with JobBased() as db:
         db.mark_applications_older_than_30days_as_rejected()
+    git = Git()
+    git.commit_files(["jobs.db", "chore: update listing info"])
+    git.push()
     input("...")
 
 
