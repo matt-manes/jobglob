@@ -13,7 +13,7 @@ root = Path(__file__).parent
 
 def is_alive(url: str, xpath: str) -> bool:
     """Return True if still posted."""
-    with User(headless=False) as user:
+    with User(headless=True) as user:
         try:
             user.get(url)
             user.find(xpath)
@@ -64,7 +64,7 @@ def update_listings():
     with JobBased() as db:
         db.mark_applications_older_than_30days_as_rejected()
     git = Git()
-    git.commit_files(["jobs.db", "chore: update listing info"])
+    git.commit_files(["jobs.db"], "chore: update listing info")
     git.push()
     input("...")
 
