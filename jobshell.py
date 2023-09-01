@@ -67,7 +67,6 @@ class JobManager(DBShell):
         """Show listings that are still up."""
         with JobBased(self.dbpath) as db:
             rows = db.execute_script("live_listings.sql")
-        input(rows[0])
         print(
             griddy(
                 rows,
