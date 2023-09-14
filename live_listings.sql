@@ -6,6 +6,12 @@ SELECT
     listings.date_added,
     CAST(
         JULIANDAY ('now') - JULIANDAY (listings.date_added) AS INT
+    ),
+    listing_id in (
+        SELECT
+            listing_id
+        FROM
+            applications
     )
 FROM
     listings

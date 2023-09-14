@@ -77,6 +77,7 @@ class JobManager(DBShell):
                     "url",
                     "date_added",
                     "days_since_adding",
+                    "applied",
                 ],
             )
         )
@@ -95,6 +96,7 @@ class JobManager(DBShell):
                     "url",
                     "date_added",
                     "days_since_adding",
+                    "applied",
                 ],
             )
         )
