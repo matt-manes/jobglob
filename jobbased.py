@@ -106,6 +106,12 @@ class JobBased(DataBased):
                 "applications", datum[0], datum[1], {"application_id": application_id}
             )
 
+    def mark_dead(self, listing_id: int):
+        self.update("listings", "alive", 0, [("listing_id", listing_id)])
+        self.update(
+            "listings", "date_removed", datetime.now(), [("listing_id", listing_id)]
+        )
+
     def remove_board(self, url: str):
         url = url.strip("/")
         board_id = self.query(f"SELECT board_id FROM boards WHERE url = '{url}';")[0][0]

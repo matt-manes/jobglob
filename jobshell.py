@@ -194,6 +194,11 @@ class JobManager(DBShell):
         with JobBased(self.dbpath) as db:
             db.update("listings", "xpath", xpath, {"url": url})
 
+    def do_mark_dead(self, listing_id: str):
+        """Given a `listing_id`, mark a listing as removed."""
+        with JobBased(self.dbpath) as db:
+            db.mark_dead(int(listing_id))
+
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
         super().preloop()
