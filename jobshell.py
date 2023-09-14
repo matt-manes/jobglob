@@ -140,11 +140,11 @@ class JobManager(DBShell):
             if args.applied:
                 db.add_application(args.url.strip("/"))
 
-    def do_mark_applied(self, url: str):
+    def do_mark_applied(self, listing_id: str):
         """Mark a job as applied.
         The argument expected is the url of the listing."""
         with JobBased(self.dbpath) as db:
-            db.add_application(url.strip("/"))
+            db.add_application(int(listing_id))
 
     def do_mark_rejected(self, application_id: str):
         """Mark a job as rejected.
@@ -187,12 +187,12 @@ class JobManager(DBShell):
         with JobBased(self.dbpath) as db:
             db.remove_board(args)
 
-    def do_update_xpath(self, args: str):
-        """Give a url and a new xpath."""
+    def do_update_xpath(self, listing_id: str):
+        """Give a listing_id and a new xpath."""
         args = args.strip()
-        url, xpath = args[: args.find(" ")], args[args.find(" ") + 1 :]
+        listing_id, xpath = args[: args.find(" ")], args[args.find(" ") + 1 :]
         with JobBased(self.dbpath) as db:
-            db.update("listings", "xpath", xpath, {"url": url})
+            db.update("listings", "xpath", xpath, {"listing_id": int(listing_id)})
 
     def do_mark_dead(self, listing_id: str):
         """Given a `listing_id`, mark a listing as removed."""

@@ -47,10 +47,7 @@ class JobBased(DataBased):
     def rejected_applications(self) -> list[dict]:
         return self.get_rows("applications", {"rejected": 1})
 
-    def add_application(self, url: str, cover_letter: bool = False):
-        listing_id = self.query(f"SELECT listing_id FROM listings WHERE url='{url}';")[
-            0
-        ][0]
+    def add_application(self, listing_id: int, cover_letter: bool = False):
         self.add_row(
             "applications",
             (listing_id, datetime.now(), int(cover_letter)),
