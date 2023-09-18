@@ -141,14 +141,12 @@ class JobManager(DBShell):
                 db.add_application(args.url.strip("/"))
 
     def do_mark_applied(self, listing_id: str):
-        """Mark a job as applied.
-        The argument expected is the url of the listing."""
+        """Mark a job as applied given the `listing_id`."""
         with JobBased(self.dbpath) as db:
             db.add_application(int(listing_id))
 
     def do_mark_rejected(self, application_id: str):
-        """Mark a job as rejected.
-        The argument expected is the url of the listing."""
+        """Mark a job as rejected given the `application_id`."""
         with JobBased(self.dbpath) as db:
             db.mark_rejected(application_id)
 
