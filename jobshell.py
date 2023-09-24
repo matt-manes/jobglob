@@ -1,4 +1,5 @@
-from databased import DBShell, dbparsers, DataBased
+from databased import Databased
+from databased.dbshell import DBShell
 from datetime import datetime
 import argshell
 import os
@@ -10,12 +11,12 @@ from jobbased import JobBased
 root = Pathier(__file__).parent
 
 
-def num_days(date: datetime) -> datetime:
+def num_days(date: datetime) -> int:
     """Returns the number of days since 'date'."""
     return (datetime.now() - date).days
 
 
-def get_add_parser() -> argshell.Namespace:
+def get_add_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser(prog="")
     parser.add_argument("name", type=str, help=""" The job title of the listing. """)
     parser.add_argument(
@@ -43,7 +44,7 @@ def get_add_parser() -> argshell.Namespace:
     return parser
 
 
-def get_add_board_parser() -> argshell.Namespace:
+def get_add_board_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser()
     parser.add_argument("url", type=str, help=""" Job board url """)
     parser.add_argument(
@@ -59,75 +60,33 @@ def get_add_board_parser() -> argshell.Namespace:
 class JobManager(DBShell):
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
-    dbpath = (
-        "jobs.db"  # Replace None with a path to a .db file to set a default database
-    )
+    _dbpath = Pathier("jobs.db")
 
     def do_alive(self, arg: str):
         """Show listings that are still up."""
         with JobBased(self.dbpath) as db:
             rows = db.execute_script("live_listings.sql")
-        print(
-            griddy(
-                rows,
-                headers=[
-                    "listing_id",
-                    "name",
-                    "company",
-                    "url",
-                    "date_added",
-                    "days_since_adding",
-                    "applied",
-                ],
-            )
-        )
+        print(db.to_grid(rows))
 
     def do_dead(self, arg: str):
         """Show listings that are no longer up."""
         with JobBased(self.dbpath) as db:
             rows = db.execute_script("dead_listings.sql")
-        print(
-            griddy(
-                rows,
-                headers=[
-                    "listing_id",
-                    "name",
-                    "company",
-                    "url",
-                    "date_added",
-                    "days_since_adding",
-                    "applied",
-                ],
-            )
-        )
+        print(db.to_grid(rows))
 
     def do_applied(self, arg: str):
         """Show listings you applied for."""
         with JobBased(self.dbpath) as db:
             rows = db.execute_script("applications.sql")
-            for i, row in enumerate(rows):
-                rows[i] = ["" if item is None else item for item in row]
-            print(
-                griddy(
-                    rows,
-                    headers=[
-                        "aid",
-                        "lid",
-                        "position",
-                        "company",
-                        "alive",
-                        "rejected",
-                        "days_since_applying",
-                        "days_since_rejection",
-                    ],
-                )
-            )
+            """ for i, row in enumerate(rows):
+                rows[i] = ["" if item is None else item for item in row] """
+            print(db.to_grid(rows))
             print(f"Not yet rejected: {len(db.live_applications)}")
             print(f"Rejected: {len(db.rejected_applications)}")
             print(f"Total applications: {len(db.applications)}")
             last_seven_days = db.query(
-                "SELECT COUNT(*) FROM applications WHERE (JULIANDAY('now')-JULIANDAY(date_applied)) < 7;"
-            )[0][0]
+                "SELECT COUNT(*) AS num_applications FROM applications WHERE (JULIANDAY('now')-JULIANDAY(date_applied)) < 7;"
+            )[0]["num_applications"]
             print(f"Applications in last 7 days: {last_seven_days}")
 
     @argshell.with_parser(get_add_parser)
@@ -148,7 +107,7 @@ class JobManager(DBShell):
     def do_mark_rejected(self, application_id: str):
         """Mark a job as rejected given the `application_id`."""
         with JobBased(self.dbpath) as db:
-            db.mark_rejected(application_id)
+            db.mark_rejected(int(application_id))
 
     def do_open(self, arg: str):
         """Open job boards in browser."""
@@ -185,12 +144,12 @@ class JobManager(DBShell):
         with JobBased(self.dbpath) as db:
             db.remove_board(args)
 
-    def do_update_xpath(self, listing_id: str):
+    def do_update_xpath(self, args: str):
         """Give a listing_id and a new xpath."""
         args = args.strip()
         listing_id, xpath = args[: args.find(" ")], args[args.find(" ") + 1 :]
         with JobBased(self.dbpath) as db:
-            db.update("listings", "xpath", xpath, {"listing_id": int(listing_id)})
+            db.update("listings", "xpath", xpath, f"listing_id = {int(listing_id)}")
 
     def do_mark_dead(self, listing_id: str):
         """Given a `listing_id`, mark a listing as removed."""
