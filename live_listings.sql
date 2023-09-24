@@ -1,18 +1,18 @@
 SELECT
     listing_id,
     listings.position,
-    companies.name,
+    companies.name AS company,
     listings.url,
     listings.date_added,
     CAST(
         JULIANDAY ('now') - JULIANDAY (listings.date_added) AS INT
-    ),
-    listing_id in (
+    ) AS days_since_adding,
+    listing_id IN (
         SELECT
             listing_id
         FROM
             applications
-    )
+    ) AS applied
 FROM
     listings
     INNER JOIN companies ON listings.company_id = companies.company_id
