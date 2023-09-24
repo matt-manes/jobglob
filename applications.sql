@@ -1,7 +1,7 @@
 SELECT
     application_id,
     applications.listing_id,
-    listings.name,
+    listings.position,
     companies.name,
     listings.alive,
     rejected,

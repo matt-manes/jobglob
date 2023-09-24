@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS
     listings (
         listing_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        position TEXT,
         company_id INTEGER,
         url TEXT,
         xpath TEXT,

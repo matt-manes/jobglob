@@ -1,6 +1,6 @@
 SELECT
     listing_id,
-    listings.name,
+    listings.position,
     companies.name,
     listings.url,
     listings.date_added,
