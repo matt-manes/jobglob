@@ -57,6 +57,18 @@ def get_add_board_parser() -> argshell.ArgShellParser:
     return parser
 
 
+def get_add_scrapable_board_parser() -> argshell.ArgShellParser:
+    parser = get_add_board_parser()
+    parser.add_argument(
+        "-b",
+        "--board_type",
+        type=str,
+        default=None,
+        help=""" Specify a board type instead of trying to detect one. """,
+    )
+    return parser
+
+
 class JobShell(DBShell):
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
@@ -139,7 +151,7 @@ class JobShell(DBShell):
             if args.url not in db.boards:
                 db.add_board(args.url, args.company)
 
-    @argshell.with_parser(get_add_board_parser)
+    @argshell.with_parser(get_add_scrapable_board_parser)
     def do_add_scrapable_board(self, args: argshell.Namespace):
         """Add a url to scrapable boards list."""
         if not args.company:
@@ -149,10 +161,15 @@ class JobShell(DBShell):
                 args.url = args.url.strip("/")
                 if args.url not in db.scrapable_boards:
                     db.add_scrapable_board(args.url, args.company)
-                    self.create_scraper_from_template(args.url, args.company)
+                    self.create_scraper_from_template(
+                        args.url, args.company, args.board_type
+                    )
 
-    def create_scraper_from_template(self, url: str, company: str):
-        board_type = self.detect_board_type(url)
+    def create_scraper_from_template(
+        self, url: str, company: str, board_type: str | None = None
+    ):
+        if not board_type:
+            board_type = self.detect_board_type(url)
         if not board_type:
             template = (root / "scrapers" / "template.py").read_text()
         else:
