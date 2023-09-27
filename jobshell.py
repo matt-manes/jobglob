@@ -180,6 +180,8 @@ class JobShell(DBShell):
     def detect_board_type(self, url: str) -> str | None:
         if "boards.greenhouse.io" in url:
             return "greenhouse"
+        elif "jobs.lever.co" in url:
+            return "lever"
         else:
             return None
 
