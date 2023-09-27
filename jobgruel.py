@@ -1,10 +1,9 @@
-from typing import Any
-
-from gruel import Gruel, ParsableItem
 from bs4 import Tag
+from gruel import Gruel, ParsableItem
 from gruel.gruel import ParsableItem
-from jobbased import JobBased
 from seleniumuser import User
+
+from jobbased import JobBased
 
 
 class Jobgruel(Gruel):
@@ -14,7 +13,7 @@ class Jobgruel(Gruel):
             self.url = db.get_scrapable_board_url(self.name)
             self.company = db.get_scrapable_board_company(self.name)
 
-    def store_item(self, item: Any):
+    def store_item(self, item: dict):
         with JobBased() as db:
             if item["url"] not in db.scraped_listings_urls:
                 db.add_scraped_listing(
@@ -52,7 +51,7 @@ class Levergruel(Jobgruel):
         soup = self.get_soup(self.url)
         return soup.find_all("div", class_="posting")
 
-    def parse_item(self, item: Tag) -> Any:
+    def parse_item(self, item: Tag) -> dict | None:
         try:
             data = {}
             title_element = item.find("a", class_="posting-title")
@@ -108,7 +107,7 @@ class Ashbygruel(Jobgruel):
             items.extend(section.find_all("a"))
         return items
 
-    def parse_item(self, item: ParsableItem) -> Any:
+    def parse_item(self, item: ParsableItem) -> dict | None:
         try:
             data = {}
             assert isinstance(item, Tag)
@@ -119,6 +118,33 @@ class Ashbygruel(Jobgruel):
             location = item.find("p")
             assert isinstance(location, Tag)
             data["location"] = location.text.split("•")[1].strip()
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class Workablegruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        return self.get_page(
+            f"https://apply.workable.com/api/v3/accounts/{self.company.lower().replace(' ','-')}/jobs",
+            "post",
+        ).json()["results"]
+
+    def parse_item(self, item: dict) -> dict | None:
+        try:
+            data = {}
+            data[
+                "url"
+            ] = f"https:://apply.workable.com/{self.company.lower().replace(' ','-')}/j/{item['shortcode']}"
+            location = ""
+            if item["remote"]:
+                location += f"Remote {item['location']['country']}"
+            else:
+                location += f"{item['location']['city']}, {item['location']['country']}"
+            data["location"] = location
+            data["position"] = item["title"]
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
