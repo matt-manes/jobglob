@@ -14,6 +14,8 @@ def detect_board_type(url: str) -> str | None:
         return "ashby"
     elif "apply.workable" in url:
         return "workable"
+    elif "easyapply.co" in url:
+        return "easyapply"
     else:
         return None
 

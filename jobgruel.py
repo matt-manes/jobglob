@@ -1,3 +1,4 @@
+from typing import Any
 from bs4 import Tag
 from gruel import Gruel, ParsableItem
 from gruel.gruel import ParsableItem
@@ -145,6 +146,35 @@ class Workablegruel(Jobgruel):
                 location += f"{item['location']['city']}, {item['location']['country']}"
             data["location"] = location
             data["position"] = item["title"]
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class Easyapplygruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        listings = soup.find("div", attrs={"id": "list"})
+        assert isinstance(listings, Tag)
+        return listings.find_all("a", attrs={"target": "_blank"})
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            data["url"] = item.get("href")
+            position = item.find("div", class_="no_word_break")
+            assert isinstance(position, Tag)
+            position = position.find("span")
+            assert isinstance(position, Tag)
+            data["position"] = position.text
+            location = item.find("p")
+            assert isinstance(location, Tag)
+            location = location.find("span")
+            assert isinstance(location, Tag)
+            data["location"] = location.text
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
