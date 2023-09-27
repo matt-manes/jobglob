@@ -9,6 +9,7 @@ import inspect
 
 class Jobgruel(Gruel):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         with JobBased() as db:
             self.url = db.get_scrapable_board_url(self.name)
             self.company = db.get_scrapable_board_company(self.name)
@@ -65,7 +66,7 @@ class Levergruel(Jobgruel):
                 class_="sort-by-location posting-category small-category-label location",
             )
             assert isinstance(location, Tag)
-            data["location"] = location
+            data["location"] = location.text
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
