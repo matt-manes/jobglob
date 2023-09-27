@@ -29,10 +29,6 @@ class JobScraper(Jobgruel):
         >>>     return None"""
         raise NotImplementedError
 
-    def store_item(self, item: Any):
-        """Store `item`."""
-        raise NotImplementedError
-
 
 if __name__ == "__main__":
     scraper = JobScraper()
