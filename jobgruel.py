@@ -1,11 +1,10 @@
 from typing import Any
 
 from gruel import Gruel, ParsableItem
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
 from gruel.gruel import ParsableItem
 from jobbased import JobBased
-from pathier import Pathier
-import inspect
+from seleniumuser import User
 
 
 class Jobgruel(Gruel):
@@ -90,6 +89,36 @@ class Bamboogruel(Jobgruel):
                 detail for detail in [remote, city, state] if detail
             )
             data["position"] = item["jobOpeningName"]
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class Ashbygruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        with User(True) as user:
+            user.get(self.url)
+            soup = user.get_soup()
+        sections = soup.find_all("div", class_="ashby-job-posting-brief-list")
+        # assert isinstance(sections, Tag)
+        items = []
+        for section in sections:
+            items.extend(section.find_all("a"))
+        return items
+
+    def parse_item(self, item: ParsableItem) -> Any:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            data["url"] = f"https://jobs.ashbyhq.com{item.get('href')}"
+            position = item.find("h3")
+            assert isinstance(position, Tag)
+            data["position"] = position.text
+            location = item.find("p")
+            assert isinstance(location, Tag)
+            data["location"] = location.text.split("•")[1].strip()
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
