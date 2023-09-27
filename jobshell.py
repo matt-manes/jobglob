@@ -182,6 +182,8 @@ class JobShell(DBShell):
             return "greenhouse"
         elif "jobs.lever.co" in url:
             return "lever"
+        elif "bamboohr" in url:
+            return "bamboo"
         else:
             return None
 

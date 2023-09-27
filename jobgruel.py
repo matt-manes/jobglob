@@ -2,6 +2,7 @@ from typing import Any
 
 from gruel import Gruel, ParsableItem
 from bs4 import BeautifulSoup, Tag
+from gruel.gruel import ParsableItem
 from jobbased import JobBased
 from pathier import Pathier
 import inspect
@@ -67,6 +68,28 @@ class Levergruel(Jobgruel):
             )
             assert isinstance(location, Tag)
             data["location"] = location.text
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class Bamboogruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        return self.get_page(f"{self.url}/list").json()["result"]
+
+    def parse_item(self, item: dict) -> dict | None:
+        try:
+            data = {}
+            data["url"] = f"{self.url}/{item['id']}"
+            city = item["location"].get("city", "")
+            state = item["location"].get("state", "")
+            remote = "Remote" if item["isRemote"] else ""
+            data["location"] = ", ".join(
+                detail for detail in [remote, city, state] if detail
+            )
+            data["position"] = item["jobOpeningName"]
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
