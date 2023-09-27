@@ -99,6 +99,13 @@ class JobBased(Databased):
             where=f"companies.name LIKE '{name.replace('_', ' ')}'",
         )[0]["url"]
 
+    def get_scrapable_board_company(self, name: str) -> str:
+        return self.select(
+            "companies",
+            ["name"],
+            where=f"companies.name LIKE '{name.replace('_', ' ')}'",
+        )[0]["name"]
+
     def add_listing(
         self,
         position: str,
