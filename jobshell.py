@@ -57,7 +57,7 @@ def get_add_board_parser() -> argshell.ArgShellParser:
     return parser
 
 
-class JobManager(DBShell):
+class JobShell(DBShell):
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
     _dbpath = Pathier("jobs.db")
@@ -132,12 +132,39 @@ class JobManager(DBShell):
                 db.reset_alive_status(url)
 
     @argshell.with_parser(get_add_board_parser)
-    def do_add_to_boards(self, args: argshell.Namespace):
+    def do_add_board(self, args: argshell.Namespace):
         """Add a url to boards list."""
         with JobBased(self.dbpath) as db:
             args.url = args.url.strip("/")
             if args.url not in db.boards:
                 db.add_board(args.url, args.company)
+
+    @argshell.with_parser(get_add_board_parser)
+    def do_add_scrapable_board(self, args: argshell.Namespace):
+        """Add a url to scrapable boards list."""
+        if not args.company:
+            print("Scrapable boards require a company name.")
+        else:
+            with JobBased(self.dbpath) as db:
+                args.url = args.url.strip("/")
+                if args.url not in db.scrapable_boards:
+                    db.add_scrapable_board(args.url, args.company)
+                    self.create_scraper_from_template(args.url, args.company)
+
+    def create_scraper_from_template(self, url: str, company: str):
+        board_type = self.detect_board_type(url)
+        if not board_type:
+            template = (root / "scrapers" / "template.py").read_text()
+        else:
+            template = (root / "scrapers" / f"{board_type}_template.py").read_text()
+        stem = company.lower().replace(" ", "_")
+        (root / "scrapers" / f"{stem}.py").write_text(template)
+
+    def detect_board_type(self, url: str) -> str | None:
+        if "boards.greenhouse.io" in url:
+            return "greenhouse"
+        else:
+            return None
 
     def do_remove_from_boards(self, args: str):
         """Remove a url from boards list."""
@@ -164,4 +191,4 @@ class JobManager(DBShell):
 
 
 if __name__ == "__main__":
-    JobManager().cmdloop()
+    JobShell().cmdloop()

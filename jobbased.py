@@ -18,6 +18,14 @@ class JobBased(Databased):
         return [row["url"] for row in self.select("boards", ["url"])]
 
     @property
+    def scrapable_boards(self) -> list[str]:
+        return [row["url"] for row in self.select("scrapable_boards", ["url"])]
+
+    @property
+    def scraped_listings_urls(self) -> list[str]:
+        return [row["url"] for row in self.select("scraped_listings", ["url"])]
+
+    @property
     def companies(self) -> list[str]:
         return [row["name"] for row in self.select("companies", ["name"])]
 
@@ -48,13 +56,48 @@ class JobBased(Databased):
         url = url.strip("/")
         self.insert("boards", ("url", "date_added"), [(url, datetime.now())])
         if company and company in self.companies:
-            board_id = self.query(f"SELECT board_id FROM boards WHERE url='{url}';")[0][
-                0
-            ]
             board_id = self.select("boards", ["board_id"], where=f"url = '{url}'")[0][
                 "board_id"
             ]
-            self.update("companies", "board_id", board_id, f"company = '{company}'")
+            self.update("companies", "board_id", board_id, f"name = '{company}'")
+
+    def add_scrapable_board(self, url: str, company: str):
+        url = url.strip("/")
+        if url in [row["url"] for row in self.select("boards", ["url"])]:
+            board_id = self.select("boards", ["board_id"], where=f"url = '{url}'")[0][
+                "board_id"
+            ]
+            self.insert(
+                "scrapable_boards",
+                ("board_id", "url", "date_added"),
+                [(board_id, url, datetime.now())],
+            )
+        else:
+            self.insert("boards", ("url", "date_added"), [(url, datetime.now())])
+        self.add_company(company)
+        board_id = self.select(
+            "scrapable_boards", ["board_id"], where=f"url = '{url}'"
+        )[0]["board_id"]
+        self.update("companies", "board_id", board_id, f"name = '{company}'")
+
+    def add_company(self, name: str):
+        if name not in self.companies:
+            self.insert("companies", ("name", "date_added"), [(name, datetime.now())])
+
+    def get_company_id(self, name: str) -> int:
+        return self.select("companies", ["company_id"], where=f"name = '{name}'")[0][
+            "company_id"
+        ]
+
+    def get_scrapable_board_url(self, name: str) -> str:
+        return self.select(
+            "companies",
+            ["scrapable_boards.url"],
+            [
+                "INNER JOIN scrapable_boards ON companies.board_id=scrapable_boards.board_id"
+            ],
+            where=f"companies.name LIKE '{name.replace('_', ' ')}'",
+        )[0]["url"]
 
     def add_listing(
         self,
@@ -64,17 +107,21 @@ class JobBased(Databased):
         xpath: str,
         found_on: str | None = None,
     ):
-        if company not in self.companies:
-            self.insert(
-                "companies", ("name", "date_added"), [(company, datetime.now())]
-            )
-        company_id = self.select(
-            "companies", ["company_id"], where=f"name = '{company}'"
-        )[0]["company_id"]
+        self.add_company(company)
+        company_id = self.get_company_id(company)
         self.insert(
             "listings",
-            ("name", "company_id", "url", "xpath", "found_on", "date_added"),
+            ("position", "company_id", "url", "xpath", "found_on", "date_added"),
             [(position, company_id, url, xpath, found_on, datetime.now())],
+        )
+
+    def add_scraped_listing(self, position: str, location: str, url: str, company: str):
+        self.add_company(company)
+        company_id = self.get_company_id(company)
+        self.insert(
+            "scraped_listings",
+            ("position", "location", "url", "company_id", "date_added"),
+            [(position, location, url, company_id, datetime.now())],
         )
 
     def create_schema(self, path: Pathish = "schema.sql"):
