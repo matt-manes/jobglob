@@ -8,42 +8,23 @@ import inspect
 
 
 class Jobgruel(Gruel):
-    def get_parsable_items(self) -> list[ParsableItem]:
-        """Get relevant webpages and extract raw data that needs to be parsed.
-
-        e.g. first 10 results for an endpoint that returns json content
-        >>> return self.get_page(some_url).json()[:10]"""
-        raise NotImplementedError
-
-    def parse_item(self, item: ParsableItem) -> Any:
-        """Parse `item` and return parsed data.
-
-        e.g.
-        >>> try:
-        >>>     parsed = {}
-        >>>     parsed["thing1"] = item["element"].split()[0]
-        >>>     self.successes += 1
-        >>>     return parsed
-        >>> except Exception:
-        >>>     self.logger.exception("message")
-        >>>     self.failures += 1
-        >>>     return None"""
-        raise NotImplementedError
+    def __init__(self, *args, **kwargs):
+        with JobBased() as db:
+            self.url = db.get_scrapable_board_url(self.name)
+            self.company = db.get_scrapable_board_company(self.name)
 
     def store_item(self, item: Any):
-        """Store `item`."""
-        raise NotImplementedError
+        with JobBased() as db:
+            if item["url"] not in db.scraped_listings_urls:
+                db.add_scraped_listing(
+                    item["position"], item["location"], item["url"], self.company
+                )
+                self.success_count += 1
 
 
 class Greenhousegruel(Jobgruel):
-    @property
-    def name(self) -> str:
-        return Pathier(inspect.getsourcefile(type(self))).stem  # type: ignore
-
     def get_parsable_items(self) -> list[ParsableItem]:
-        with JobBased() as db:
-            url = db.get_scrapable_board_url(self.name)
-        soup = self.get_soup(url)
+        soup = self.get_soup(self.url)
         return soup.find_all("div", class_="opening")
 
     def parse_item(self, item: Tag) -> dict | None:
@@ -64,10 +45,29 @@ class Greenhousegruel(Jobgruel):
             self.fail_count += 1
             return None
 
-    def store_item(self, item: dict):
-        with JobBased() as db:
-            if item["url"] not in db.scraped_listings_urls:
-                db.add_scraped_listing(
-                    item["position"], item["location"], item["url"], "Strava"
-                )
-                self.success_count += 1
+
+class Levergruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        return soup.find_all("div", class_="posting")
+
+    def parse_item(self, item: Tag) -> Any:
+        try:
+            data = {}
+            title_element = item.find("a", class_="posting-title")
+            assert isinstance(title_element, Tag)
+            data["url"] = title_element.get("href")
+            position = title_element.find("h5")
+            assert isinstance(position, Tag)
+            data["position"] = position.text
+            location = title_element.find(
+                "span",
+                class_="sort-by-location posting-category small-category-label location",
+            )
+            assert isinstance(location, Tag)
+            data["location"] = location
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
