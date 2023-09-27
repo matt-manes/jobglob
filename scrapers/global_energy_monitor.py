@@ -7,8 +7,3 @@ from jobgruel import Bamboogruel
 
 class JobScraper(Bamboogruel):
     ...
-
-
-if __name__ == "__main__":
-    g = JobScraper()
-    g.scrape()

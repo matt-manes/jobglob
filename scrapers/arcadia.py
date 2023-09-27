@@ -7,8 +7,3 @@ from jobgruel import Levergruel
 
 class JobScraper(Levergruel):
     ...
-
-
-if __name__ == "__main__":
-    gruel = JobScraper()
-    gruel.scrape()
