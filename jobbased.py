@@ -73,7 +73,9 @@ class JobBased(Databased):
                 [(board_id, url, datetime.now())],
             )
         else:
-            self.insert("boards", ("url", "date_added"), [(url, datetime.now())])
+            self.insert(
+                "scrapable_boards", ("url", "date_added"), [(url, datetime.now())]
+            )
         self.add_company(company)
         board_id = self.select(
             "scrapable_boards", ["board_id"], where=f"url = '{url}'"
