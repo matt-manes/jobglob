@@ -7,6 +7,7 @@ import time
 from pathier import Pathier
 from griddle import griddy
 from jobbased import JobBased
+import helpers
 
 root = Pathier(__file__).parent
 
@@ -161,31 +162,9 @@ class JobShell(DBShell):
                 args.url = args.url.strip("/")
                 if args.url not in db.scrapable_boards:
                     db.add_scrapable_board(args.url, args.company)
-                    self.create_scraper_from_template(
+                    helpers.create_scraper_from_template(
                         args.url, args.company, args.board_type
                     )
-
-    def create_scraper_from_template(
-        self, url: str, company: str, board_type: str | None = None
-    ):
-        if not board_type:
-            board_type = self.detect_board_type(url)
-        if not board_type:
-            template = (root / "scrapers" / "template.py").read_text()
-        else:
-            template = (root / "scrapers" / f"{board_type}_template.py").read_text()
-        stem = company.lower().replace(" ", "_")
-        (root / "scrapers" / f"{stem}.py").write_text(template)
-
-    def detect_board_type(self, url: str) -> str | None:
-        if "boards.greenhouse.io" in url:
-            return "greenhouse"
-        elif "jobs.lever.co" in url:
-            return "lever"
-        elif "bamboohr" in url:
-            return "bamboo"
-        else:
-            return None
 
     def do_remove_from_boards(self, args: str):
         """Remove a url from boards list."""
