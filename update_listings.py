@@ -51,12 +51,12 @@ def update_listings():
         print(*[listing["url"] for listing in dead_listings], sep="\n")
         with JobBased() as db:
             for listing in dead_listings:
-                db.update("listings", "alive", 0, f"url = '{listing['url']}")
+                db.update("listings", "alive", 0, f"url = '{listing['url']}'")
                 db.update(
                     "listings",
                     "date_removed",
                     datetime.now(),
-                    f"url = '{listing['url']}",
+                    f"url = '{listing['url']}'",
                 )
     else:
         print("All previously live listings appear still live.")
