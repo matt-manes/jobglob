@@ -129,7 +129,7 @@ class Ashbygruel(Jobgruel):
 class Workablegruel(Jobgruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         return self.get_page(
-            f"https://apply.workable.com/api/v3/accounts/{self.company.lower().replace(' ','-')}/jobs",
+            f"https://apply.workable.com/api/v3/accounts/{self.url[self.url.rfind('/')+1:]}/jobs",
             "post",
         ).json()["results"]
 
