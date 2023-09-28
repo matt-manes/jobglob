@@ -45,6 +45,42 @@ class JobBased(Databased):
     def rejected_applications(self) -> list[dict]:
         return self.select("applications", where="rejected = 1")
 
+    @property
+    def unseen_listings(self) -> list[dict]:
+        return self.select(
+            "scraped_listings",
+            [
+                "listing_id AS id",
+                "position",
+                "companies.name AS company",
+                "location",
+                "scraped_listings.url",
+            ],
+            [
+                "INNER JOIN companies ON scraped_listings.company_id = companies.company_id"
+            ],
+            where="seen = 0",
+        )
+
+    def mark_seen(self, listing_id: int):
+        self.update("scraped_listings", "seen", 1, f"listing_id = {listing_id}")
+
+    def mark_intrested(self, listing_id: int, xpath: str):
+        listing = self.select("scraped_listings", where=f"listing_id = {listing_id}")[0]
+        self.insert(
+            "listings",
+            ("position", "company_id", "url", "xpath", "date_added"),
+            [
+                (
+                    listing["position"],
+                    listing["company_id"],
+                    listing["url"],
+                    xpath,
+                    datetime.now(),
+                )
+            ],
+        )
+
     def add_application(self, listing_id: int, cover_letter: bool = False):
         self.insert(
             "applications",
