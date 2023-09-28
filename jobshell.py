@@ -171,6 +171,30 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             db.remove_board(args)
 
+    def do_delete_scraper(self, board_id: str):
+        """Delete a scraper given its `board_id`.
+        Deletes the corresponding `scrapable_boards` entry, scraper file, and scraper log file."""
+        board_id = int(board_id)  # type: ignore
+        print("Delete the following?")
+        with JobBased(self.dbpath) as db:
+            self.display(
+                db.select(
+                    "scrapable_boards",
+                    [
+                        "scrapable_boards.board_id",
+                        "scrapable_boards.url",
+                        "companies.name",
+                    ],
+                    [
+                        "INNER JOIN companies ON scrapable_boards.board_id = companies.board_id"
+                    ],
+                    where=f"scrapable_boards.board_id = {board_id}",
+                )
+            )
+        ans = input("y/n: ")
+        if ans == "y":
+            helpers.delete_scraper(board_id)  # type: ignore
+
     def do_update_xpath(self, args: str):
         """Give a listing_id and a new xpath."""
         args = args.strip()
