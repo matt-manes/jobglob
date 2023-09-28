@@ -180,3 +180,31 @@ class Easyapplygruel(Jobgruel):
             self.logger.exception("Failure to parse item")
             self.fail_count += 1
             return None
+
+
+class Jobvitegruel(Jobgruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        job_tables = soup.find_all("table", class_="jv-job-list")
+        listings = []
+        for table in job_tables:
+            if isinstance(table, Tag):
+                listings.extend(table.find_all("tr"))
+        return listings
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            data["url"] = f"https://jobs.jobvite.com/careers{a.get('href')}"
+            data["position"] = a.text
+            td = item.find("td", class_="jv-job-list-location")
+            assert isinstance(td, Tag)
+            data["location"] = td.text
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
