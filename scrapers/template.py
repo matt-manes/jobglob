@@ -4,6 +4,7 @@ root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
 from jobgruel import Jobgruel, ParsableItem
 from typing import Any
+from bs4 import Tag
 
 
 class JobScraper(Jobgruel):
@@ -14,7 +15,7 @@ class JobScraper(Jobgruel):
         >>> return self.get_page(some_url).json()[:10]"""
         raise NotImplementedError
 
-    def parse_item(self, item: ParsableItem) -> Any:
+    def parse_item(self, item: ParsableItem) -> dict | None:
         """Parse `item` and return parsed data.
 
         e.g.
