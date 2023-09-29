@@ -3,18 +3,48 @@ import webbrowser
 
 from griddle import griddy
 from pathier import Pathier
-
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
 
+import argparse
 
-def filter_listings(listings: list[dict]) -> list[dict]:
+
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "key_terms",
+        nargs="*",
+        type=str,
+        default=[],
+        help=""" Only show listings with these terms in the job `position` """,
+    )
+
+    parser.add_argument(
+        "-f",
+        "--filter_positions",
+        action="store_true",
+        help=""" Use `peruse_filters.toml` to filter listings. 
+        i.e. any listings with these words in the job `position` won't be shown.
+        Overrides `key_terms` arg.""",
+    )
+
+    args = parser.parse_args()
+
+    return args
+
+
+def filter_listings(
+    listings: list[dict], filter_on: str, key_terms: list[str], exclude_terms: list[str]
+) -> list[dict]:
     filtered_listings = []
-    filters = (root / "peruse_filters.txt").split()
+
     for listing in listings:
-        position = listing["position"].lower()
-        if any(filter_ in position for filter_ in filters):
+        column = listing[filter_on].lower()
+        if any(exclude in column for exclude in exclude_terms):
+            continue
+        if key_terms and all(key not in column for key in key_terms):
             continue
         filtered_listings.append(listing)
     return filtered_listings
@@ -23,11 +53,11 @@ def filter_listings(listings: list[dict]) -> list[dict]:
 def do_action(listing: dict):
     while True:
         action = input(
-            "Enter action ('i': intrested, 'o': open url, 'q': quit, enter to mark seen): "
+            "Enter action ('a': add listing, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
         )
         match action:
-            case "i":
-                xpath = f"Enter an xpath: "
+            case "a":
+                xpath = input(f"Enter an xpath: ")
                 with JobBased() as db:
                     db.mark_intrested(listing["id"], xpath)
                     db.mark_seen(listing["id"])
@@ -36,7 +66,7 @@ def do_action(listing: dict):
                 webbrowser.open(listing["url"])
             case "q":
                 sys.exit()
-            case "":
+            case "i":
                 with JobBased() as db:
                     db.mark_seen(listing["id"])
                 break
@@ -48,10 +78,16 @@ def show(listing: dict):
     print(griddy([listing], "keys"))
 
 
-def main():
+def main(args: argparse.Namespace):
     with JobBased() as db:
         listings = db.unseen_listings
-    listings = filter_listings(listings)
+    filters = (root / "peruse_filters.toml").loads()
+    listings = filter_listings(
+        listings, "location", [], exclude_terms=filters["filters"]["location"]
+    )
+    if args.key_terms or args.filter_positions:
+        excludes = filters["filters"]["position"] if args.filter_positions else []
+        listings = filter_listings(listings, "position", args.key_terms, excludes)
     num_listings = len(listings)
     print(f"Unseen listings: {num_listings}")
     for i, listing in enumerate(listings, 1):
@@ -61,4 +97,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(get_args())
