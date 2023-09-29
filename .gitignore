@@ -8,3 +8,4 @@ migrate.py
 __pycache__
 .vscode
 lastcheck.toml
+*.temp
