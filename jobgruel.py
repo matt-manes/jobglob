@@ -138,7 +138,7 @@ class Workablegruel(Jobgruel):
             data = {}
             data[
                 "url"
-            ] = f"https:://apply.workable.com/{self.company.lower().replace(' ','-')}/j/{item['shortcode']}"
+            ] = f"https://apply.workable.com/{self.company.lower().replace(' ','-')}/j/{item['shortcode']}"
             location = ""
             if item["remote"]:
                 location += f"Remote {item['location']['country']}"
