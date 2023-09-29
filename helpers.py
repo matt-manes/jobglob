@@ -25,12 +25,13 @@ def detect_board_type(url: str) -> str | None:
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
+    templates_path = root / "templates"
     if not board_type:
         board_type = detect_board_type(url)
     if not board_type:
-        template = (root / "scrapers" / "template.py").read_text()
+        template = (templates_path / "template.py").read_text()
     else:
-        template = (root / "scrapers" / f"{board_type}_template.py").read_text()
+        template = (templates_path / f"{board_type}_template.py").read_text()
     stem = company.lower().replace(" ", "_")
     (root / "scrapers" / f"{stem}.py").write_text(template)
 
