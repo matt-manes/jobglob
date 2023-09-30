@@ -2,8 +2,8 @@ from pathier import Pathier
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
-from jobgruel import Greenhousegruel
+from jobgruel import GreenhouseGruel
 
 
-class JobScraper(Greenhousegruel):
+class JobScraper(GreenhouseGruel):
     ...

@@ -2,12 +2,12 @@ from pathier import Pathier
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
-from jobgruel import Jobgruel, ParsableItem
+from jobgruel import JobGruel, ParsableItem
 from typing import Any
 from bs4 import Tag
 
 
-class JobScraper(Jobgruel):
+class JobScraper(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         """Get relevant webpages and extract raw data that needs to be parsed.
 

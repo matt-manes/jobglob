@@ -7,7 +7,7 @@ from seleniumuser import User
 from jobbased import JobBased
 
 
-class Jobgruel(Gruel):
+class JobGruel(Gruel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         with JobBased() as db:
@@ -23,7 +23,7 @@ class Jobgruel(Gruel):
                 self.success_count += 1
 
 
-class Greenhousegruel(Jobgruel):
+class GreenhouseGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.url)
         return soup.find_all("div", class_="opening")
@@ -47,7 +47,7 @@ class Greenhousegruel(Jobgruel):
             return None
 
 
-class Levergruel(Jobgruel):
+class LeverGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.url)
         return soup.find_all("div", class_="posting")
@@ -74,7 +74,7 @@ class Levergruel(Jobgruel):
             return None
 
 
-class Bamboogruel(Jobgruel):
+class BambooGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         return self.get_page(f"{self.url}/list").json()["result"]
 
@@ -96,7 +96,7 @@ class Bamboogruel(Jobgruel):
             return None
 
 
-class Ashbygruel(Jobgruel):
+class AshbyGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         with User(True) as user:
             user.get(self.url)
@@ -126,7 +126,7 @@ class Ashbygruel(Jobgruel):
             return None
 
 
-class Workablegruel(Jobgruel):
+class WorkableGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         return self.get_page(
             f"https://apply.workable.com/api/v3/accounts/{self.url[self.url.rfind('/')+1:]}/jobs",
@@ -153,7 +153,7 @@ class Workablegruel(Jobgruel):
             return None
 
 
-class Easyapplygruel(Jobgruel):
+class EasyApplyGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.url)
         listings = soup.find("div", attrs={"id": "list"})
@@ -182,7 +182,7 @@ class Easyapplygruel(Jobgruel):
             return None
 
 
-class Jobvitegruel(Jobgruel):
+class JobviteGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.url)
         job_tables = soup.find_all("table", class_="jv-job-list")
