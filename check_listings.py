@@ -49,3 +49,4 @@ def check_table(table: str):
 if __name__ == "__main__":
     for table in ["scraped_listings", "listings"]:
         check_table(table)
+    input("...")
