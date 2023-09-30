@@ -57,9 +57,8 @@ def do_action(listing: dict):
         )
         match action:
             case "a":
-                xpath = input(f"Enter an xpath: ")
                 with JobBased() as db:
-                    db.mark_intrested(listing["id"], xpath)
+                    db.mark_intrested(listing["id"], "")
                     db.mark_seen(listing["id"])
                 break
             case "o":

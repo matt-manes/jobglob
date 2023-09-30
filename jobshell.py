@@ -24,11 +24,7 @@ def get_add_parser() -> argshell.ArgShellParser:
         "company", type=str, help=""" The company the listing is for. """
     )
     parser.add_argument("url", type=str, help=""" The url of the listing. """)
-    parser.add_argument(
-        "xpath",
-        type=str,
-        help=""" An xpath to use when determining if the listing is still up. """,
-    )
+
     parser.add_argument(
         "-f",
         "--found_on",
@@ -107,7 +103,7 @@ class JobShell(DBShell):
         """Add a job listing to the database."""
         with JobBased(self.dbpath) as db:
             db.add_listing(
-                args.name, args.company, args.url.strip("/"), args.xpath, args.found_on
+                args.name, args.company, args.url.strip("/"), "", args.found_on
             )
             if args.applied:
                 db.add_application(args.url.strip("/"))
@@ -194,13 +190,6 @@ class JobShell(DBShell):
         ans = input("y/n: ")
         if ans == "y":
             helpers.delete_scraper(board_id)  # type: ignore
-
-    def do_update_xpath(self, args: str):
-        """Give a listing_id and a new xpath."""
-        args = args.strip()
-        listing_id, xpath = args[: args.find(" ")], args[args.find(" ") + 1 :]
-        with JobBased(self.dbpath) as db:
-            db.update("listings", "xpath", xpath, f"listing_id = {int(listing_id)}")
 
     def do_mark_dead(self, listing_id: str):
         """Given a `listing_id`, mark a listing as removed."""
