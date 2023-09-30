@@ -1,5 +1,4 @@
 *.db
-!jobs.db
 *.log
 *.json
 *scratch*
