@@ -208,3 +208,29 @@ class JobviteGruel(JobGruel):
             self.logger.exception("Failure to parse item")
             self.fail_count += 1
             return None
+
+
+class ApplyToJobGruel(JobGruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        list_group = soup.find("ul", class_="list-group")
+        if isinstance(list_group, Tag):
+            return list_group.find_all("li", class_="list-group-item")
+        return []
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            data["url"] = a.get("href")
+            data["position"] = a.text
+            li = item.find("li")
+            assert isinstance(li, Tag)
+            data["location"] = li.text
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
