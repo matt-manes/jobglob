@@ -59,7 +59,7 @@ class JobBased(Databased):
             [
                 "INNER JOIN companies ON scraped_listings.company_id = companies.company_id"
             ],
-            where="seen = 0",
+            where="seen = 0 AND alive = 1",
         )
 
     def mark_seen(self, listing_id: int):
