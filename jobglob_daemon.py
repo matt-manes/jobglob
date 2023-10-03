@@ -16,12 +16,13 @@ def is_business_hours() -> bool:
 
 
 def main():
-    jobglob = JobGlob(["JobScraper"], ["*template.py"], root / "scrapers")
     while True:
         if is_business_hours():
+            jobglob = JobGlob(["JobScraper"], ["*template.py"], root / "scrapers")
             print(f"Brewing at {datetime.now():%m/%d %I:%M %p}")
             jobglob.brew()
             print("nap time")
+            del jobglob
         time.sleep(3600)
 
 
