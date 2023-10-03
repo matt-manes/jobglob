@@ -1,6 +1,6 @@
 SELECT
-    application_id,
-    applications.listing_id,
+    application_id AS app_id,
+    applications.listing_id AS list_id,
     listings.position,
     companies.name AS company,
     listings.alive,

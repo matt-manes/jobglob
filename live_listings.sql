@@ -1,5 +1,5 @@
 SELECT
-    listing_id,
+    listing_id AS id,
     listings.position,
     companies.name AS company,
     listings.url,
