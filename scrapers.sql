@@ -2,6 +2,7 @@ CREATE VIEW IF NOT EXISTS
     scrapers (board_id, company_id, company, url) AS
 SELECT
     scrapable_boards.board_id,
+    companies.company_id,
     companies.name,
     scrapable_boards.url
 FROM
