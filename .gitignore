@@ -9,3 +9,5 @@ __pycache__
 lastcheck.toml
 *.temp
 peruse_filters.toml
+add_to_bulk_add_list.py
+condense_stillhiring.py
