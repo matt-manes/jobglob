@@ -1,6 +1,7 @@
 from pathier import Pathier
 from jobbased import JobBased
 from gitbetter import Git
+import os
 
 root = Pathier(__file__).parent
 
@@ -35,7 +36,10 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
     else:
         template = (templates_path / f"{board_type}_template.py").read_text()
     stem = company.lower().replace(" ", "_")
-    (root / "scrapers" / f"{stem}.py").write_text(template)
+    py_path = root / "scrapers" / f"{stem}.py"
+    py_path.write_text(template)
+    if not board_type:
+        os.system(f"code -r {py_path}")
 
 
 def delete_scraper(board_id: int):
