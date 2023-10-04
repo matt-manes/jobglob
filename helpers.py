@@ -61,4 +61,4 @@ def delete_scraper(board_id: int):
     git.untrack(*files)
     for file in files:
         file.delete()
-    git.commit(f'-m "chore: delete `{company}` scraper"')
+    # git.commit(f'-m "chore: delete `{company}` scraper"')
