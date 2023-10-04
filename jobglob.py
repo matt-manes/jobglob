@@ -21,6 +21,7 @@ class JobGlob(Brewer):
         return grouped_listings
 
     def postscrape_chores(self):
+        super().postscrape_chores()
         with JobBased() as db:
             num_new_listings = db.count("scraped_listings") - self.num_listings
             new_listings = self.group_by_company(
@@ -48,7 +49,6 @@ class JobGlob(Brewer):
             print("Scrape failures:")
         for file in scrape_fails:
             print(f"  {file}")
-            print()
 
         parse_fails = []
         for company in scraped_companies:
