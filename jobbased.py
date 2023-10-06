@@ -99,16 +99,6 @@ class JobBased(Databased):
 
     def add_scrapable_board(self, url: str, company: str):
         url = url.strip("/")
-        """ if url in [row["url"] for row in self.select("boards", ["url"])]:
-            board_id = self.select("boards", ["board_id"], where=f"url = '{url}'")[0][
-                "board_id"
-            ]
-            self.insert(
-                "scrapable_boards",
-                ("board_id", "url", "date_added"),
-                [(board_id, url, datetime.now())],
-            )
-        else: """
         self.insert("scrapable_boards", ("url", "date_added"), [(url, datetime.now())])
         self.add_company(company)
         board_id = self.select(
