@@ -7,10 +7,13 @@ from jobbased import JobBased
 
 
 def check_listing(listing: dict) -> dict:
-    response = requests.get(listing["url"])
-    if response.status_code == 200 and response.url.strip("/") == listing["url"]:
-        return {"url": listing["url"], "alive": True}
-    return {"listing": listing, "alive": False}
+    try:
+        response = requests.get(listing["url"])
+        if response.status_code == 200 and response.url.strip("/") == listing["url"]:
+            return {"url": listing["url"], "alive": True}
+        return {"listing": listing, "alive": False}
+    except Exception as e:
+        return {"listing": listing, "alive": None}
 
 
 def get_pool(listings: list[dict]) -> PoolBar:
@@ -28,8 +31,11 @@ def check_table(table: str):
     pool = get_pool(listings)
     results = pool.execute()
     dead_count = 0
+    failed_requests = []
     for result in results:
-        if not result["alive"]:
+        if result["alive"] is None:
+            failed_requests.append(result["listing"])
+        elif not result["alive"]:
             dead_count += 1
             listing = result["listing"]
             with JobBased() as db:
@@ -44,9 +50,16 @@ def check_table(table: str):
         print("Did not find any dead listings.")
     else:
         print(f"Found {dead_count} dead listings.")
+    if failed_requests:
+        print("Failed requests:")
+        for request in failed_requests:
+            print(f"  {request}")
 
 
 if __name__ == "__main__":
     for table in ["scraped_listings", "listings"]:
-        check_table(table)
+        try:
+            check_table(table)
+        except Exception as e:
+            print(e)
     input("...")
