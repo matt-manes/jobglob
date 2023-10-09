@@ -237,3 +237,41 @@ class ApplyToJobGruel(JobGruel):
             self.logger.exception("Failure to parse item")
             self.fail_count += 1
             return None
+
+
+class SmartRecruiterGruel(JobGruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        page_count = 0
+        company_page = self.url[self.url.rfind("/") + 1 :]
+        listings = []
+        while True:
+            if page_count == 0:
+                soup = self.get_soup(self.url)
+                listings.extend(soup.find_all("a", class_="link--block details"))
+            else:
+                response = self.get_page(
+                    f"https://careers.smartrecruiters.com/{company_page}/api/more?page={page_count}"
+                )
+                if not response.text:
+                    break
+                soup = self.as_soup(response)
+                listings.extend(soup.find_all("a", class_="link--block details"))
+            page_count += 1
+        return listings
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            data["url"] = item.get("href")
+            h4 = item.find("h4")
+            assert isinstance(h4, Tag)
+            data["position"] = h4.text
+            li = item.find("li", class_="job-desc")
+            assert isinstance(li, Tag)
+            data["location"] = li.text
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
