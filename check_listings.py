@@ -13,6 +13,7 @@ def check_listing(listing: dict) -> dict:
             return {"url": listing["url"], "alive": True}
         return {"listing": listing, "alive": False}
     except Exception as e:
+        listing["error"] = str(e)
         return {"listing": listing, "alive": None}
 
 
