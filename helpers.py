@@ -7,28 +7,11 @@ root = Pathier(__file__).parent
 
 
 def detect_board_type(url: str) -> str | None:
-    if "boards.greenhouse.io" in url:
-        return "greenhouse"
-    elif "jobs.lever.co" in url:
-        return "lever"
-    elif "bamboohr" in url:
-        return "bamboo"
-    elif "jobs.ashbyhq" in url:
-        return "ashby"
-    elif "apply.workable" in url:
-        return "workable"
-    elif "easyapply.co" in url:
-        return "easyapply"
-    elif "jobs.jobvite" in url:
-        return "jobvite"
-    elif ".applytojob." in url:
-        return "applytojob"
-    elif "careers.smartrecruiters" in url:
-        return "smartrecruiter"
-    elif "recruitee.com" in url:
-        return "recruitee"
-    else:
-        return None
+    boards = (root / "boardtype_dict.toml").loads()
+    for board in boards:
+        if board in url:
+            return boards[board]
+    return None
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
