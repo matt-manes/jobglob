@@ -275,3 +275,33 @@ class SmartRecruiterGruel(JobGruel):
             self.logger.exception("Failure to parse item")
             self.fail_count += 1
             return None
+
+
+class RecruiteeGruel(JobGruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        output = soup.find("output")
+        assert isinstance(output, Tag)
+        div_grid = output.find("div")
+        assert isinstance(div_grid, Tag)
+        return div_grid.find_all("div", recursive=False)
+
+    def parse_item(self, item: ParsableItem) -> Any:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            data["position"] = a.text
+            data["url"] = f"{self.url}{a.get('href')}"
+            css = "custom-css-style-job-location-"
+            city = item.find("span", class_=f"{css}city")
+            assert isinstance(city, Tag)
+            country = item.find("span", class_=f"{css}country")
+            assert isinstance(country, Tag)
+            data["location"] = f"{city}, {country}"
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
