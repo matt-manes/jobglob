@@ -17,8 +17,13 @@ def detect_board_type(url: str) -> str | None:
 
 
 def extract_board_type(url: str) -> str | None:
-    response = requests.get(url, headers={"User-Agent": whosyouragent.get_agent()})
-    return detect_board_type(response.text)
+    try:
+        response = requests.get(
+            url, headers={"User-Agent": whosyouragent.get_agent()}, timeout=10
+        )
+        return detect_board_type(response.text)
+    except Exception as e:
+        return None
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
