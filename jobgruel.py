@@ -286,7 +286,7 @@ class RecruiteeGruel(JobGruel):
         assert isinstance(div_grid, Tag)
         return div_grid.find_all("div", recursive=False)
 
-    def parse_item(self, item: ParsableItem) -> Any:
+    def parse_item(self, item: ParsableItem) -> dict | None:
         try:
             data = {}
             assert isinstance(item, Tag)
@@ -300,6 +300,29 @@ class RecruiteeGruel(JobGruel):
             country = item.find("span", class_=f"{css}country")
             assert isinstance(country, Tag)
             data["location"] = f"{city}, {country}"
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class RecruiteeAltGruel(JobGruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        return soup.find_all("div", class_="job")
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            data["position"] = a.text
+            data["url"] = f"{self.url}{a.get('href')}"
+            li = item.find("li", class_="job-location")
+            assert isinstance(li, Tag)
+            data["location"] = li.text
             return data
         except Exception as e:
             self.logger.exception("Failure to parse item")
