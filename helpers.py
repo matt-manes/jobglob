@@ -2,6 +2,8 @@ from pathier import Pathier
 from jobbased import JobBased
 from gitbetter import Git
 import os
+import requests
+import whosyouragent
 
 root = Pathier(__file__).parent
 
@@ -12,6 +14,11 @@ def detect_board_type(url: str) -> str | None:
         if board in url:
             return boards[board]
     return None
+
+
+def extract_board_type(url: str) -> str | None:
+    response = requests.get(url, headers={"User-Agent": whosyouragent.get_agent()})
+    return detect_board_type(response.text)
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):

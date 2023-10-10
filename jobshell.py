@@ -196,6 +196,9 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             db.mark_dead(int(listing_id))
 
+    def do_extract_boardtype(self, url: str):
+        print(helpers.extract_board_type(url))
+
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
         super().preloop()
