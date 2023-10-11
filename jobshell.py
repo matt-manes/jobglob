@@ -147,7 +147,7 @@ class JobShell(DBShell):
         if ans == "y":
             helpers.delete_scraper(board_id)  # type: ignore
 
-    def do_detect_boardtype(self, args: str):
+    def do_detect_boards(self, args: str):
         """Try to detect job board url from a company website jobs url and a company name.
         >>> detect_boardtype https://somecompany.com/careers Some Company"""
         (url, company) = args.split(maxsplit=1)
@@ -162,6 +162,10 @@ class JobShell(DBShell):
                 )
             else:
                 print("Could not determine 3rd party board information.")
+
+    def do_detect_board_type(self, url: str):
+        """Given a company jobs url, try to detect board type."""
+        print(board_detector.get_board_type_from_page(url))
 
     def do_mark_applied(self, listing_id: str):
         """Mark a job as applied given the `listing_id`."""
