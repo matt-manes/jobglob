@@ -3,6 +3,7 @@ import webbrowser
 
 from griddle import griddy
 from pathier import Pathier
+
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
@@ -28,6 +29,13 @@ def get_args() -> argparse.Namespace:
         help=""" Use `peruse_filters.toml` to filter listings. 
         i.e. any listings with these words in the job `position` won't be shown.
         Overrides `key_terms` arg.""",
+    )
+
+    parser.add_argument(
+        "-ds",
+        "--default_search",
+        action="store_true",
+        help=""" Use the default search terms in `persuse_filters.toml` in addition to any provided `key_terms` arguments. """,
     )
 
     args = parser.parse_args()
@@ -81,12 +89,14 @@ def main(args: argparse.Namespace):
     with JobBased() as db:
         listings = db.unseen_listings
     filters = (root / "peruse_filters.toml").loads()
+    default_search = filters["search"] if args.default_search else []
     listings = filter_listings(
-        listings, "location", [], exclude_terms=filters["filters"]["location"]
+        listings, "location", [], exclude_terms=filters["location"]
     )
-    if args.key_terms or args.filter_positions:
-        excludes = filters["filters"]["position"] if args.filter_positions else []
-        listings = filter_listings(listings, "position", args.key_terms, excludes)
+    excludes = filters["position"] if args.filter_positions else []
+    listings = filter_listings(
+        listings, "position", args.key_terms + default_search, excludes
+    )
     num_listings = len(listings)
     print(f"Unseen listings: {num_listings}")
     for i, listing in enumerate(listings, 1):
