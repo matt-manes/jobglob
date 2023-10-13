@@ -143,7 +143,7 @@ class JobShell(DBShell):
         """Given a company jobs url, try to detect board type."""
         print(board_detector.get_board_type_from_page(url))
 
-    def do_detect_board_trial_error(self, company: str):
+    def do_try_boards(self, company: str):
         """Just try all template urls and see what sticks given a company name."""
         urls = board_detector.get_board_by_trial_and_error(company)
         if urls:
