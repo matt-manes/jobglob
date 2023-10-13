@@ -1,3 +1,13 @@
+CREATE VIEW IF NOT EXISTS
+    dead_listings (
+        id,
+        position,
+        company,
+        url,
+        date_added,
+        days_since_adding,
+        applied
+    ) AS
 SELECT
     listing_id AS id,
     listings.position,
@@ -17,6 +27,4 @@ FROM
     listings
     INNER JOIN companies ON listings.company_id = companies.company_id
 WHERE
-    alive = 0
-ORDER BY
-    listings.date_added DESC;
+    alive = 0;

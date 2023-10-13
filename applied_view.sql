@@ -1,3 +1,14 @@
+CREATE VIEW IF NOT EXISTS
+    applied (
+        app_id,
+        list_id,
+        position,
+        company,
+        alive,
+        rejected,
+        days_since_applying,
+        days_since_rejected
+    ) AS
 SELECT
     application_id AS app_id,
     applications.listing_id AS list_id,

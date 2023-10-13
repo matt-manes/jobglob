@@ -98,32 +98,6 @@ class JobShell(DBShell):
                         args.url, args.company, args.board_type
                     )
 
-    def do_alive(self, arg: str):
-        """Show listings that are still up."""
-        with JobBased(self.dbpath) as db:
-            rows = db.execute_script("live_listings.sql")
-        print(db.to_grid(rows))
-
-    def do_applied(self, arg: str):
-        """Show listings you applied for."""
-        with JobBased(self.dbpath) as db:
-            rows = db.execute_script("applications.sql")
-            ' for i, row in enumerate(rows):\n                rows[i] = ["" if item is None else item for item in row] '
-            print(db.to_grid(rows))
-            print(f"Not yet rejected: {len(db.live_applications)}")
-            print(f"Rejected: {len(db.rejected_applications)}")
-            print(f"Total applications: {len(db.applications)}")
-            last_seven_days = db.query(
-                "SELECT COUNT(*) AS num_applications FROM applications WHERE (JULIANDAY('now')-JULIANDAY(date_applied)) < 7;"
-            )[0]["num_applications"]
-            print(f"Applications in last 7 days: {last_seven_days}")
-
-    def do_dead(self, arg: str):
-        """Show listings that are no longer up."""
-        with JobBased(self.dbpath) as db:
-            rows = db.execute_script("dead_listings.sql")
-        print(db.to_grid(rows))
-
     def do_delete_scraper(self, board_id: str):
         """Delete a scraper given its `board_id`.
         Deletes the corresponding `scrapable_boards` entry, scraper file, and scraper log file.
