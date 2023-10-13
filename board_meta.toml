@@ -1,6 +1,19 @@
+boards = [
+    "greenhouse",
+    "lever",
+    "bamboo",
+    "ashby",
+    "workable",
+    "easyapply",
+    "jobvite",
+    "applytojob",
+    "smartrecruiter",
+    "recruitee"
+]
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
 "boards.greenhouse.io" = "greenhouse"
+"?gh_jid=" = "greenhouse"
 "jobs.lever.co" = "lever"
 "bamboohr" = "bamboo"
 "jobs.ashbyhq" = "ashby"
@@ -9,7 +22,7 @@
 "jobs.jobvite" = "jobvite"
 ".applytojob." = "applytojob"
 "careers.smartrecruiters" = "smartrecruiter"
-"recruitee.com" = "recruitee"
+"recruitee" = "recruitee"
 
 [url_templates]
 "greenhouse" = "https://boards.greenhouse.io/$company"
