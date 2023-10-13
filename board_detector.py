@@ -3,6 +3,9 @@ from string import ascii_letters, digits
 import requests
 import whosyouragent
 from pathier import Pathier
+from printbuddies import PoolBar
+from scrapetools import LinkScraper
+from younotyou import younotyou
 
 root = Pathier(__file__).parent
 
@@ -41,6 +44,7 @@ def get_board_type_from_page(url: str) -> str | None:
         )
         return get_board_type_from_text(response.text)
     except Exception as e:
+        print(e)
         return None
 
 
@@ -69,6 +73,29 @@ def get_candidate_urls(company: str, board_type: str) -> list[str]:
     return [template_url.replace("$company", stem) for stem in stems]
 
 
+def get_board_by_trial_and_error(company: str) -> list[str]:
+    """Just try all the templates for a company name and see what sticks.
+
+    >>> yeet"""
+    url_templates = get_url_templates()
+    board_types = list(url_templates.keys())
+    candidate_urls = []
+
+    def trial_error(company: str, board_type: str) -> list[str] | None:
+        return get_valid_urls(get_candidate_urls(company, board_type))
+
+    pool = PoolBar(
+        "thread",
+        [trial_error] * len(board_types),  # type: ignore
+        [(company, board_type) for board_type in board_types],
+    )
+    results = pool.execute()
+    for result in results:
+        if result:
+            candidate_urls.extend(result)
+    return candidate_urls
+
+
 def get_valid_urls(urls: list[str]) -> list[str] | None:
     """Make a request to each url in `urls`.
 
@@ -80,8 +107,13 @@ def get_valid_urls(urls: list[str]) -> list[str] | None:
             response = requests.get(
                 url, headers={"User-Agent": whosyouragent.get_agent()}, timeout=10
             )
-            if response.status_code == 200 and response.url.strip("/") == url.strip(
-                "/"
+            if (
+                response.status_code == 200
+                and response.url.strip("/") == url.strip("/")
+                and (
+                    "ashbyhq.com" not in url
+                    or '"organization":null' not in response.text.lower()
+                )  # ashby returns a 200 even if the company doesn't exist with them
             ):
                 valid_urls.append(url)
         except Exception as e:
@@ -100,3 +132,19 @@ def get_board_url(company: str, company_jobs_url: str) -> list[str] | None:
     if not board_type:
         return None
     return get_valid_urls(get_candidate_urls(company, board_type))
+
+
+def get_board_from_links(url: str) -> list[str]:
+    """Make a request to `url` and search the page for possible job board links."""
+    try:
+        response = requests.get(
+            url, headers={"User-Agent": whosyouragent.get_agent()}, timeout=10
+        )
+    except Exception as e:
+        return []
+    linkscraper = LinkScraper(response.text, url)
+    linkscraper.scrape_page()
+    links = linkscraper.get_links(excluded_links=linkscraper.get_links("img"))
+    boards = [f"*{board}*" for board in load_meta()["boards"]]
+    urls = younotyou(links, boards, case_sensitive=False)
+    return urls

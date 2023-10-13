@@ -1,12 +1,14 @@
-from databased.dbshell import DBShell
-from datetime import datetime
-import argshell
 import os
 import time
+from datetime import datetime
+
+import argshell
+from databased.dbshell import DBShell
 from pathier import Pathier
+
 import board_detector
-from jobbased import JobBased
 import helpers
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
 
@@ -126,7 +128,7 @@ class JobShell(DBShell):
         """Delete a scraper given its `board_id`.
         Deletes the corresponding `scrapable_boards` entry, scraper file, and scraper log file.
         """
-        board_id = int(board_id)  # type: ignore  # type: ignore
+        board_id = int(board_id)  # type: ignore
         print("Delete the following?")
         with JobBased(self.dbpath) as db:
             self.display(
@@ -167,6 +169,14 @@ class JobShell(DBShell):
         """Given a company jobs url, try to detect board type."""
         print(board_detector.get_board_type_from_page(url))
 
+    def do_detect_board_trial_error(self, company: str):
+        """Just try all template urls and see what sticks given a company name."""
+        urls = board_detector.get_board_by_trial_and_error(company)
+        if urls:
+            print(*urls, sep="\n")
+        else:
+            print(urls)
+
     def do_mark_applied(self, listing_id: str):
         """Mark a job as applied given the `listing_id`."""
         with JobBased(self.dbpath) as db:
@@ -182,7 +192,7 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             db.mark_rejected(int(application_id))
 
-    def do_open(self, arg: str):
+    def do_open(self, _: str):
         """Open job boards in browser."""
         last_check_path = root / "lastcheck.toml"
         last_check = last_check_path.loads()["time"]
