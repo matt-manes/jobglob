@@ -193,6 +193,14 @@ class JobShell(DBShell):
             for url in urls:
                 db.reset_alive_status(url)
 
+    def do_trouble_shoot(self, file_stem: str):
+        """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
+        company = file_stem.replace("_", " ")
+        with JobBased(self.dbpath) as db:
+            self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
+        os.system(f"code scrapers/{file_stem}.py -r")
+        os.system(f"code logs/{file_stem}.log -r")
+
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
         super().preloop()
