@@ -169,7 +169,7 @@ class JobBased(Databased):
                     [
                         "INNER JOIN companies ON listings.company_id=companies.company_id"
                     ],
-                    where=f"listing_id = '{application['listing_id']}';",
+                    where=f"listing_id = {application['listing_id']}",
                 )[0]
                 print(
                     f"Marking application for '{listing['listing_id']}. {listing['position']} -- {listing['company']}' as rejected."
