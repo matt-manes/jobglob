@@ -101,8 +101,8 @@ def get_board_by_trial_and_error(company: str) -> list[str]:
     return candidate_urls
 
 
-def response_is_valid(response: requests.Response) -> bool:
-    return True if response.status_code == 200 and response.url.strip("/") == response.request.url.strip("/") else False  # type: ignore
+def response_is_valid(response: requests.Response, requested_url: str) -> bool:
+    return True if response.status_code == 200 and response.url.strip("/") == requested_url else False  # type: ignore
 
 
 def get_valid_urls(urls: list[str]) -> list[str] | None:
@@ -114,7 +114,7 @@ def get_valid_urls(urls: list[str]) -> list[str] | None:
     for url in urls:
         try:
             response = request(url)
-            if response_is_valid(response) and (
+            if response_is_valid(response, url) and (
                 "ashbyhq.com" not in url
                 or '"organization":null' not in response.text.lower()
             ):  # ashby returns a 200 even if the company doesn't exist with them
@@ -149,3 +149,16 @@ def get_board_from_links(url: str) -> list[str]:
     boards = [f"*{board}*" for board in load_meta()["boards"]]
     urls = younotyou(links, boards, case_sensitive=False)
     return urls
+
+
+def brute_force_careers_page(base_url: str) -> list[str]:
+    """Returns a list of urls that returned a 200 code and didn't redirect."""
+    base_url = base_url.strip("/")
+    pages = (root / "careers_page_list.txt").split()
+    urls = [f"{base_url}/{page}" for page in pages]
+    results = quickpool.ThreadPool(
+        [request] * len(urls), [(url,) for url in urls]
+    ).execute(False)
+    return [
+        url for url, response in zip(urls, results) if response_is_valid(response, url)
+    ]

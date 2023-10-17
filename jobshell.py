@@ -81,7 +81,7 @@ class JobShell(DBShell):
                 db.add_application(args.url.strip("/"))
 
     @argshell.with_parser(get_add_scrapable_board_parser)
-    def do_add_scrapable_board(self, args: argshell.Namespace):
+    def do_add_scraper(self, args: argshell.Namespace):
         """Add a url to scrapable boards list. Will try to determine 3rd party url if supplied url isn't in the system."""
         if not args.company:
             print("Scrapable boards require a company name.")
@@ -200,6 +200,14 @@ class JobShell(DBShell):
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
         os.system(f"code scrapers/{file_stem}.py -r")
         os.system(f"code logs/{file_stem}.log -r")
+
+    def do_find_careers_page(self, base_url: str):
+        """Try to find the careers page given a company's base url."""
+        urls = board_detector.brute_force_careers_page(base_url)
+        if urls:
+            print(*urls, sep="\n")
+        else:
+            print("Valid urls not found.")
 
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
