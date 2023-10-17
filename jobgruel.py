@@ -328,3 +328,28 @@ class RecruiteeAltGruel(JobGruel):
             self.logger.exception("Failure to parse item")
             self.fail_count += 1
             return None
+
+
+class BreezyGruel(JobGruel):
+    def get_parsable_items(self) -> list[ParsableItem]:
+        soup = self.get_soup(self.url)
+        return soup.find_all("li", class_="position transition")
+
+    def parse_item(self, item: ParsableItem) -> dict | None:
+        try:
+            data = {}
+            assert isinstance(item, Tag)
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            data["url"] = f"{self.url}{a.get('href')}"
+            h2 = a.find("h2")
+            assert isinstance(h2, Tag)
+            data["position"] = h2.text
+            li = a.find("li", class_="location")
+            assert isinstance(li, Tag)
+            data["location"] = li.text
+            return data
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
