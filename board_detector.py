@@ -151,14 +151,34 @@ def get_board_from_links(url: str) -> list[str]:
     return urls
 
 
-def brute_force_careers_page(base_url: str) -> list[str]:
+def brute_force_careers_page(base_url: str) -> list[str | None]:
     """Returns a list of urls that returned a 200 code and didn't redirect."""
     base_url = base_url.strip("/")
     pages = (root / "careers_page_list.txt").split()
     urls = [f"{base_url}/{page}" for page in pages]
+
+    def brute_page(url: str) -> requests.Response | None:
+        try:
+            return request(url)
+        except Exception as e:
+            return None
+
     results = quickpool.ThreadPool(
-        [request] * len(urls), [(url,) for url in urls]
+        [brute_page] * len(urls), [(url,) for url in urls]
     ).execute(False)
     return [
-        url for url, response in zip(urls, results) if response_is_valid(response, url)
+        url
+        for url, response in zip(urls, results)
+        if response and response_is_valid(response, url)
     ]
+
+
+def scrape_for_careers_page(url: str) -> list[str]:
+    try:
+        linkscraper = LinkScraper(request(url).text, url)
+    except Exception as e:
+        return []
+    linkscraper.scrape_page()
+    terms = (root / "careers_page_list.txt").split()
+    terms = [f"*{term}*" for term in terms if term not in ["get-involved"]]
+    return younotyou(linkscraper.get_links(), terms, case_sensitive=False)
