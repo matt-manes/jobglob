@@ -1,4 +1,4 @@
-from gruel import Brewer
+from gruel.brewer import Brewer
 import logparse
 from jobbased import JobBased
 from pathier import Pathier
