@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS
     );
 
 CREATE TABLE IF NOT EXISTS
-    interested_listings (
-        interested_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pinned_listings (
+        pinned_id INTEGER PRIMARY KEY AUTOINCREMENT,
         listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 

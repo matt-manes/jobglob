@@ -1,31 +1,32 @@
 CREATE VIEW IF NOT EXISTS
-    applied (
-        app_id,
-        list_id,
+    apps (
+        a_id,
+        l_id,
+        rej,
         position,
         company,
-        alive,
-        rejected,
-        days_since_applying,
-        days_since_rejected
+        app_days,
+        rej_days,
+        alive
     ) AS
 SELECT
-    application_id AS app_id,
-    applications.listing_id AS list_id,
+    applications.application_id,
+    applications.listing_id,
+    CASE
+        WHEN rejection_id IS NOT NULL THEN 1
+        ELSE 0
+    END,
     listings.position,
-    companies.name AS company,
-    listings.alive,
-    rejected,
+    companies.name,
     CAST(
         JULIANDAY ('now') - JULIANDAY (date_applied) AS INT
-    ) AS days_since_applying,
+    ),
     CAST(
         JULIANDAY ('now') - JULIANDAY (date_rejected) AS INT
-    ) AS days_since_rejected
+    ),
+    listings.alive
 FROM
     applications
     INNER JOIN listings ON applications.listing_id = listings.listing_id
     INNER JOIN companies ON listings.company_id = companies.company_id
-ORDER BY
-    rejected DESC,
-    date_applied;
+    LEFT JOIN rejections ON applications.application_id = rejections.application_id;
