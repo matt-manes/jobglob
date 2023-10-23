@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS
     companies (
         company_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        name TEXT UNIQUE,
         date_added TIMESTAMP
     );
 
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS
     applications (
         application_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER UNIQUE REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE,
         date_applied TIMESTAMP
     );
 
