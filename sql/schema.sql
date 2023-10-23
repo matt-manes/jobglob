@@ -28,25 +28,25 @@ CREATE TABLE IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS
     seen_listings (
         seen_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE
+        listing_id INTEGER UNIQUE REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS
     pinned_listings (
         pinned_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE
+        listing_id INTEGER UNIQUE REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS
     applications (
         application_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        listing_id INTEGER UNIQUE REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE,
         date_applied TIMESTAMP
     );
 
 CREATE TABLE IF NOT EXISTS
     rejections (
         rejection_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        application_id INTEGER REFERENCES applications (application_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        application_id INTEGER UNIQUE REFERENCES applications (application_id) ON DELETE CASCADE ON UPDATE CASCADE,
         date_rejected TIMESTAMP
     );
