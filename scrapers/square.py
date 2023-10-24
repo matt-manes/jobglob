@@ -2,10 +2,10 @@ from pathier import Pathier
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
-from jobgruel import SmartRecruiterGruel
+from jobgruel import SmartrecruiterGruel
 
 
-class JobScraper(SmartRecruiterGruel):
+class JobScraper(SmartrecruiterGruel):
     ...
 
 

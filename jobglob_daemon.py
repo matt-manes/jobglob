@@ -37,9 +37,9 @@ def check_last_brew_time():
 
 
 def main():
-    check_last_brew_time()
     while True:
         if is_business_hours():
+            check_last_brew_time()
             jobglob = JobGlob(["JobScraper"], ["*template.py"], root / "scrapers")
             print(f"Brewing at {datetime.now():%m/%d %I:%M %p}")
             jobglob.brew()

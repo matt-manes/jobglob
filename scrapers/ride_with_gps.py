@@ -5,25 +5,26 @@ root = Pathier(__file__).parent
 from jobgruel import JobGruel, ParsableItem
 from typing import Any
 from bs4 import Tag
+import models
 
 
 class JobScraper(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
-        soup = self.get_soup(self.url)
+        soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="position")
 
-    def parse_item(self, item: ParsableItem) -> dict | None:
+    def parse_item(self, item: ParsableItem) -> models.Listing | None:
         try:
-            data = {}
+            listing = self.new_listing()
             assert isinstance(item, Tag)
             h2 = item.find("h2")
             assert isinstance(h2, Tag)
-            data["position"] = h2.text
-            data["location"] = "Remote"
+            listing.position = h2.text
+            listing.location = "Remote"
             a = item.find("a")
             assert isinstance(a, Tag)
-            data["url"] = f"https://ridewithgps.com{a.get('href')}"
-            return data
+            listing.url = f"https://ridewithgps.com{a.get('href')}"
+            return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
             self.fail_count += 1

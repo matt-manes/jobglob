@@ -1,9 +1,11 @@
 import sys
 import webbrowser
+from dataclasses import asdict
 
 from griddle import griddy
 from pathier import Pathier
 
+import models
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
@@ -44,12 +46,15 @@ def get_args() -> argparse.Namespace:
 
 
 def filter_listings(
-    listings: list[dict], filter_on: str, key_terms: list[str], exclude_terms: list[str]
-) -> list[dict]:
+    listings: list[models.Listing],
+    filter_on: str,
+    key_terms: list[str],
+    exclude_terms: list[str],
+) -> list[models.Listing]:
     filtered_listings = []
 
     for listing in listings:
-        column = listing[filter_on].lower()
+        column = getattr(listing, filter_on).lower()
         if any(exclude in column for exclude in exclude_terms):
             continue
         if key_terms and all(key not in column for key in key_terms):
@@ -58,7 +63,7 @@ def filter_listings(
     return filtered_listings
 
 
-def do_action(listing: dict):
+def do_action(listing: models.Listing):
     while True:
         action = input(
             "Enter action ('a': add listing, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
@@ -66,28 +71,36 @@ def do_action(listing: dict):
         match action:
             case "a":
                 with JobBased() as db:
-                    db.mark_intrested(listing["id"], "")
-                    db.mark_seen(listing["id"])
+                    db.pin_listing(listing.id_)
+                    db.mark_seen(listing.id_)
                 break
             case "o":
-                webbrowser.open(listing["url"])
+                webbrowser.open(listing.url)
             case "q":
                 sys.exit()
             case "i":
                 with JobBased() as db:
-                    db.mark_seen(listing["id"])
+                    db.mark_seen(listing.id_)
                 break
             case _:
                 print("oops")
 
 
-def show(listing: dict):
-    print(griddy([listing], "keys"))
+def show(listing: models.Listing):
+    line = asdict(listing)
+    line = {
+        "id": line["id_"],
+        "position": line["position"],
+        "company": line["company"]["name"],
+        "location": line["location"],
+        "url": line["url"],
+    }
+    print(griddy([line], "keys"))
 
 
 def main(args: argparse.Namespace):
     with JobBased() as db:
-        listings = db.unseen_listings
+        listings = db.unseen_live_listings
     filters = (root / "peruse_filters.toml").loads()
     default_search = filters["search"] if args.default_search else []
     listings = filter_listings(

@@ -2,9 +2,12 @@ from pathier import Pathier
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
-from jobgruel import JobGruel, ParsableItem
 from typing import Any
+
 from bs4 import Tag
+
+import models
+from jobgruel import JobGruel, ParsableItem
 
 
 class JobScraper(JobGruel):
@@ -15,7 +18,7 @@ class JobScraper(JobGruel):
         >>> return self.get_page(some_url).json()[:10]"""
         raise NotImplementedError
 
-    def parse_item(self, item: ParsableItem) -> dict | None:
+    def parse_item(self, item: ParsableItem) -> models.Listing | None:
         """Parse `item` and return parsed data.
 
         e.g.
@@ -32,5 +35,6 @@ class JobScraper(JobGruel):
 
 
 if __name__ == "__main__":
-    scraper = JobScraper()
-    scraper.scrape()
+    j = JobScraper()
+    j.scrape()
+    print(models.Log.get_log(j.board.company.name).events[-1])

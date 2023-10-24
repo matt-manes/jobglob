@@ -1,91 +1,101 @@
-from datetime import datetime
+import random
+from dataclasses import asdict
 
+import quickpool
 import requests
-from griddle import griddy
-from printbuddies import PoolBar
 
+import models
 from jobbased import JobBased
+import logging
+from pathier import Pathier
+
+root = Pathier(__file__).parent
+
+logger = logging.getLogger(Pathier(__file__).stem)
+if not logger.hasHandlers():
+    handler = logging.FileHandler(Pathier(__file__).stem + ".log")
+    handler.setFormatter(
+        logging.Formatter(
+            "{levelname}|-|{asctime}|-|{message}",
+            style="{",
+            datefmt="%m/%d/%Y %I:%M:%S %p",
+        )
+    )
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 
-def check_listing(listing: dict) -> dict:
+def is_alive(listing: models.Listing) -> bool | None:
     try:
-        response = requests.get(listing["url"])
-        if response.status_code == 200 and response.url.strip("/") == listing["url"]:
-            return {"url": listing["url"], "alive": True}
-        return {"listing": listing, "alive": False}
+        response = requests.get(listing.url)
+        if (
+            response.status_code in [200, 429]
+            and response.url.strip("/") == listing.url
+        ):
+            return True
+        logger.info(
+            f"Listing {listing.id_} at {listing.url} appears dead with code {response.status_code} and resolved url {response.url}"
+        )
+        return False
     except Exception as e:
-        listing["error"] = str(e)
-        return {"listing": listing, "alive": None}
+        logger.exception(f"Error requesting {listing.url}")
+        return None
 
 
-def get_pool(listings: list[dict]) -> PoolBar:
-    return PoolBar(
-        "thread",
-        [check_listing for _ in range(len(listings))],
+def get_pool(listings: list[models.Listing]) -> quickpool.ThreadPool:
+    return quickpool.ThreadPool(
+        [is_alive for _ in range(len(listings))],
         [(listing,) for listing in listings],
     )
 
 
-def check_table(table: str) -> list[dict]:
-    print(f"Checking {table}...")
+def check_listings() -> list[models.Listing]:
+    print(f"Checking listings...")
     with JobBased() as db:
-        listings = db.select(table, where="alive = 1", order_by="RANDOM()")
+        listings = db.live_listings
+    random.shuffle(listings)
     pool = get_pool(listings)
     results = pool.execute()
     dead_count = 0
     dead_listings = []
     failed_requests = []
-    for result in results:
-        if result["alive"] is None:
-            failed_requests.append(result["listing"])
-        elif not result["alive"]:
+    for result, listing in zip(results, listings):
+        if result is None:
+            failed_requests.append(listing)
+        elif not result:
             dead_count += 1
-            listing = result["listing"]
             with JobBased() as db:
-                db.update(table, "alive", 0, f"listing_id = {listing['listing_id']}")
-                db.update(
-                    table,
-                    "date_removed",
-                    datetime.now(),
-                    f"listing_id = {listing['listing_id']}",
-                )
+                db.mark_dead(listing.id_)
             dead_listings.append(listing)
     if not dead_count:
         print("Did not find any dead listings.")
     else:
         print(f"Found {dead_count} dead listings.")
     if failed_requests:
-        print("Failed requests:")
+        print(f"{len(failed_requests)} failed requests: ")
         for request in failed_requests:
-            print(f"  {request}")
+            print(f" Listing id: {request.id_} | {request.url}")
+
     return dead_listings
 
 
 if __name__ == "__main__":
-    for table in ["scraped_listings", "listings"]:
-        try:
-            dead_listings = check_table(table)
-            if table == "listings":
-                ids = (
-                    "("
-                    + ", ".join(str(listing["listing_id"]) for listing in dead_listings)
-                    + ")"
-                )
-                with JobBased() as db:
-                    listings = db.select(
-                        "listings",
-                        [
-                            "listing_id AS id",
-                            "position",
-                            "companies.name AS company",
-                            "listings.url AS url",
-                        ],
-                        [
-                            "INNER JOIN companies ON listings.company_id = companies.company_id"
-                        ],
-                        where=f"listings.listing_id IN {ids}",
-                    )
-                print(db.to_grid(listings))
-        except Exception as e:
-            print(e)
+    try:
+        dead_listings = check_listings()
+        with JobBased() as db:
+            pinned_ids = [listing.id_ for listing in db.pinned_listings]
+        dead_pinned_listings = []
+        for dead_listing in dead_listings:
+            if dead_listing.id_ in pinned_ids:
+                listing = asdict(dead_listing)
+                company = listing.pop("company")
+                for key in ["location", "alive", "date_added", "date_removed"]:
+                    listing.pop(key)
+                listing["company"] = company["name"]
+                dead_pinned_listings.append(listing)
+        if dead_pinned_listings:
+            print("Dead pinned listings:")
+            print(db.to_grid(dead_pinned_listings))
+    except Exception as e:
+        print(e)
     input("...")

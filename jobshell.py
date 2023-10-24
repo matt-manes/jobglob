@@ -1,5 +1,4 @@
 import os
-import time
 from datetime import datetime
 
 import argshell
@@ -8,6 +7,7 @@ from pathier import Pathier
 
 import board_detector
 import helpers
+import models
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
@@ -20,11 +20,15 @@ def num_days(date: datetime) -> int:
 
 def get_add_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser(prog="")
-    parser.add_argument("name", type=str, help=" The job title of the listing. ")
+    parser.add_argument("position", type=str, help=" The job title of the listing. ")
     parser.add_argument("company", type=str, help=" The company the listing is for. ")
     parser.add_argument("url", type=str, help=" The url of the listing. ")
     parser.add_argument(
-        "-f", "--found_on", type=str, default="", help=" Where the listing was found. "
+        "-l",
+        "--location",
+        type=str,
+        default="Remote",
+        help=""" The location of the listing. Defaults to "Remote". """,
     )
     parser.add_argument(
         "-a", "--applied", action="store_true", help=" Mark this listing as 'applied'. "
@@ -34,19 +38,12 @@ def get_add_parser() -> argshell.ArgShellParser:
 
 def get_add_board_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser()
-    parser.add_argument("url", type=str, help=" Job board url ")
+    parser.add_argument("url", type=str, help=" Job board url.3 ")
     parser.add_argument(
         "company",
         type=str,
-        nargs="?",
-        default=None,
-        help=" Company name if applicable. ",
+        help=" Company name. ",
     )
-    return parser
-
-
-def get_add_scrapable_board_parser() -> argshell.ArgShellParser:
-    parser = get_add_board_parser()
     parser.add_argument(
         "-b",
         "--board_type",
@@ -63,65 +60,35 @@ class JobShell(DBShell):
     prompt = "jobshell>"
 
     @argshell.with_parser(get_add_board_parser)
-    def do_add_board(self, args: argshell.Namespace):
-        """Add a url to boards list."""
+    def do_add_scraper(self, args: argshell.Namespace):
+        """Add a scraper to the list."""
         with JobBased(self.dbpath) as db:
             args.url = args.url.strip("/")
-            if args.url not in db.boards:
-                db.add_board(args.url, args.company)
+            db.add_board(args.url, args.company)
+            helpers.create_scraper_from_template(
+                args.url, args.company, args.board_type
+            )
 
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
         """Add a job listing to the database."""
         with JobBased(self.dbpath) as db:
+            company = db.get_company_from_name(args.company)
+            if not company:
+                db.add_company(args.name)
+                company = db.get_company_from_name(args.name)
+                assert company
             db.add_listing(
-                args.name, args.company, args.url.strip("/"), "", args.found_on
-            )
-            if args.applied:
-                db.add_application(args.url.strip("/"))
-
-    @argshell.with_parser(get_add_scrapable_board_parser)
-    def do_add_scraper(self, args: argshell.Namespace):
-        """Add a url to scrapable boards list. Will try to determine 3rd party url if supplied url isn't in the system."""
-        if not args.company:
-            print("Scrapable boards require a company name.")
-        else:
-            with JobBased(self.dbpath) as db:
-                args.url = args.url.strip("/")
-                if args.url not in db.scrapable_boards:
-                    if not board_detector.get_board_type_from_text(args.url):
-                        url = board_detector.get_board_url(args.company, args.url)
-                        if url:
-                            args.url = url[0]
-                    db.add_scrapable_board(args.url, args.company)
-                    helpers.create_scraper_from_template(
-                        args.url, args.company, args.board_type
-                    )
-
-    def do_delete_scraper(self, board_id: str):
-        """Delete a scraper given its `board_id`.
-        Deletes the corresponding `scrapable_boards` entry, scraper file, and scraper log file.
-        """
-        board_id = int(board_id)  # type: ignore
-        print("Delete the following?")
-        with JobBased(self.dbpath) as db:
-            self.display(
-                db.select(
-                    "scrapable_boards",
-                    [
-                        "scrapable_boards.board_id",
-                        "scrapable_boards.url",
-                        "companies.name",
-                    ],
-                    [
-                        "INNER JOIN companies ON scrapable_boards.board_id = companies.board_id"
-                    ],
-                    where=f"scrapable_boards.board_id = {board_id}",
+                models.Listing(
+                    company,
+                    position=args.position,
+                    location=args.location,
+                    url=args.url,
                 )
             )
-        ans = input("y/n: ")
-        if ans == "y":
-            helpers.delete_scraper(board_id)  # type: ignore
+            if args.applied:
+                listing = db._get_listings(f"url = '{args.url}'")[0]
+                db.add_application(listing.id_)
 
     def do_detect_boards(self, args: str):
         """Try to detect job board url from a company website jobs url and a company name.
@@ -166,32 +133,11 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             db.mark_rejected(int(application_id))
 
-    def do_open(self, _: str):
-        """Open job boards in browser."""
-        last_check_path = root / "lastcheck.toml"
-        last_check = last_check_path.loads()["time"]
-        current_time = time.time()
-        delta = int((current_time - last_check) / (3600 * 24))
-        print(f"Boards last checked {delta} days ago.")
-        last_check_path.dumps({"time": current_time})
-        os.system("open_boards.py")
-
-    def do_remove_from_boards(self, args: str):
-        """Remove a url from boards list."""
+    def do_reset_alive_status(self, listing_ids: str):
+        """Reset the status of a listing to alive given a list of `listing_id`s."""
         with JobBased(self.dbpath) as db:
-            db.remove_board(args)
-
-    def do_reset_alive_status(self, args: str):
-        """Reset the status of a listing to alive.
-
-        :params:
-
-        `args`: A list of urls to reset.
-        """
-        urls = args.split()
-        with JobBased(self.dbpath) as db:
-            for url in urls:
-                db.reset_alive_status(url)
+            for id_ in listing_ids.split():
+                db.reset_alive_status(int(id_))
 
     def do_trouble_shoot(self, file_stem: str):
         """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
