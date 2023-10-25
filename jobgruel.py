@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from typing import Any
 
 import requests
@@ -42,6 +43,7 @@ class JobGruel(Gruel):
     def store_item(self, listing: models.Listing):
         if listing.url not in self.existing_listing_urls:
             with JobBased() as db:
+                listing.date_added = datetime.now()
                 try:
                     db.add_listing(listing)
                     self.success_count += 1
