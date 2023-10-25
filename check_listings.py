@@ -29,7 +29,7 @@ def is_alive(listing: models.Listing) -> bool | None:
     try:
         response = requests.get(listing.url)
         if (
-            response.status_code in [200, 429]
+            response.status_code not in [404, 410]
             and response.url.strip("/") == listing.url
         ):
             return True
