@@ -138,6 +138,8 @@ class Log:
                 event = line
             else:
                 event += line
+        if event:
+            events.append(event.strip("\n"))
         return events
 
     @staticmethod
