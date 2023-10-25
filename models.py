@@ -38,6 +38,11 @@ class Listing:
     def __post_init__(self):
         self.alive = bool(self.alive)
 
+    def prune_strings(self):
+        prune = lambda s: " ".join(s.strip().split())
+        self.position = prune(self.position)
+        self.location = prune(self.location)
+
 
 @dataclass
 class Application:

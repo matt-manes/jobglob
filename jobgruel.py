@@ -44,6 +44,7 @@ class JobGruel(Gruel):
         if listing.url not in self.existing_listing_urls:
             with JobBased() as db:
                 listing.date_added = datetime.now()
+                listing.prune_strings()
                 try:
                     db.add_listing(listing)
                     self.success_count += 1
