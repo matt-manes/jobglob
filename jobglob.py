@@ -43,18 +43,22 @@ class JobGlob(Brewer):
             print("No new listings found.")
         print()
 
-    def print_errors(self):
+    def logprint_errors(self):
         errors = helpers.get_scrapers_with_errors(self.start_time)
         for error, names in errors.items():
             if names:
-                print(f"{error}:")
-                print(*[f"  {name}" for name in names], sep="\n")
-                print()
+                message = f"{error}:\n"
+                message += "\n".join(f"  {name}" for name in names)
+                if error == "no_listings":
+                    self.logger.info(message)
+                else:
+                    self.logprint(message)
+                    print()
 
     def postscrape_chores(self):
         super().postscrape_chores()
         self.print_new_listings()
-        self.print_errors()
+        self.logprint_errors()
 
 
 if __name__ == "__main__":

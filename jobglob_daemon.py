@@ -17,9 +17,9 @@ def is_business_hours() -> bool:
 
 
 def get_last_brew_time() -> datetime:
-    logpath = root / "brewer.log"
+    logpath = root / "jobglob.log"
     if logpath.exists():
-        logs = (root / "brewer.log").split()[::-1]
+        logs = (root / "jobglob.log").split()[::-1]
         for log in logs:
             if "Brew complete." in log:
                 date = log.split("|-|")[1]
