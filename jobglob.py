@@ -31,6 +31,7 @@ class JobGlob(Brewer):
                 where=f"listings.date_added >= '{self.start_time}'"
             )
             num_new_listings = len(new_listings)
+            self.logger.info(f"Added {num_new_listings} new listings")
         if num_new_listings > 0:
             grouped_listings = self.group_by_company(new_listings)
             print(f"Added {num_new_listings} new listings to the database:")
