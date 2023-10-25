@@ -71,8 +71,8 @@ class GreenhouseGruel(JobGruel):
                 listing.url = "https://boards.greenhouse.io" + href
             listing.position = element.text
             span = item.find("span")
-            assert isinstance(span, Tag)
-            listing.location = span.text
+            if isinstance(span, Tag):
+                listing.location = span.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -100,8 +100,8 @@ class LeverGruel(JobGruel):
                 "span",
                 class_="sort-by-location posting-category small-category-label location",
             )
-            assert isinstance(location, Tag)
-            listing.location = location.text
+            if isinstance(location, Tag):
+                listing.location = location.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -152,8 +152,8 @@ class AshbyGruel(JobGruel):
             assert isinstance(position, Tag)
             listing.position = position.text
             location = item.find("p")
-            assert isinstance(location, Tag)
-            listing.location = location.text.split("•")[1].strip()
+            if isinstance(location, Tag):
+                listing.location = location.text.split("•")[1].strip()
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -206,10 +206,10 @@ class EasyapplyGruel(JobGruel):
             assert isinstance(position, Tag)
             listing.position = position.text
             location = item.find("p")
-            assert isinstance(location, Tag)
-            location = location.find("span")
-            assert isinstance(location, Tag)
-            listing.location = location.text
+            if isinstance(location, Tag):
+                location = location.find("span")
+                assert isinstance(location, Tag)
+                listing.location = location.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -236,8 +236,8 @@ class JobviteGruel(JobGruel):
             listing.url = f"https://jobs.jobvite.com/careers{a.get('href')}"
             listing.position = a.text
             td = item.find("td", class_="jv-job-list-location")
-            assert isinstance(td, Tag)
-            listing.location = td.text
+            if isinstance(td, Tag):
+                listing.location = td.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -304,8 +304,8 @@ class SmartrecruiterGruel(JobGruel):
             assert isinstance(h4, Tag)
             listing.position = h4.text
             li = item.find("li", class_="job-desc")
-            assert isinstance(li, Tag)
-            listing.location = li.text
+            if isinstance(li, Tag):
+                listing.location = li.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
@@ -332,10 +332,10 @@ class RecruiteeGruel(JobGruel):
             listing.url = f"{self.board.url}{a.get('href')}"
             css = "custom-css-style-job-location-"
             city = item.find("span", class_=f"{css}city")
-            assert isinstance(city, Tag)
-            country = item.find("span", class_=f"{css}country")
-            assert isinstance(country, Tag)
-            listing.location = f"{city}, {country}"
+            if isinstance(city, Tag):
+                country = item.find("span", class_=f"{css}country")
+                assert isinstance(country, Tag)
+                listing.location = f"{city}, {country}"
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
