@@ -121,7 +121,8 @@ class JobBased(Databased):
     @property
     def rejections(self) -> list[models.Rejection]:
         rejections = self.select("rejections", order_by="application_id")
-        apps = sorted(self.applications, key=lambda a: a.id_)
+        ids = [rejection["application_id"] for rejection in rejections]
+        apps = [app for app in self.applications if app.id_ in ids]
         return [
             models.Rejection(app, row["rejection_id"], row["date_rejected"])
             for app, row in zip(apps, rejections)
@@ -238,7 +239,7 @@ class JobBased(Databased):
                 and (datetime.now() - application.date_applied).days > 30
             ):
                 print(
-                    f"Marking application for '{application.listing.id_}. {application.listing.position} -- {application.listing.company.name}' as rejected."
+                    f"Marking application #{application.id_} for listing '{application.listing.id_}. {application.listing.position} -- {application.listing.company.name}' as rejected."
                 )
                 self.mark_rejected(application.id_)
 
