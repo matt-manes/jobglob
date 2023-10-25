@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from datetime import datetime
 
 import argshell
@@ -141,6 +142,7 @@ class JobShell(DBShell):
 
     def do_trouble_shoot(self, file_stem: str):
         """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
+        self.do_open(file_stem)
         company = file_stem.replace("_", " ")
         with JobBased(self.dbpath) as db:
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
@@ -154,6 +156,12 @@ class JobShell(DBShell):
             print(*urls, sep="\n")
         else:
             print("Valid urls not found.")
+
+    def do_open(self, company: str):
+        """Open the board url associated with the given company."""
+        with JobBased() as db:
+            url = db.get_board(company).url
+        webbrowser.open_new_tab(url)
 
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
