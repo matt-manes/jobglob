@@ -12,5 +12,7 @@ class JobScraper(GreenhouseGruel):
         listing = super().parse_item(item)
         if listing:
             url = listing.url
-            listing.url = url[: url.rfind("?gh")]
+            url = url[: url.rfind("?gh")]
+            job_id = url[url.find("?") + 1 :]
+            listing.url = f"https://verily.com/about-us/careers/open-roles?{job_id}"
         return listing
