@@ -77,6 +77,7 @@ class JobBased(Databased):
                 "position",
                 "location",
                 "url",
+                "scraped_url",
                 "companies.company_id AS c_id",
                 "name",
                 "listings.date_added AS l_date",
@@ -95,6 +96,7 @@ class JobBased(Databased):
                 datum["position"],
                 datum["location"],
                 datum["url"],
+                datum["scraped_url"],
                 datum["alive"],
                 datum["l_date"],
                 datum["date_removed"],
@@ -214,12 +216,13 @@ class JobBased(Databased):
     def add_listing(self, listing: models.Listing):
         self.insert(
             "listings",
-            ("position", "location", "url", "company_id", "date_added"),
+            ("position", "location", "url", "scraped_url", "company_id", "date_added"),
             [
                 (
                     listing.position,
                     listing.location,
                     listing.url,
+                    listing.scraped_url,
                     listing.company.id_,
                     listing.date_added,
                 )

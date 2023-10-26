@@ -31,6 +31,7 @@ class Listing:
     position: str = ""
     location: str = ""
     url: str = ""
+    scraped_url: str = ""
     alive: bool = True
     date_added: datetime = datetime.now()
     date_removed: datetime | None = None

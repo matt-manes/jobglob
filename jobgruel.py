@@ -14,25 +14,25 @@ from jobbased import JobBased
 
 class JobGruel(Gruel):
     def __init__(
-        self, existing_listing_urls: list[models.Listing] | None = None, *args, **kwargs
+        self, existing_listings: list[models.Listing] | None = None, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         with JobBased() as db:
             self.board = db.get_board(self.name)
-            if existing_listing_urls:
+            if existing_listings:
                 company_id = self.board.company.id_
-                self.existing_listing_urls = [
-                    listing.url
-                    for listing in existing_listing_urls
+                listings = [
+                    listing
+                    for listing in existing_listings
                     if listing.company.id_ == company_id
                 ]
             else:
-                self.existing_listing_urls = [
-                    listing.url
-                    for listing in db._get_listings(
-                        f"listings.company_id = {self.board.company.id_}"
-                    )
-                ]
+                listings = db._get_listings(
+                    f"listings.company_id = {self.board.company.id_}"
+                )
+        self.existing_listing_urls = [listing.url for listing in listings] + [
+            listing.scraped_url for listing in listings if listing.scraped_url
+        ]
         self.already_added_listings = 0
 
     def get_page(
@@ -64,9 +64,6 @@ class JobGruel(Gruel):
                         self.fail_count += 1
                     else:
                         self.already_added_listings += 1
-        else:
-            with JobBased() as db:
-                db.update("listings", "alive", 1, f"url = '{listing.url}'")
 
 
 class GreenhouseGruel(JobGruel):
@@ -85,7 +82,10 @@ class GreenhouseGruel(JobGruel):
                 listing.url = href
             else:
                 listing.url = "https://boards.greenhouse.io" + href
-            if "embed" in self.board.url:
+            if (
+                "embed" in self.board.url
+                and listing.url.strip("/") not in self.existing_listing_urls
+            ):
                 # Sometimes these redirect to a different url than what the page says
                 # And they'll be marked dead when the check listings script runs
                 response = self.get_page(listing.url)
@@ -93,7 +93,10 @@ class GreenhouseGruel(JobGruel):
                     raise RuntimeError(
                         f"Error resolving url '{listing.url}' for '{listing.position}'"
                     )
-                listing.url = self.get_page(listing.url).url
+                resolved_url = response.url.strip("/")
+                if resolved_url != listing.url:
+                    listing.scraped_url = listing.url
+                    listing.url = resolved_url
             listing.position = element.text
             span = item.find("span")
             if isinstance(span, Tag):
