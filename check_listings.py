@@ -98,4 +98,6 @@ if __name__ == "__main__":
             print(db.to_grid(dead_pinned_listings))
     except Exception as e:
         print(e)
+    with JobBased() as db:
+        db.mark_applications_older_than_30days_as_rejected()
     input("...")
