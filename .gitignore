@@ -13,3 +13,5 @@ peruse_filters.toml
 add_to_bulk_add_list.py
 condense_stillhiring.py
 bulk_extract.py
+dbmigrate.py
+techjobsforgood_company_list.py
