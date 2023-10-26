@@ -66,13 +66,17 @@ def filter_listings(
 def do_action(listing: models.Listing):
     while True:
         action = input(
-            "Enter action ('a': add listing, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
+            "Enter action ('a': add listing, 'd': mark dead, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
         )
         match action:
             case "a":
                 with JobBased() as db:
                     db.pin_listing(listing.id_)
                     db.mark_seen(listing.id_)
+                break
+            case "d":
+                with JobBased() as db:
+                    db.mark_dead(listing.id_)
                 break
             case "o":
                 webbrowser.open(listing.url)
