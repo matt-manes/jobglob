@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS
     applications (
         application_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        listing_id INTEGER REFERENCES listings (listing_id) ON DELETE RESTRICT ON UPDATE CASCADE,
         date_applied TIMESTAMP
     );
 
