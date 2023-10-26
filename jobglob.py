@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import quickpool
 from gruel.brewer import Brewer
+from gruel import Gruel
 from pathier import Pathier
 
 import helpers
@@ -59,6 +61,12 @@ class JobGlob(Brewer):
         super().postscrape_chores()
         self.print_new_listings()
         self.logprint_errors()
+
+    def scrape(self, scrapers: list[Gruel]):
+        with JobBased() as db:
+            listings = db.listings
+        pool = quickpool.ThreadPool([scraper(listings).scrape for scraper in scrapers])  # type: ignore
+        pool.execute()
 
 
 if __name__ == "__main__":

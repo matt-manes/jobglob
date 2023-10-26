@@ -13,16 +13,26 @@ from jobbased import JobBased
 
 
 class JobGruel(Gruel):
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self, existing_listing_urls: list[models.Listing] | None = None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         with JobBased() as db:
             self.board = db.get_board(self.name)
-            self.existing_listing_urls = [
-                listing.url
-                for listing in db._get_listings(
-                    f"listings.company_id = {self.board.company.id_}"
-                )
-            ]
+            if existing_listing_urls:
+                company_id = self.board.company.id_
+                self.existing_listing_urls = [
+                    listing.url
+                    for listing in existing_listing_urls
+                    if listing.company.id_ == company_id
+                ]
+            else:
+                self.existing_listing_urls = [
+                    listing.url
+                    for listing in db._get_listings(
+                        f"listings.company_id = {self.board.company.id_}"
+                    )
+                ]
         self.already_added_listings = 0
 
     def get_page(
