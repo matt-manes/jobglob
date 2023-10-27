@@ -22,7 +22,7 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
         if board_type == "greenhouse_embed":
             board_type = "greenhouse"
         template = (
-            (templates_path / "subgruel_template.py)")
+            (templates_path / "subgruel_template.py")
             .read_text()
             .replace("JobGruel", f"{board_type.capitalize()}Gruel")
         )
@@ -84,10 +84,9 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
 
 def main():
     """ """
-    for k, v in get_scrapers_with_errors(datetime(2023, 10, 24)).items():
-        print(f"{k}:")
-        for s in v:
-            print(f"  {s}")
+    create_scraper_from_template(
+        "https://boards.greenhouse.io/kaiahealth", "Kaia Health"
+    )
 
 
 if __name__ == "__main__":
