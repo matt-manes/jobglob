@@ -147,7 +147,7 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
         os.system(f"code scrapers/{file_stem}.py -r")
-        os.system(f"code logs/{file_stem}.log -r")
+        os.system(f"code gruel_logs/{file_stem}.log -r")
 
     def do_find_careers_page(self, base_url: str):
         """Try to find the careers page given a company's base url."""

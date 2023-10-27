@@ -6,23 +6,12 @@ import requests
 
 import models
 from jobbased import JobBased
-import logging
+import loggi
 from pathier import Pathier
 
 root = Pathier(__file__).parent
 
-logger = logging.getLogger(Pathier(__file__).stem)
-if not logger.hasHandlers():
-    handler = logging.FileHandler(Pathier(__file__).stem + ".log")
-    handler.setFormatter(
-        logging.Formatter(
-            "{levelname}|-|{asctime}|-|{message}",
-            style="{",
-            datefmt="%m/%d/%Y %I:%M:%S %p",
-        )
-    )
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+logger = loggi.getLogger(Pathier(__file__).stem)
 
 
 def is_alive(listing: models.Listing) -> bool | None:

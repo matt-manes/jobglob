@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from typing import Generator
 
+import loggi
+import loggi.models
 from pathier import Pathier
 
 import board_detector
@@ -31,11 +33,14 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
         os.system(f"code -r {py_path}")
 
 
-def get_all_logs() -> Generator[models.Log, None, None]:
-    stems = [file.stem for file in (root / "logs").glob("*.log")]
-    for stem in stems:
-        yield models.Log.get_log(stem)
-    # return [models.Log.get_log(stem) for stem in stems]
+def load_log(company: str) -> loggi.models.Log:
+    stem = company.lower().replace(" ", "_")
+    return loggi.load_log(root / "gruel_logs" / f"{stem}.log")
+
+
+def get_all_logs() -> Generator[loggi.models.Log, None, None]:
+    for file in (root / "gruel_logs").glob("*.log"):
+        yield loggi.load_log(file)
 
 
 def get_failed_scrapers(start_time: datetime) -> list[str]:
