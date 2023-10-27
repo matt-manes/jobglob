@@ -199,7 +199,7 @@ class WorkableGruel(JobGruel):
     def parse_item(self, item: dict) -> models.Listing | None:
         try:
             listing = self.new_listing()
-            listing.url = f"https://apply.workable.com/{self.board.company.name.lower().replace(' ','-')}/j/{item['shortcode']}"
+            listing.url = f"https://apply.workable.com/{self.board.url[self.board.url.rfind('/')+1:]}/j/{item['shortcode']}"
             location = ""
             if item["remote"]:
                 location += f"Remote {item['location']['country']}"
