@@ -65,10 +65,13 @@ class JobShell(DBShell):
         """Add a scraper to the list."""
         with JobBased(self.dbpath) as db:
             args.url = args.url.strip("/")
-            db.add_board(args.url, args.company)
-            helpers.create_scraper_from_template(
-                args.url, args.company, args.board_type
-            )
+            if args.url in [board.url for board in db.boards]:
+                print("That board already exists.")
+            else:
+                db.add_board(args.url, args.company)
+                helpers.create_scraper_from_template(
+                    args.url, args.company, args.board_type
+                )
 
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
