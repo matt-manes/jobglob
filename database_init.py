@@ -24,6 +24,9 @@ def init(db_name: str, silent_overwrite: bool = False):
         db.execute_script(root / "sql" / "schema.sql")
         for view in views:
             db.execute_script(view)
+        data_path = root / "sql" / "jobs_data.sql"
+        if data_path.exists():
+            db.execute_script(data_path)
 
 
 def main():
