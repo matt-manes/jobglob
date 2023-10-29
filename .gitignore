@@ -3,6 +3,7 @@
 *.json
 *scratch*
 *.txt
+!requirements.txt
 !careers_page_list.txt
 migrate.py
 __pycache__
