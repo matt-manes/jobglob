@@ -88,15 +88,7 @@ class GreenhouseGruel(JobGruel):
             ):
                 # Sometimes these redirect to a different url than what the page says
                 # And they'll be marked dead when the check listings script runs
-                response = self.get_page(listing.url)
-                if response.status_code not in [200, 302]:
-                    raise RuntimeError(
-                        f"Error resolving url '{listing.url}' for '{listing.position}'"
-                    )
-                resolved_url = response.url.strip("/")
-                if resolved_url != listing.url:
-                    listing.scraped_url = listing.url
-                    listing.url = resolved_url
+                listing.resolve_url()
             listing.position = element.text
             span = item.find("span")
             if isinstance(span, Tag):

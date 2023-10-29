@@ -1,10 +1,9 @@
-import re
 from dataclasses import dataclass
 from datetime import datetime
 
+import requests
 from pathier import Pathier
-from typing_extensions import Self
-from younotyou import younotyou
+from whosyouragent import whosyouragent
 
 root = Pathier(__file__).parent
 
@@ -43,6 +42,19 @@ class Listing:
         prune = lambda s: " ".join(s.strip().split())
         self.position = prune(self.position)
         self.location = prune(self.location)
+
+    def resolve_url(self):
+        response = requests.get(
+            self.url, headers={"User-Agent": whosyouragent.get_agent()}, timeout=10
+        )
+        if response.status_code not in [200, 302]:
+            raise RuntimeError(
+                f"Error resolving url '{self.url}' for listing '{self.company}: '{self.position}'"
+            )
+        resolved_url = response.url.strip("/")
+        if resolved_url != self.url.strip("/"):
+            self.scraped_url = self.url.strip("/")
+            self.url = resolved_url
 
 
 @dataclass
