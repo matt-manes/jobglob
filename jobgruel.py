@@ -425,6 +425,7 @@ class MyworkdayGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         with User(True) as user:
             user.get(self.board.url)
+            time.sleep(1)
             soup = user.get_soup()
             num_pages = self.get_num_pages(soup)
             listings = []
