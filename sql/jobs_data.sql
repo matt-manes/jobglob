@@ -924,7 +924,11 @@ VALUES
     (1116, "Ecosia", "2023-10-27 13:44:55.465480"),
     (1117, "UNHCR", "2023-10-27 13:44:55.502230"),
     (1118, "Humanitarian OpenStreetMap Team", "2023-10-27 13:44:55.540223"),
-    (1119, "Osmosis", "2023-10-27 13:44:55.578060");
+    (1119, "Osmosis", "2023-10-27 13:44:55.578060"),
+    (1120, "Equitable Hiring Group", "2023-10-30 19:46:40.642861"),
+    (1121, "Oscar Health", "2023-10-30 19:50:55.590870"),
+    (1122, "ETR", "2023-10-30 19:52:11.596199"),
+    (1123, "Tidepool", "2023-10-30 19:58:15.164374");
 
 INSERT INTO
     boards (board_id, url, company_id, date_added)
@@ -1804,7 +1808,11 @@ VALUES
     (1160, "https://jobs.lever.co/ecosia", 1116, "2023-10-27 13:44:55.469470"),
     (1161, "https://usaforunhcr.bamboohr.com/careers", 1117, "2023-10-27 13:44:55.506798"),
     (1162, "https://hotosm.bamboohr.com/careers", 1118, "2023-10-27 13:44:55.544188"),
-    (1163, "https://boards.greenhouse.io/osmosis", 1119, "2023-10-27 13:44:55.581775");
+    (1163, "https://boards.greenhouse.io/osmosis", 1119, "2023-10-27 13:44:55.581775"),
+    (1164, "https://equitablehiringgroup.applytojob.com/apply", 1120, "2023-10-30 19:46:40.649022"),
+    (1165, "https://boards.greenhouse.io/embed/job_board?for=oscar", 1121, "2023-10-30 19:50:55.598867"),
+    (1166, "https://etr.bamboohr.com/careers", 1122, "2023-10-30 19:52:11.603180"),
+    (1167, "https://careers.smartrecruiters.com/tidepool", 1123, "2023-10-30 19:58:15.171355");
 
 INSERT INTO
     listings (listing_id, position, location, url, company_id, alive, date_added, date_removed, scraped_url)
