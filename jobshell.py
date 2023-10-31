@@ -166,6 +166,11 @@ class JobShell(DBShell):
             url = db.get_board(company).url
         webbrowser.open_new_tab(url)
 
+    def do_pin_listing(self, listing_id: str):
+        """Pin a listing given its `listing_id`."""
+        with JobBased() as db:
+            db.pin_listing(int(listing_id))
+
     def preloop(self):
         """Set any applications older than 30 days to rejected."""
         super().preloop()
