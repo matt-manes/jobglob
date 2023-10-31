@@ -9,7 +9,8 @@ boards = [
     "applytojob",
     "smartrecruiter",
     "recruitee",
-    "breezy"
+    "breezy",
+    "myworkday"
 ]
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
@@ -25,6 +26,7 @@ boards = [
 "careers.smartrecruiters" = "smartrecruiter"
 "recruitee" = "recruitee"
 "breezy.hr" = "breezy"
+"myworkdayjobs.com" = "myworkday"
 
 [url_templates]
 "greenhouse" = "https://boards.greenhouse.io/$company"
@@ -39,3 +41,4 @@ boards = [
 "smartrecruiter" = "https://careers.smartrecruiters.com/$company"
 "workable" = "https://apply.workable.com/$company"
 "breezy" = "https://$company.breezy.hr"
+"myworkday" = "https://$company.wd1.myworkdayjobs.com/careers"

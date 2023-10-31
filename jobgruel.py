@@ -1,9 +1,10 @@
+import math
 import time
 from datetime import datetime
 from typing import Any
 
 import requests
-from bs4 import Tag
+from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
 from gruel.gruel import ParsableItem
 from seleniumuser import User
@@ -404,6 +405,49 @@ class BreezyGruel(JobGruel):
             li = a.find("li", class_="location")
             assert isinstance(li, Tag)
             listing.location = li.text
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class MyworkdayGruel(JobGruel):
+    def get_num_pages(self, soup: BeautifulSoup) -> int:
+        jobs_per_page = 20
+        p = soup.find("p", attrs={"data-automation-id": "jobFoundText"})
+        assert isinstance(p, Tag)
+        num_jobs = int(p.text.split()[0])
+        return math.ceil(num_jobs / jobs_per_page)
+
+    def get_parsable_items(self) -> list[ParsableItem]:
+        with User(True) as user:
+            user.get(self.board.url)
+            soup = user.get_soup()
+            num_pages = self.get_num_pages(soup)
+            listings = []
+            for page in range(1, num_pages + 1):
+                if page > 1:
+                    user.click("//button[@data-uxi-element-id='next']")
+                    time.sleep(1)
+                    soup = user.get_soup()
+                job_list = soup.find("ul", attrs={"role": "list"})
+                assert isinstance(job_list, Tag)
+                listings.extend(job_list.find_all("li", recursive=False))
+        return listings
+
+    def parse_item(self, item: ParsableItem) -> Any:
+        try:
+            listing = self.new_listing()
+            assert isinstance(item, Tag)
+            a = item.find("a", attrs={"data-automation-id": "jobTitle"})
+            assert isinstance(a, Tag)
+            url = self.board.url[: self.board.url.rfind("/")]
+            listing.url = f"{url}{a.get('href')}"
+            listing.position = a.text
+            dl = item.find("dl")
+            if isinstance(dl, Tag):
+                listing.location = dl.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
