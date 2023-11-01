@@ -1,5 +1,8 @@
 import subprocess
 import sys
+from pathlib import Path
+
+root = Path(__file__).parent
 
 
 def main():
@@ -8,7 +11,8 @@ def main():
         ["pip", "install", "-r", "requirements.txt"],
         [sys.executable, "database_init.py"],
     ]:
-        subprocess.run(command, shell=True)
+        subprocess.run(command)
+    (root / "gruel_logs").mkdir(exist_ok=True)
 
 
 if __name__ == "__main__":
