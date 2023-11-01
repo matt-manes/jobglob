@@ -415,19 +415,33 @@ class BreezyGruel(JobGruel):
 
 
 class MyworkdayGruel(JobGruel):
-    def get_num_pages(self, soup: BeautifulSoup) -> int:
+    def get_num_pages(self, user: User) -> int:
+        num_pages = None
+        attempts = 0
+        max_attempts = 10
         jobs_per_page = 20
-        p = soup.find("p", attrs={"data-automation-id": "jobFoundText"})
-        assert isinstance(p, Tag)
-        num_jobs = int(p.text.split()[0])
-        return math.ceil(num_jobs / jobs_per_page)
+        soup = user.get_soup()
+        while num_pages is None and attempts < max_attempts:
+            try:
+                p = soup.find("p", attrs={"data-automation-id": "jobFoundText"})
+                assert isinstance(p, Tag)
+                num_jobs = int(p.text.split()[0])
+                num_pages = math.ceil(num_jobs / jobs_per_page)
+            except Exception as e:
+                time.sleep(1)
+                soup = user.get_soup()
+            finally:
+                attempts += 1
+        if not num_pages:
+            raise RuntimeError("Could not get num_pages")
+        return num_pages
 
     def get_parsable_items(self) -> list[ParsableItem]:
         with User(True) as user:
             user.get(self.board.url)
             time.sleep(1)
+            num_pages = self.get_num_pages(user)
             soup = user.get_soup()
-            num_pages = self.get_num_pages(soup)
             listings = []
             for page in range(1, num_pages + 1):
                 if page > 1:
