@@ -94,29 +94,25 @@ class JobShell(DBShell):
                 listing = db._get_listings(f"url = '{args.url}'")[0]
                 db.add_application(listing.id_)
 
-    def do_detect_boards(self, args: str):
-        """Try to detect job board url from a company website jobs url and a company name.
-        >>> detect_boardtype https://somecompany.com/careers Some Company"""
-        (url, company) = args.split(maxsplit=1)
-        board_urls = board_detector.get_board_url(company, url)
-        if board_urls:
-            print(*board_urls, sep="\n")
+    def do_find_boards(self, url: str):
+        """Try to detect job board urls from a company website."""
+        detector = board_detector.BoardDetector()
+        boards = []
+        boards = detector.scrape_page_for_boards(url)
+        if not boards:
+            careers_urls = detector.scrape_for_careers_page(url)
+            for url in careers_urls:
+                boards.extend(detector.scrape_page_for_boards(url))
+        if not boards:
+            print("Could not find any job boards.")
         else:
-            board_type = board_detector.get_board_type_from_page(url)
-            if board_type:
-                print(
-                    f"Could not determine board url, but the board type is <{board_type}>."
-                )
-            else:
-                print("Could not determine 3rd party board information.")
-
-    def do_detect_board_type(self, url: str):
-        """Given a company jobs url, try to detect board type."""
-        print(board_detector.get_board_type_from_page(url))
+            print(f"Found {len(boards)} possible board urls:")
+            print(*boards, sep="\n")
 
     def do_try_boards(self, company: str):
         """Just try all template urls and see what sticks given a company name."""
-        urls = board_detector.get_board_by_trial_and_error(company)
+        detector = board_detector.BoardDetector()
+        urls = detector.get_board_by_brute_force(company)
         if urls:
             print(*urls, sep="\n")
         else:
@@ -154,7 +150,8 @@ class JobShell(DBShell):
 
     def do_find_careers_page(self, base_url: str):
         """Try to find the careers page given a company's base url."""
-        urls = board_detector.brute_force_careers_page(base_url)
+        detector = board_detector.BoardDetector()
+        urls = detector.get_careers_page_by_brute_force(base_url)
         if urls:
             print(*urls, sep="\n")
         else:

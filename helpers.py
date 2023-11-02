@@ -14,8 +14,9 @@ root = Pathier(__file__).parent
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
     templates_path = root / "templates"
+    detector = board_detector.BoardDetector()
     if not board_type:
-        board_type = board_detector.get_board_type_from_text(url)
+        board_type = detector.get_board_type_from_text(url)
     if not board_type:
         template = (templates_path / "template.py").read_text()
     else:
@@ -80,14 +81,3 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
         elif error_exceptions.events:
             scrapers["misc_fails"].append(log.path.stem)
     return scrapers
-
-
-def main():
-    """ """
-    create_scraper_from_template(
-        "https://boards.greenhouse.io/kaiahealth", "Kaia Health"
-    )
-
-
-if __name__ == "__main__":
-    main()
