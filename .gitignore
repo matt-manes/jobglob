@@ -4,7 +4,7 @@
 *scratch*
 *.txt
 !requirements.txt
-!careers_page_list.txt
+!careers_page_stubs.txt
 migrate.py
 __pycache__
 .vscode
