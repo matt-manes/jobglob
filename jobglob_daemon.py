@@ -23,7 +23,7 @@ class JobGlobDaemon:
 
     @property
     def is_weekend(self) -> bool:
-        return datetime.now().weekday in [5, 6]
+        return datetime.now().weekday() in [5, 6]
 
     @property
     def glob_interval(self) -> int:
