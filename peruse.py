@@ -40,6 +40,13 @@ def get_args() -> argparse.Namespace:
         help=""" Use the default search terms in `persuse_filters.toml` in addition to any provided `key_terms` arguments. """,
     )
 
+    parser.add_argument(
+        "-nf",
+        "--newest_first",
+        action="store_true",
+        help=""" Go through listings starting with the most recent. """,
+    )
+
     args = parser.parse_args()
 
     return args
@@ -97,6 +104,7 @@ def show(listing: models.Listing):
         "position": line["position"],
         "company": line["company"]["name"],
         "location": line["location"],
+        "date": line["date_added"],
         "url": line["url"],
     }
     print(griddy([line], "keys"))
@@ -105,6 +113,8 @@ def show(listing: models.Listing):
 def main(args: argparse.Namespace):
     with JobBased() as db:
         listings = db.unseen_live_listings
+    if args.newest_first:
+        listings = listings[::-1]
     filters = (root / "peruse_filters.toml").loads()
     default_search = filters["search"] if args.default_search else []
     listings = filter_listings(
