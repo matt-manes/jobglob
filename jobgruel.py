@@ -340,7 +340,8 @@ class RecruiteeGruel(JobGruel):
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         output = soup.find("output")
-        assert isinstance(output, Tag)
+        if not isinstance(output, Tag):
+            return []
         div_grid = output.find("div")
         assert isinstance(div_grid, Tag)
         return div_grid.find_all("div", recursive=False)
