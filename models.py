@@ -20,6 +20,7 @@ class Board:
     company: Company
     id_: int = -1
     url: str = ""
+    active: bool = True
     date_added: datetime = datetime.now()
 
 

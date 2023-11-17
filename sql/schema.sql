@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS
         board_id INTEGER PRIMARY KEY AUTOINCREMENT,
         url TEXT UNIQUE,
         company_id INTEGER REFERENCES companies (company_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        active INTEGER DEFAULT 1,
         date_added TIMESTAMP
     );
 

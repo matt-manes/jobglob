@@ -1,11 +1,9 @@
 import os
 import webbrowser
 from datetime import datetime
-
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
-
 import board_detector
 import helpers
 import models
@@ -29,7 +27,7 @@ def get_add_parser() -> argshell.ArgShellParser:
         "--location",
         type=str,
         default="Remote",
-        help=""" The location of the listing. Defaults to "Remote". """,
+        help=' The location of the listing. Defaults to "Remote". ',
     )
     parser.add_argument(
         "-a", "--applied", action="store_true", help=" Mark this listing as 'applied'. "
@@ -40,11 +38,7 @@ def get_add_parser() -> argshell.ArgShellParser:
 def get_add_board_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser()
     parser.add_argument("url", type=str, help=" Job board url.3 ")
-    parser.add_argument(
-        "company",
-        type=str,
-        help=" Company name. ",
-    )
+    parser.add_argument("company", type=str, help=" Company name. ")
     parser.add_argument(
         "-b",
         "--board_type",
@@ -55,23 +49,32 @@ def get_add_board_parser() -> argshell.ArgShellParser:
     return parser
 
 
+def get_toggle_scraper_parser() -> argshell.ArgShellParser:
+    """Returns a toggle_scraper parser."""
+    parser = argshell.ArgShellParser(
+        "toggle_scraper", description="Activate or deactivate scrapers/boards."
+    )
+    parser.add_argument(
+        "status",
+        choices=["a", "d"],
+        type=str,
+        default=None,
+        help=" Whether the boards should be activated (a) or deactivated (d).",
+    )
+    parser.add_argument(
+        "scrapers",
+        nargs="*",
+        type=str,
+        default=[],
+        help=" A list of board ids or company stems to toggle.",
+    )
+    return parser
+
+
 class JobShell(DBShell):
     _dbpath = Pathier("jobs.db")
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
-
-    @argshell.with_parser(get_add_board_parser)
-    def do_add_scraper(self, args: argshell.Namespace):
-        """Add a scraper to the list."""
-        with JobBased(self.dbpath) as db:
-            args.url = args.url.strip("/")
-            if args.url in [board.url for board in db.boards]:
-                print("That board already exists.")
-            else:
-                db.add_board(args.url, args.company)
-                helpers.create_scraper_from_template(
-                    args.url, args.company, args.board_type
-                )
 
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
@@ -94,6 +97,19 @@ class JobShell(DBShell):
                 listing = db._get_listings(f"url = '{args.url}'")[0]
                 db.add_application(listing.id_)
 
+    @argshell.with_parser(get_add_board_parser)
+    def do_add_scraper(self, args: argshell.Namespace):
+        """Add a scraper to the list."""
+        with JobBased(self.dbpath) as db:
+            args.url = args.url.strip("/")
+            if args.url in [board.url for board in db.boards]:
+                print("That board already exists.")
+            else:
+                db.add_board(args.url, args.company)
+                helpers.create_scraper_from_template(
+                    args.url, args.company, args.board_type
+                )
+
     def do_find_boards(self, url: str):
         """Try to detect job board urls from a company website."""
         detector = board_detector.BoardDetector()
@@ -109,14 +125,14 @@ class JobShell(DBShell):
             print(f"Found {len(boards)} possible board urls:")
             print(*boards, sep="\n")
 
-    def do_try_boards(self, company: str):
-        """Just try all template urls and see what sticks given a company name."""
+    def do_find_careers_page(self, base_url: str):
+        """Try to find the careers page given a company's base url."""
         detector = board_detector.BoardDetector()
-        urls = detector.get_board_by_brute_force(company)
+        urls = detector.get_careers_page_by_brute_force(base_url)
         if urls:
             print(*urls, sep="\n")
         else:
-            print(urls)
+            print("Valid urls not found.")
 
     def do_mark_applied(self, listing_id: str):
         """Mark a job as applied given the `listing_id`."""
@@ -133,30 +149,6 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             db.mark_rejected(int(application_id))
 
-    def do_reset_alive_status(self, listing_ids: str):
-        """Reset the status of a listing to alive given a list of `listing_id`s."""
-        with JobBased(self.dbpath) as db:
-            for id_ in listing_ids.split():
-                db.reset_alive_status(int(id_))
-
-    def do_trouble_shoot(self, file_stem: str):
-        """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
-        self.do_open(file_stem)
-        company = file_stem.replace("_", " ")
-        with JobBased(self.dbpath) as db:
-            self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
-        os.system(f"code scrapers/{file_stem}.py -r")
-        os.system(f"code gruel_logs/{file_stem}.log -r")
-
-    def do_find_careers_page(self, base_url: str):
-        """Try to find the careers page given a company's base url."""
-        detector = board_detector.BoardDetector()
-        urls = detector.get_careers_page_by_brute_force(base_url)
-        if urls:
-            print(*urls, sep="\n")
-        else:
-            print("Valid urls not found.")
-
     def do_open(self, company: str):
         """Open the board url associated with the given company."""
         with JobBased() as db:
@@ -167,6 +159,46 @@ class JobShell(DBShell):
         """Pin a listing given its `listing_id`."""
         with JobBased() as db:
             db.pin_listing(int(listing_id))
+
+    def do_reset_alive_status(self, listing_ids: str):
+        """Reset the status of a listing to alive given a list of `listing_id`s."""
+        with JobBased(self.dbpath) as db:
+            for id_ in listing_ids.split():
+                db.reset_alive_status(int(id_))
+
+    @argshell.with_parser(get_toggle_scraper_parser)
+    def do_toggle_scraper(self, args: argshell.Namespace):
+        """Activate or deactivate scrapers/boards."""
+        active = 1 if args.status == "a" else 0
+        with JobBased() as db:
+            for scraper in args.scrapers:
+                try:
+                    where = f"board_id = {int(scraper)}"
+                except Exception as e:
+                    company = db.get_company_from_name(helpers.stem_to_name(scraper))
+                    assert company
+                    where = f"company_id = {company.id_}"
+                print(
+                    f'{scraper} updated: {db.update("boards", "active", active, where)}'
+                )
+
+    def do_trouble_shoot(self, file_stem: str):
+        """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
+        self.do_open(file_stem)
+        company = file_stem.replace("_", " ")
+        with JobBased(self.dbpath) as db:
+            self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
+        os.system(f"code scrapers/{file_stem}.py -r")
+        os.system(f"code gruel_logs/{file_stem}.log -r")
+
+    def do_try_boards(self, company: str):
+        """Just try all template urls and see what sticks given a company name."""
+        detector = board_detector.BoardDetector()
+        urls = detector.get_board_by_brute_force(company)
+        if urls:
+            print(*urls, sep="\n")
+        else:
+            print(urls)
 
     def preloop(self):
         """Set any applications older than 30 days to rejected."""

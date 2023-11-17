@@ -69,10 +69,16 @@ class JobGlob(Brewer):
         pool.execute()
 
 
+def get_inactive_scrapers() -> list[str]:
+    with JobBased() as db:
+        boards = db.inactive_boards
+    return [helpers.name_to_stem(board.company.name) for board in boards]
+
+
 if __name__ == "__main__":
     jobglob = JobGlob(
         ["JobScraper"],
-        ["*template.py"],
+        ["*template.py"] + [f"*{name}.py" for name in get_inactive_scrapers()],
         root / "scrapers",
     )
     jobglob.brew()

@@ -40,6 +40,7 @@ class JobBased(Databased):
                 "boards.company_id",
                 "name",
                 "companies.date_added AS c_date",
+                "active",
             ],
             ["INNER JOIN companies ON boards.company_id = companies.company_id"],
         )
@@ -48,6 +49,7 @@ class JobBased(Databased):
                 models.Company(datum["company_id"], datum["name"], datum["c_date"]),
                 datum["board_id"],
                 datum["url"],
+                datum["active"],
                 datum["b_date"],
             )
             for datum in data
@@ -160,6 +162,10 @@ class JobBased(Databased):
             "alive = 0 AND listing_id IN (SELECT listing_id FROM pinned_listings)"
         )
 
+    @property
+    def inactive_boards(self) -> list[models.Board]:
+        return [board for board in self.boards if not board.active]
+
     def mark_seen(self, listing_id: int):
         self.insert("seen_listings", ("listing_id",), [(listing_id,)])
 
@@ -187,8 +193,8 @@ class JobBased(Databased):
             )
         self.insert(
             "boards",
-            ("url", "company_id", "date_added"),
-            [(url, company_id, datetime.now())],
+            ("url", "company_id", "date_added", "active"),
+            [(url, company_id, datetime.now(), 1)],
         )
 
     def add_company(self, name: str):
@@ -197,7 +203,7 @@ class JobBased(Databased):
 
     def get_company_from_name(self, company_name: str) -> models.Company | None:
         try:
-            company = self.select("companies", where=f"name = '{company_name}'")[0]
+            company = self.select("companies", where=f"name LIKE '{company_name}'")[0]
         except Exception as e:
             return None
         return models.Company(

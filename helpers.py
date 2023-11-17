@@ -7,7 +7,6 @@ import loggi.models
 from pathier import Pathier
 
 import board_detector
-import models
 
 root = Pathier(__file__).parent
 
@@ -81,3 +80,13 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
         elif error_exceptions.events:
             scrapers["misc_fails"].append(log.path.stem)
     return scrapers
+
+
+def name_to_stem(name: str) -> str:
+    """Convert to lowercase and replace spaces with underscores."""
+    return name.lower().replace(" ", "_")
+
+
+def stem_to_name(stem: str) -> str:
+    """Replace underscores with spaces and capitalize first letters."""
+    return " ".join(word.capitalize() for word in stem.split("_"))
