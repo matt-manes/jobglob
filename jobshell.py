@@ -1,10 +1,13 @@
 import os
 import webbrowser
 from datetime import datetime
+
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
+
 import board_detector
+import dump_data
 import helpers
 import models
 from jobbased import JobBased
@@ -110,6 +113,11 @@ class JobShell(DBShell):
                     args.url, args.company, args.board_type
                 )
 
+    def do_dump(self, _: str):
+        """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
+        print("Creating dump file...")
+        dump_data.dump()
+
     def do_find_boards(self, url: str):
         """Try to detect job board urls from a company website."""
         detector = board_detector.BoardDetector()
@@ -179,7 +187,7 @@ class JobShell(DBShell):
                     assert company
                     where = f"company_id = {company.id_}"
                 print(
-                    f'{scraper} updated: {db.update("boards", "active", active, where)}'
+                    f"{scraper} updated: {db.update('boards', 'active', active, where)}"
                 )
 
     def do_trouble_shoot(self, file_stem: str):
