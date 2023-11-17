@@ -45,7 +45,7 @@ class JobGruel(Gruel):
         else:
             self.logger.info(f"{url} returned status code {response.status_code}")
         if url == self.board.url and url != response.url.strip("/"):
-            self.logger.warning(f"Board url '{url}' resolved to '{response}'")
+            self.logger.warning(f"Board url '{url}' resolved to '{response.url}'")
         return response
 
     def new_listing(self) -> models.Listing:
