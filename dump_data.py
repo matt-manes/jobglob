@@ -3,6 +3,7 @@ from noiftimer import time_it
 from pathier import Pathier
 
 from jobbased import JobBased
+import quickpool
 
 root = Pathier(__file__).parent
 
@@ -12,8 +13,12 @@ def dump():
     """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
     tables = ["companies", "boards", "listings"]
     dump_path = root / "sql" / "jobs_data.sql"
-    with JobBased() as db:
-        db.dump_data(dump_path, tables)
+
+    def _dump():
+        with JobBased() as db:
+            db.dump_data(dump_path, tables)
+
+    quickpool.update_and_wait(_dump)
     git = Git()
     git.commit_files([dump_path], "chore: update data")
 
