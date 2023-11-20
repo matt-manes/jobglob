@@ -113,6 +113,16 @@ class JobShell(DBShell):
                     args.url, args.company, args.board_type
                 )
 
+    def do_company_exists(self, company: str):
+        """Return info about `company` if it exists in the database."""
+        with JobBased(self.dbpath) as db:
+            where = f"company LIKE '%{company}%'"
+            if db.count("scrapers", where=where):
+                data = db.select("scrapers", where=where)
+                self.display(data)
+            else:
+                print(f"Could not find records matching '%{company}%'.")
+
     def do_dump(self, _: str):
         """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
         print("Creating dump file...")
