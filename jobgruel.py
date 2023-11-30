@@ -466,12 +466,16 @@ class MyworkdayGruel(JobGruel):
             assert isinstance(item, Tag)
             a = item.find("a", attrs={"data-automation-id": "jobTitle"})
             assert isinstance(a, Tag)
-            url = self.board.url[: self.board.url.rfind("/")]
+            url = self.board.url[
+                : self.board.url.rfind("/")
+                if self.board.url.endswith("careers")
+                else self.board.url.find("/", self.board.url.find(".com"))
+            ]
             listing.url = f"{url}{a.get('href')}"
             listing.position = a.text
             dl = item.find("dl")
             if isinstance(dl, Tag):
-                listing.location = dl.text
+                listing.location = dl.text.lstrip("locations")
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
