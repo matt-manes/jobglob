@@ -297,20 +297,26 @@ class ApplytojobGruel(JobGruel):
 
 
 class SmartrecruiterGruel(JobGruel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        company_page = self.board.url[self.board.url.rfind("/") + 1 :]
+        self.api_endpoint = (
+            f"https://careers.smartrecruiters.com/{company_page}/api/more?page="
+        )
+
     def get_parsable_items(self) -> list[ParsableItem]:
         page_count = 0
-        company_page = self.board.url[self.board.url.rfind("/") + 1 :]
         listings = []
         while True:
             if page_count == 0:
                 soup = self.get_soup(self.board.url)
                 listings.extend(soup.find_all("a", class_="link--block details"))
             else:
-                response = self.get_page(
-                    f"https://careers.smartrecruiters.com/{company_page}/api/more?page={page_count}"
-                )
+                response = self.get_page(f"{self.api_endpoint}{page_count}")
                 if not response.text:
                     break
+                elif response.status_code == 404:
+                    raise RuntimeError("Smart recruiters api endpoint returning 404.")
                 soup = self.as_soup(response)
                 listings.extend(soup.find_all("a", class_="link--block details"))
             page_count += 1
