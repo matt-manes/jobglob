@@ -460,7 +460,7 @@ class MyworkdayGruel(JobGruel):
                 listings.extend(job_list.find_all("li", recursive=False))
         return listings
 
-    def parse_item(self, item: ParsableItem) -> Any:
+    def parse_item(self, item: ParsableItem) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -476,6 +476,32 @@ class MyworkdayGruel(JobGruel):
             dl = item.find("dl")
             if isinstance(dl, Tag):
                 listing.location = dl.text.lstrip("locations")
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item")
+            self.fail_count += 1
+            return None
+
+
+class TeamtailorGruel(JobGruel):
+    def get_parsable_items(self) -> list[Tag]:
+        soup = self.get_soup(self.board.url)
+        job_container = soup.find("ul", attrs={"id": "jobs_list_container"})
+        assert isinstance(job_container, Tag)
+        return job_container.find_all("li")
+
+    def parse_item(self, item: Tag) -> models.Listing | None:
+        try:
+            listing = self.new_listing()
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            listing.url = str(a.get("href"))
+            position_span = a.find("span")
+            assert isinstance(position_span, Tag)
+            listing.position = position_span.text
+            deet_div = a.find("div", class_="mt-1 text-md")
+            assert isinstance(deet_div, Tag)
+            listing.location = deet_div.text
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")

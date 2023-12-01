@@ -10,7 +10,8 @@ boards = [
     "smartrecruiter",
     "recruitee",
     "breezy",
-    "myworkday"
+    "myworkday",
+    "teamtailor"
 ]
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
@@ -27,6 +28,7 @@ boards = [
 "recruitee" = "recruitee"
 "breezy.hr" = "breezy"
 "myworkdayjobs.com" = "myworkday"
+"teamtailor.com" = "teamtailor"
 
 [url_templates]
 "greenhouse" = "https://boards.greenhouse.io/$company"
@@ -42,3 +44,4 @@ boards = [
 "workable" = "https://apply.workable.com/$company"
 "breezy" = "https://$company.breezy.hr"
 "myworkday" = "https://$company.wd1.myworkdayjobs.com/careers"
+"teamtailor" = "https://$company.teamtailor.com/jobs"
