@@ -365,7 +365,7 @@ class RecruiteeGruel(JobGruel):
             if isinstance(city, Tag):
                 country = item.find("span", class_=f"{css}country")
                 assert isinstance(country, Tag)
-                listing.location = f"{city}, {country}"
+                listing.location = f"{city.text}, {country.text}"
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item")
