@@ -5,5 +5,5 @@ root = Pathier(__file__).parent
 import jobgruel
 
 
-class JobScraper(jobgruel.TeamtailorGruel):
+class JobScraper(jobgruel.WorkableGruel):
     ...
