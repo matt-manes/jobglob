@@ -48,9 +48,9 @@ class Listing:
         response = requests.get(
             self.url, headers={"User-Agent": whosyouragent.get_agent()}, timeout=10
         )
-        if response.status_code not in [200, 302]:
+        if response.status_code not in [200, 202, 302]:
             raise RuntimeError(
-                f"Error resolving url '{self.url}' for listing '{self.company}: '{self.position}'"
+                f"Error resolving url '{self.url}' for listing '{self.company}: '{self.position}'. Status code: {response.status_code} Resolved url: '{response.url}'"
             )
         resolved_url = response.url.strip("/")
         if resolved_url != self.url.strip("/"):

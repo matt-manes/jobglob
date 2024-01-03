@@ -77,6 +77,7 @@ class GreenhouseGruel(JobGruel):
             listing = self.new_listing()
             element = item.find("a")
             assert isinstance(element, Tag)
+            listing.position = element.text
             href = element.get("href")
             assert isinstance(href, str)
             if "https://" in href:
@@ -92,7 +93,6 @@ class GreenhouseGruel(JobGruel):
                 # Sometimes these redirect to a different url than what the page says
                 # And they'll be marked dead when the check listings script runs
                 listing.resolve_url()
-            listing.position = element.text
             span = item.find("span")
             if isinstance(span, Tag):
                 listing.location = span.text
