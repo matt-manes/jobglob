@@ -96,7 +96,8 @@ class GreenhouseGruel(JobGruel):
                 listing.location = span.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -125,7 +126,8 @@ class LeverGruel(JobGruel):
                 listing.location = location.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -147,7 +149,8 @@ class BambooGruel(JobGruel):
             listing.position = item["jobOpeningName"]
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -177,7 +180,8 @@ class AshbyGruel(JobGruel):
                 listing.location = location.text.split("•")[1].strip()
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -202,7 +206,8 @@ class WorkableGruel(JobGruel):
             listing.position = item["title"]
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -233,7 +238,8 @@ class EasyapplyGruel(JobGruel):
                 listing.location = location.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -261,7 +267,8 @@ class JobviteGruel(JobGruel):
                 listing.location = td.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -289,7 +296,8 @@ class ApplytojobGruel(JobGruel):
             listing.location = li.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -335,7 +343,8 @@ class SmartrecruiterGruel(JobGruel):
                 listing.location = li.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -366,7 +375,8 @@ class RecruiteeGruel(JobGruel):
                 listing.location = f"{city.text}, {country.text}"
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -389,7 +399,8 @@ class RecruiteeAltGruel(JobGruel):
             listing.location = li.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -414,7 +425,8 @@ class BreezyGruel(JobGruel):
             listing.location = li.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -476,7 +488,8 @@ class MyworkdayGruel(JobGruel):
                 listing.location = dl.text.lstrip("locations")
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
 
@@ -502,6 +515,7 @@ class TeamtailorGruel(JobGruel):
             listing.location = deet_div.text
             return listing
         except Exception as e:
-            self.logger.exception("Failure to parse item")
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
             self.fail_count += 1
             return None
