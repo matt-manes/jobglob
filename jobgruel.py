@@ -80,10 +80,8 @@ class GreenhouseGruel(JobGruel):
             listing.position = element.text
             href = element.get("href")
             assert isinstance(href, str)
-            if "https://" in href:
-                listing.url = href
-            elif "http://" in href:
-                listing.url = href.replace("http://", "https://")
+            if href.startswith("http"):
+                listing.url = listing.url.replace("http://", "https://", 1)
             else:
                 listing.url = "https://boards.greenhouse.io" + href
             if (
