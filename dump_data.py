@@ -1,9 +1,9 @@
+import quickpool
 from gitbetter import Git
 from noiftimer import time_it
 from pathier import Pathier
 
 from jobbased import JobBased
-import quickpool
 
 root = Pathier(__file__).parent
 

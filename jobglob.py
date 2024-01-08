@@ -1,8 +1,8 @@
 from datetime import datetime
 
 import quickpool
-from gruel.brewer import Brewer
 from gruel import Gruel
+from gruel.brewer import Brewer
 from pathier import Pathier
 
 import helpers

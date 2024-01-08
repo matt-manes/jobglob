@@ -1,6 +1,7 @@
 import loggi
-from jobbased import JobBased
 from pathier import Pathier
+
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
 

@@ -1,6 +1,7 @@
+import sys
+
 from databased import Databased
 from pathier import Pathier
-import sys
 
 root = Pathier(__file__).parent
 
