@@ -7,6 +7,7 @@ root = Pathier(__file__).parent
 
 
 def init(db_name: str, silent_overwrite: bool = False):
+    """Initialize and build database, populating with data from `sql/jobs_data.sql` if present."""
     db_path = root / db_name
     if silent_overwrite:
         db_path.delete()

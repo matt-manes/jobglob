@@ -7,7 +7,7 @@ root = Pathier(__file__).parent
 
 
 def main():
-    """ """
+    """Print scrapers that didn't find any listings on their last run."""
     event = (
         loggi.load_log(root / "jobglob.log")
         .filter_messages(["*no_listings*"])

@@ -12,18 +12,22 @@ root = Pathier(__file__).parent
 
 
 class JobGlobDaemon:
+    """Daemonize running `jobglob.py`.
+
+    Runs once an hour Monday -> Friday between 7 am and 7 pm.
+
+    Use `jobglob.py` to run ad hoc.
+    """
+
     def __init__(self):
         self._last_glob_time = None
 
     @property
     def business_hours(self) -> tuple[int, int]:
+        """Returns `(7, 19)`."""
         # Assuming local time is CST: start 8 am EST and end 5 pm PST
         # (7 am - 7 pm CST)
         return (7, 19)
-
-    @property
-    def is_weekend(self) -> bool:
-        return datetime.now().weekday() in [5, 6]
 
     @property
     def glob_interval(self) -> int:
@@ -31,15 +35,27 @@ class JobGlobDaemon:
         return 3600
 
     @property
-    def logpath(self) -> Pathier:
-        return root / "jobglob.log"
+    def is_business_hours(self) -> bool:
+        """Returns if the current time is during business hours (according to `self.business_hours`)."""
+        now = datetime.now()
+        if (
+            now.replace(hour=self.business_hours[0], minute=0, second=0, microsecond=0)
+            <= now
+            <= now.replace(
+                hour=self.business_hours[1], minute=0, second=0, microsecond=0
+            )
+        ):
+            return True
+        return False
 
     @property
-    def seconds_since_last_glob(self) -> float:
-        return (datetime.now() - self.last_glob_time).total_seconds()
+    def is_weekend(self) -> bool:
+        """Returns if the current time is a weekday."""
+        return datetime.now().weekday() in [5, 6]
 
     @property
     def last_glob_time(self) -> datetime:
+        """Returns the last time a scrape was run, whether by this file of `jobglob.py`."""
         if not self._last_glob_time:
             if self.logpath.exists():
                 logs = loggi.load_log(self.logpath).filter_messages(["Brew complete"])
@@ -55,36 +71,18 @@ class JobGlobDaemon:
         self._last_glob_time = time
 
     @property
-    def seconds_until_next_glob(self) -> float:
-        if self.is_weekend:
-            return self.seconds_until_monday_business_start
-        if not self.is_business_hours:
-            return self.seconds_until_business_hours
-        return self.glob_interval - self.seconds_since_last_glob
+    def logpath(self) -> Pathier:
+        """Log path for `jobglob.log`."""
+        return root / "jobglob.log"
 
     @property
-    def is_business_hours(self) -> bool:
-        now = datetime.now()
-        if (
-            now.replace(hour=self.business_hours[0], minute=0, second=0, microsecond=0)
-            <= now
-            <= now.replace(
-                hour=self.business_hours[1], minute=0, second=0, microsecond=0
-            )
-        ):
-            return True
-        return False
-
-    @property
-    def seconds_until_monday_business_start(self) -> float:
-        now = datetime.now()
-        monday = (now + timedelta(days=7 - now.weekday())).replace(
-            hour=self.business_hours[0], minute=0, second=0, microsecond=0
-        )
-        return (monday - now).total_seconds()
+    def seconds_since_last_glob(self) -> float:
+        """The number of seconds since the last time `jobglob.JobGlob().brew()` was run."""
+        return (datetime.now() - self.last_glob_time).total_seconds()
 
     @property
     def seconds_until_business_hours(self) -> float:
+        """The number of seconds between now and the next business hours window (according to `self.business_hours`)."""
         now = datetime.now()
         start, stop = self.business_hours
         business_start = now.replace(hour=start, minute=0, second=0, microsecond=0)
@@ -92,15 +90,37 @@ class JobGlobDaemon:
         if now < business_start:
             return (business_start - now).total_seconds()
         if business_stop < now:
-            return ((business_start + timedelta(days=1)) - now).total_seconds()
+            return (business_start + timedelta(days=1) - now).total_seconds()
         return 0
 
+    @property
+    def seconds_until_monday_business_start(self) -> float:
+        """The number of seconds between now and business hours on the upcoming Monday (according to `self.business_hours`)."""
+        now = datetime.now()
+        monday = (now + timedelta(days=7 - now.weekday())).replace(
+            hour=self.business_hours[0], minute=0, second=0, microsecond=0
+        )
+        return (monday - now).total_seconds()
+
+    @property
+    def seconds_until_next_glob(self) -> float:
+        """The number of seconds until the next `jobglob.JobGlob().brew()` should be run."""
+        if self.is_weekend:
+            return self.seconds_until_monday_business_start
+        if not self.is_business_hours:
+            return self.seconds_until_business_hours
+        return self.glob_interval - self.seconds_since_last_glob
+
     def nap(self):
+        """Sleep until next glob.
+
+        Update the terminal display with how long is left in one minute intervals."""
         while (seconds := self.seconds_until_next_glob) > 0:
             print_in_place(f"Sleeping for {Timer.format_time(seconds)}", True)
             time.sleep(60)
 
     def run(self):
+        """Call to run indefinitely."""
         while True:
             self.nap()
             jobglob = JobGlob(

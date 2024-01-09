@@ -19,6 +19,7 @@ class JobGlob(Brewer):
         self.start_time = datetime.now()
 
     def group_by_company(self, listings: list[models.Listing]) -> dict[str, list[str]]:
+        """Returns listing positions grouped by company."""
         grouped_listings = {}
         for listing in listings:
             if listing.company.name not in grouped_listings:
@@ -28,6 +29,7 @@ class JobGlob(Brewer):
         return grouped_listings
 
     def print_new_listings(self):
+        """Print listings added to the database since the start of the last scrape."""
         with JobBased() as db:
             new_listings = db._get_listings(
                 where=f"listings.date_added >= '{self.start_time}'"
@@ -46,6 +48,7 @@ class JobGlob(Brewer):
         print()
 
     def logprint_errors(self):
+        """Print and log scrapers that had errors grouped by error type."""
         errors = helpers.get_scrapers_with_errors(self.start_time)
         for error, names in errors.items():
             if names:
@@ -70,6 +73,7 @@ class JobGlob(Brewer):
 
 
 def get_inactive_scrapers() -> list[str]:
+    """Return a list of scrapers marked `inactive` in the database."""
     with JobBased() as db:
         boards = db.inactive_boards
     return [helpers.name_to_stem(board.company.name) for board in boards]

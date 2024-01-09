@@ -12,6 +12,7 @@ root = Pathier(__file__).parent
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
+    """Create scraper file from template in `./scrapers` given a `url` and `company`."""
     templates_path = root / "templates"
     detector = board_detector.BoardDetector()
     if not board_type:
@@ -34,11 +35,13 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
 
 
 def load_log(company: str) -> loggi.models.Log:
+    """Returns a `loggi.models.Log` object for the scraper associated with `company`."""
     stem = company.lower().replace(" ", "_")
     return loggi.load_log(root / "gruel_logs" / f"{stem}.log")
 
 
 def get_all_logs() -> Generator[loggi.models.Log, None, None]:
+    """Generator yielding `loggi.models.Log` objects from `./gruel_logs`."""
     for file in (root / "gruel_logs").glob("*.log"):
         yield loggi.load_log(file)
 
@@ -54,6 +57,11 @@ def get_failed_scrapers(start_time: datetime) -> list[str]:
 
 
 def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
+    """Returns scrapers that have errors after `start_time`.
+
+    Ouput is a dictionary where the error type is the key and the values are lists of scrapers.
+
+    Error keys: `redirects`, `404s`, `no_listings`, `parse_fails`, and `misc_fails`."""
     scrapers = {
         "redirects": [],
         "404s": [],
@@ -90,3 +98,8 @@ def name_to_stem(name: str) -> str:
 def stem_to_name(stem: str) -> str:
     """Replace underscores with spaces and capitalize first letters."""
     return " ".join(word.capitalize() for word in stem.split("_"))
+
+
+def create_peruse_filters_from_template():
+    template_path = root / "templates" / "peruse_filters_template.toml"
+    template_path.copy(root / "peruse_filters.toml")

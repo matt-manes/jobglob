@@ -12,14 +12,24 @@ from seleniumuser import User
 import models
 from jobbased import JobBased
 
+""" Subclasses of `Gruel` scraper engine.
+
+`JobGruel` is the primary subclass.
+
+The rest are subclasses of `JobGruel` for specific job boards like Greenhouse, Lever, BambooHR etc."""
+
 
 class JobGruel(Gruel):
+    """Primary job board scraping engine."""
+
     def __init__(
         self, existing_listings: list[models.Listing] | None = None, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         with JobBased() as db:
             self.board = db.get_board(self.name)
+            # Providing `existing_listings` in the constructor
+            # avoids every scraper needing to access the database
             if existing_listings:
                 company_id = self.board.company.id_
                 listings = [
@@ -39,6 +49,12 @@ class JobGruel(Gruel):
     def get_page(
         self, url: str, method: str = "get", headers: dict[str, str] = {}
     ) -> requests.Response:
+        """Returns a `request.Response` object for the given `url`.
+
+        The underlying base class (`Gruel`) uses a randomized `User-Agent` if one is not provided in `headers`.
+
+        Logs the response status code and the resolved url if different from the provided `url`.
+        """
         response = super().get_page(url, method, headers)
         if response.status_code == 404:
             self.logger.error(f"{url} returned status code 404")
@@ -49,9 +65,11 @@ class JobGruel(Gruel):
         return response
 
     def new_listing(self) -> models.Listing:
+        """Returns a `models.Listing` object that is only populated with this scraper's company model."""
         return models.Listing(self.board.company)
 
     def store_item(self, listing: models.Listing):
+        """Add `listing` to the database if it doesn't already exist (based off `listing.url`)."""
         if listing.url not in self.existing_listing_urls:
             with JobBased() as db:
                 listing.date_added = datetime.now()
@@ -68,6 +86,8 @@ class JobGruel(Gruel):
 
 
 class GreenhouseGruel(JobGruel):
+    """`JobGruel` subclass for Greenhouse job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="opening")
@@ -103,6 +123,8 @@ class GreenhouseGruel(JobGruel):
 
 
 class LeverGruel(JobGruel):
+    """`JobGruel` subclass for Lever job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="posting")
@@ -133,6 +155,8 @@ class LeverGruel(JobGruel):
 
 
 class BambooGruel(JobGruel):
+    """`JobGruel` subclass for BambooHR job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         return self.get_page(f"{self.board.url}/list").json()["result"]
 
@@ -156,6 +180,10 @@ class BambooGruel(JobGruel):
 
 
 class AshbyGruel(JobGruel):
+    """`JobGruel` subclass for Ashby job boards.
+
+    Requires Firefox and Geckodriver."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         with User(True) as user:
             user.get(self.board.url)
@@ -187,6 +215,8 @@ class AshbyGruel(JobGruel):
 
 
 class WorkableGruel(JobGruel):
+    """`JobGruel` subclass for Workable job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         return self.get_page(
             f"https://apply.workable.com/api/v3/accounts/{self.board.url[self.board.url.rfind('/')+1:]}/jobs",
@@ -213,6 +243,8 @@ class WorkableGruel(JobGruel):
 
 
 class EasyapplyGruel(JobGruel):
+    """`JobGruel` subclass for Easyapply job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         listings = soup.find("div", attrs={"id": "list"})
@@ -245,6 +277,8 @@ class EasyapplyGruel(JobGruel):
 
 
 class JobviteGruel(JobGruel):
+    """`JobGruel` subclass for Jobvite job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         job_tables = soup.find_all("table", class_="jv-job-list")
@@ -274,6 +308,8 @@ class JobviteGruel(JobGruel):
 
 
 class ApplytojobGruel(JobGruel):
+    """`JobGruel` subclass for ApplyToJob job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         list_group = soup.find("ul", class_="list-group")
@@ -303,6 +339,8 @@ class ApplytojobGruel(JobGruel):
 
 
 class SmartrecruiterGruel(JobGruel):
+    """`JobGruel` subclass for SmartRecruiters job boards."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         company_page = self.board.url[self.board.url.rfind("/") + 1 :]
@@ -350,6 +388,8 @@ class SmartrecruiterGruel(JobGruel):
 
 
 class RecruiteeGruel(JobGruel):
+    """`JobGruel` subclass for Recruitee job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         output = soup.find("output")
@@ -382,6 +422,8 @@ class RecruiteeGruel(JobGruel):
 
 
 class RecruiteeAltGruel(JobGruel):
+    """Alternative `JobGruel` subclass for Recruitee job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="job")
@@ -406,6 +448,8 @@ class RecruiteeAltGruel(JobGruel):
 
 
 class BreezyGruel(JobGruel):
+    """`JobGruel` subclass for Breezy job boards."""
+
     def get_parsable_items(self) -> list[ParsableItem]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("li", class_="position transition")
@@ -432,6 +476,8 @@ class BreezyGruel(JobGruel):
 
 
 class MyworkdayGruel(JobGruel):
+    """`JobGruel` subclass for MyWorkDay job boards."""
+
     def get_num_pages(self, user: User) -> int:
         num_pages = None
         attempts = 0
@@ -495,6 +541,8 @@ class MyworkdayGruel(JobGruel):
 
 
 class TeamtailorGruel(JobGruel):
+    """`JobGruel` subclass for TeamTailor job boards."""
+
     def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         job_container = soup.find("ul", attrs={"id": "jobs_list_container"})
