@@ -152,6 +152,12 @@ class JobShell(DBShell):
         else:
             print("Valid urls not found.")
 
+    def do_generate_peruse_filters_file(self, _: str):
+        """Generate a file named `peruse_filters.toml` that is empty besides categories.
+
+        Each category should be filled with a list of strings."""
+        helpers.create_peruse_filters_from_template()
+
     def do_mark_applied(self, listing_id: str):
         """Mark a job as applied given the `listing_id`."""
         with JobBased(self.dbpath) as db:
