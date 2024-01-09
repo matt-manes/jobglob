@@ -17,3 +17,4 @@ bulk_extract.py
 dbmigrate.py
 techjobsforgood_company_list.py
 bulk_add_scrapable_boards.py
+*.png
