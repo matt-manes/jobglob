@@ -1,0 +1,11 @@
+filter_out_position_terms = [
+    
+]
+
+filter_out_location_terms = [
+    
+]
+
+default_search_terms = [
+    
+]
