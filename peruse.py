@@ -157,7 +157,7 @@ def peruse(listings: list[models.Listing]):
 
 def main(args: argparse.Namespace):
     with JobBased() as db:
-        listings = db.unseen_live_listings
+        listings = db.get_unseen_live_listings()
     if args.newest_first:
         listings = listings[::-1]
     # ========================

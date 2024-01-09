@@ -20,7 +20,8 @@ def is_alive(listing: models.Listing) -> bool | None:
 
     If dead, mark it as such in the database.
 
-    A listing is considered alive if it doesn't return a 404 or 410 status code and does not redirect."""
+    A listing is considered alive if it doesn't return a 404 or 410 status code and does not redirect.
+    """
     try:
         response = requests.get(listing.url)
     except Exception as e:
@@ -50,7 +51,7 @@ def get_pool(listings: list[models.Listing]) -> quickpool.ThreadPool:
 def get_live_listings() -> list[models.Listing]:
     """Returns a list of currently alive listings."""
     with JobBased() as db:
-        listings = db.live_listings
+        listings = db.get_live_listings()
     random.shuffle(listings)
     return listings
 
@@ -67,7 +68,7 @@ def get_dead_pinned_listings(
 ) -> list[models.Listing]:
     """Given a list of dead listings, return a list of those that were pinned."""
     with JobBased() as db:
-        pinned_ids = [listing.id_ for listing in db.pinned_listings]
+        pinned_ids = [listing.id_ for listing in db.get_pinned_listings()]
     return [listing for listing in dead_listings if listing.id_ in pinned_ids]
 
 

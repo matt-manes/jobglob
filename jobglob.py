@@ -67,7 +67,7 @@ class JobGlob(Brewer):
 
     def scrape(self, scrapers: list[Gruel]):
         with JobBased() as db:
-            listings = db.listings
+            listings = db.get_listings()
         pool = quickpool.ThreadPool([scraper(listings).scrape for scraper in scrapers])  # type: ignore
         pool.execute()
 
@@ -75,7 +75,7 @@ class JobGlob(Brewer):
 def get_inactive_scrapers() -> list[str]:
     """Return a list of scrapers marked `inactive` in the database."""
     with JobBased() as db:
-        boards = db.inactive_boards
+        boards = db.get_inactive_boards()
     return [helpers.name_to_stem(board.company.name) for board in boards]
 
 

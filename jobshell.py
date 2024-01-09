@@ -105,7 +105,7 @@ class JobShell(DBShell):
         """Add a scraper to the list."""
         with JobBased(self.dbpath) as db:
             args.url = args.url.strip("/")
-            if args.url in [board.url for board in db.boards]:
+            if args.url in [board.url for board in db.get_boards()]:
                 print("That board already exists.")
             else:
                 db.add_board(args.url, args.company)
