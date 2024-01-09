@@ -14,10 +14,8 @@ def main():
         subprocess.run(command)
     (root / "gruel_logs").mkdir(exist_ok=True)
     print("Some scrapers require Firefox and Geckodriver to be installed.")
-    print("Firefox:")
-    print("https://www.mozilla.org/en-US/firefox/browsers/")
-    print("Geckodriver:")
-    print("https://github.com/mozilla/geckodriver/releases")
+    print("Firefox: https://www.mozilla.org/en-US/firefox/browsers/")
+    print("Geckodriver: https://github.com/mozilla/geckodriver/releases")
     print(
         "When downloading geckodriver, either put the executable in this folder or add its location to your PATH."
     )
