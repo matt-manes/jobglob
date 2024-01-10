@@ -1,11 +1,9 @@
 import os
 import webbrowser
 from datetime import datetime
-
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
-
 import board_detector
 import dump_data
 import helpers
@@ -160,6 +158,10 @@ class JobShell(DBShell):
         Each category should be filled with a list of strings."""
         helpers.create_peruse_filters_from_template()
 
+    def do_jobglob(self, _: str):
+        """Scrape active job boards."""
+        jobglob.main()
+
     def do_mark_applied(self, listing_id: str):
         """Mark a job as applied given the `listing_id`."""
         with JobBased(self.dbpath) as db:
@@ -181,19 +183,28 @@ class JobShell(DBShell):
             url = db.get_board(company).url
         webbrowser.open_new_tab(url)
 
+    @argshell.with_parser(peruse.get_peruse_parser, [peruse.lower_terms])
+    def do_peruse(self, args: argshell.Namespace):
+        """Look through unseen job listings."""
+        peruse.main(args)
+
     def do_pin_listing(self, listing_id: str):
         """Pin a listing given its `listing_id`."""
         with JobBased() as db:
             db.pin_listing(int(listing_id))
 
-    def do_jobglob(self, _: str):
-        """Scrape active job boards."""
-        jobglob.main()
+    def do_pinned(self, arg: str):
+        """Display pinned listings.
 
-    @argshell.with_parser(peruse.get_peruse_parser, [peruse.lower_terms])
-    def do_peruse(self, args: argshell.Namespace):
-        """Look through unseen job listings."""
-        peruse.main(args)
+        Add `live` to this command to only show live listings."""
+        with JobBased(self.dbpath) as db:
+            self.display(
+                db.select(
+                    "pinned",
+                    ["l_id", "position", "company", "url", "age_days", "alive"],
+                    where="alive = 1" if arg == "live" else "1 = 1",
+                )
+            )
 
     def do_reset_alive_status(self, listing_ids: str):
         """Reset the status of a listing to alive given a list of `listing_id`s."""
