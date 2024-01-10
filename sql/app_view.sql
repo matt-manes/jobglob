@@ -7,7 +7,8 @@ CREATE VIEW IF NOT EXISTS
         company,
         app_days,
         rej_days,
-        alive
+        alive,
+        url
     ) AS
 SELECT
     applications.application_id,
@@ -24,7 +25,8 @@ SELECT
     CAST(
         JULIANDAY ('now') - JULIANDAY (date_rejected) AS INT
     ),
-    listings.alive
+    listings.alive,
+    listings.url
 FROM
     applications
     INNER JOIN listings ON applications.listing_id = listings.listing_id
