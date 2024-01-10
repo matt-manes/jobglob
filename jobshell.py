@@ -79,6 +79,27 @@ class JobShell(DBShell):
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
 
+    def do_help(self, *args, **kwargs):
+        """Display help messages."""
+        print()
+        header = "Common commands (type help <topic>):"
+        commands = [
+            "schema",
+            "jobglob",
+            "mark_applied",
+            "quit",
+            "mark_dead",
+            "backup",
+            "mark_rejected",
+            "peruse",
+            "pin_listing",
+            "pinned",
+            "add_scraper",
+            "toggle_scraper",
+        ]
+        self.print_topics(header, sorted(set(commands)), 15, 80)
+        super().do_help(*args, **kwargs)
+
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
         """Add a job listing to the database."""
