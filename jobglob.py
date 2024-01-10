@@ -61,14 +61,17 @@ class JobGlob(Brewer):
                     print()
 
     def postscrape_chores(self):
-        super().postscrape_chores()
         self.print_new_listings()
         self.logprint_errors()
+        super().postscrape_chores()
 
     def scrape(self, scrapers: list[Gruel]):
         with JobBased() as db:
             listings = db.get_listings()
-        pool = quickpool.ThreadPool([scraper(listings).scrape for scraper in scrapers])  # type: ignore
+        execute = lambda scraper: scraper(listings).scrape()
+        pool = quickpool.ThreadPool(
+            [execute] * len(scrapers), [(scraper,) for scraper in scrapers]
+        )
         pool.execute()
 
 
