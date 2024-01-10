@@ -75,6 +75,10 @@ class JobBased(Databased):
         """Returns a list of dead listings from the database."""
         return self._get_listings("alive = 0")
 
+    def get_active_boards(self) -> list[models.Board]:
+        """Returns a list active boards."""
+        return [board for board in self.get_boards() if board.active]
+
     def get_inactive_boards(self) -> list[models.Board]:
         """Returns a list of boards that have been deactivated (no longer scraped)."""
         return [board for board in self.get_boards() if not board.active]
