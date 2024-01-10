@@ -78,27 +78,23 @@ class JobShell(DBShell):
     _dbpath = Pathier("jobs.db")
     intro = "Starting job_manager (enter help or ? for command info)..."
     prompt = "jobshell>"
-
-    def do_help(self, *args, **kwargs):
-        """Display help messages."""
-        print()
-        header = "Common commands (type help <topic>):"
-        commands = [
-            "schema",
-            "jobglob",
-            "mark_applied",
-            "quit",
-            "mark_dead",
-            "backup",
-            "mark_rejected",
-            "peruse",
-            "pin_listing",
-            "pinned",
-            "add_scraper",
-            "toggle_scraper",
-        ]
-        self.print_topics(header, sorted(set(commands)), 15, 80)
-        super().do_help(*args, **kwargs)
+    common_commands = [
+        "schema",
+        "jobglob",
+        "mark_applied",
+        "quit",
+        "mark_dead",
+        "backup",
+        "mark_rejected",
+        "peruse",
+        "pin_listing",
+        "pinned",
+        "add_scraper",
+        "toggle_scraper",
+        "select",
+        "apps",
+    ]
+    common_commands = sorted(set(common_commands))
 
     @argshell.with_parser(get_add_parser)
     def do_add_listing(self, args: argshell.Namespace):
@@ -133,6 +129,11 @@ class JobShell(DBShell):
                 helpers.create_scraper_from_template(
                     args.url, args.company, args.board_type
                 )
+
+    def do_apps(self, _: str):
+        """Display submitted applications data."""
+        with JobBased(self.dbpath) as db:
+            self.display(db.select("apps"))
 
     def do_company_exists(self, company: str):
         """Return info about `company` if it exists in the database."""
@@ -178,6 +179,13 @@ class JobShell(DBShell):
 
         Each category should be filled with a list of strings."""
         helpers.create_peruse_filters_from_template()
+
+    def do_help(self, *args, **kwargs):
+        """Display help messages."""
+        print()
+        header = "Common commands (type help <topic>):"
+        self.print_topics(header, self.common_commands, 15, 80)
+        super().do_help(*args, **kwargs)
 
     def do_jobglob(self, _: str):
         """Scrape active job boards."""
