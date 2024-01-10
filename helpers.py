@@ -101,5 +101,6 @@ def stem_to_name(stem: str) -> str:
 
 
 def create_peruse_filters_from_template():
+    """Create a blank `peruse_filters.toml` file from the template."""
     template_path = root / "templates" / "peruse_filters_template.toml"
     template_path.copy(root / "peruse_filters.toml")
