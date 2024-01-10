@@ -1,7 +1,7 @@
-import sys
 import webbrowser
 from dataclasses import asdict
 
+import argshell
 from griddle import griddy
 from pathier import Pathier
 
@@ -20,8 +20,8 @@ Using this script means you don't have to keep looking at listings you've alread
 """
 
 
-def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
+def get_peruse_parser() -> argshell.ArgShellParser:
+    parser = argshell.ArgShellParser(
         description=""" Look through newly added job listings.
         If there is no `peruse_filters.toml` file, it will be created.
         The fields in this file can be used to filter locations and positions by text as well as set up default search terms.
@@ -69,9 +69,17 @@ def get_args() -> argparse.Namespace:
         Default is oldest first.""",
     )
 
-    args = parser.parse_args()
-    args.key_terms = [term.lower() for term in args.key_terms]
+    return parser
 
+
+def lower_terms(args: argshell.Namespace) -> argshell.Namespace:
+    args.key_terms = [term.lower() for term in args.key_terms]
+    return args
+
+
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(parents=[get_peruse_parser()], add_help=False)
+    args = lower_terms(parser.parse_args())  # type: ignore
     return args
 
 
@@ -103,8 +111,10 @@ def filter_listings(
     return filtered_listings
 
 
-def do_action(listing: models.Listing):
-    """Take input and perform the desired action for `listing`."""
+def do_action(listing: models.Listing) -> bool | None:
+    """Take input and perform the desired action for `listing`.
+
+    Returns `True` if user chooses `q`: `quit`."""
     while True:
         action = input(
             "Enter action ('a': add listing, 'd': mark dead, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
@@ -122,7 +132,7 @@ def do_action(listing: models.Listing):
             case "o":
                 webbrowser.open(listing.url)
             case "q":
-                sys.exit()
+                return True
             case "i":
                 with JobBased() as db:
                     db.mark_seen(listing.id_)
@@ -152,7 +162,8 @@ def peruse(listings: list[models.Listing]):
     for i, listing in enumerate(listings, 1):
         print(f"{i}/{num_listings}")
         show(listing)
-        do_action(listing)
+        if do_action(listing):
+            break
 
 
 def main(args: argparse.Namespace):

@@ -3,6 +3,7 @@ from datetime import datetime
 import quickpool
 from gruel import Gruel
 from gruel.brewer import Brewer
+from noiftimer import Timer
 from pathier import Pathier
 
 import helpers
@@ -64,6 +65,9 @@ class JobGlob(Brewer):
         self.print_new_listings()
         self.logprint_errors()
         super().postscrape_chores()
+        print(
+            f"Total runtime: {Timer.format_time((datetime.now() - self.start_time).total_seconds())}"
+        )
 
     def scrape(self, scrapers: list[Gruel]):
         with JobBased() as db:
@@ -82,10 +86,14 @@ def get_inactive_scrapers() -> list[str]:
     return [helpers.name_to_stem(board.company.name) for board in boards]
 
 
-if __name__ == "__main__":
+def main():
     jobglob = JobGlob(
         ["JobScraper"],
         ["*template.py"] + [f"*{name}.py" for name in get_inactive_scrapers()],
         root / "scrapers",
     )
     jobglob.brew()
+
+
+if __name__ == "__main__":
+    main()

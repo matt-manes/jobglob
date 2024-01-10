@@ -9,7 +9,9 @@ from pathier import Pathier
 import board_detector
 import dump_data
 import helpers
+import jobglob
 import models
+import peruse
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
@@ -183,6 +185,15 @@ class JobShell(DBShell):
         """Pin a listing given its `listing_id`."""
         with JobBased() as db:
             db.pin_listing(int(listing_id))
+
+    def do_jobglob(self, _: str):
+        """Scrape active job boards."""
+        jobglob.main()
+
+    @argshell.with_parser(peruse.get_peruse_parser, [peruse.lower_terms])
+    def do_peruse(self, args: argshell.Namespace):
+        """Look through unseen job listings."""
+        peruse.main(args)
 
     def do_reset_alive_status(self, listing_ids: str):
         """Reset the status of a listing to alive given a list of `listing_id`s."""
