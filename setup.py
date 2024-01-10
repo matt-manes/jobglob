@@ -19,6 +19,7 @@ def main():
     print(
         "When downloading geckodriver, either put the executable in this folder or add its location to your PATH."
     )
+    input("Press enter to close...")
 
 
 if __name__ == "__main__":
