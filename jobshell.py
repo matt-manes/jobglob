@@ -180,12 +180,13 @@ class JobShell(DBShell):
         Each category should be filled with a list of strings."""
         helpers.create_peruse_filters_from_template()
 
-    def do_help(self, *args, **kwargs):
+    def do_help(self, cmd: str):
         """Display help messages."""
         print()
-        header = "Common commands (type help <topic>):"
-        self.print_topics(header, self.common_commands, 15, 80)
-        super().do_help(*args, **kwargs)
+        if not cmd:
+            header = "Common commands (type help <topic>):"
+            self.print_topics(header, self.common_commands, 15, 80)
+        super().do_help(cmd)
 
     def do_jobglob(self, _: str):
         """Scrape active job boards."""
