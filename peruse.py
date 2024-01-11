@@ -117,7 +117,7 @@ def do_action(listing: models.Listing) -> bool | None:
     Returns `True` if user chooses `q`: `quit`."""
     while True:
         action = input(
-            "Enter action ('a': add listing, 'd': mark dead, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
+            "Enter action ('a': add to pinned listings, 'd': mark dead, 'o': open url, 'q': quit, 'i' to ignore and mark seen): "
         )
         match action:
             case "a":
