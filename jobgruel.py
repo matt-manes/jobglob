@@ -1,3 +1,4 @@
+import json
 import math
 import time
 from datetime import datetime
@@ -11,6 +12,10 @@ from seleniumuser import User
 
 import models
 from jobbased import JobBased
+from pathier import Pathier, Pathish
+import loggi
+
+root = Pathier(__file__).parent
 
 """ Subclasses of `Gruel` scraper engine.
 
@@ -561,6 +566,36 @@ class TeamtailorGruel(JobGruel):
             deet_div = a.find("div", class_="mt-1 text-md")
             assert isinstance(deet_div, Tag)
             listing.location = deet_div.text
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
+            self.fail_count += 1
+            return None
+
+
+class PaycomGruel(JobGruel):
+    """`JobGruel` subclass for Paycom job boards."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.base_url = "https://www.paycomonline.net"
+
+    def get_parsable_items(self) -> list[dict]:
+        soup = self.get_soup(self.board.url)
+        main_content = soup.find("div", attrs={"id": "main-content"})
+        assert isinstance(main_content, Tag)
+        data_script = main_content.find_all("script")[0].text.strip()
+        data_script = data_script[data_script.find("[") - 1 : data_script.rfind(";")]
+        data = json.loads(data_script)
+        return data
+
+    def parse_item(self, item: dict) -> models.Listing | None:
+        try:
+            listing = self.new_listing()
+            listing.position = item["title"]
+            listing.location = item["location"]["description"]
+            listing.url = f"{self.base_url}{item['url']}"
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item:")

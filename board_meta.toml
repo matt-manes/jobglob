@@ -11,7 +11,8 @@ boards = [
     "recruitee",
     "breezy",
     "myworkday",
-    "teamtailor"
+    "teamtailor",
+    "paycom"
 ]
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
@@ -29,6 +30,7 @@ boards = [
 "breezy.hr" = "breezy"
 "myworkdayjobs.com" = "myworkday"
 "teamtailor.com" = "teamtailor"
+"paycomonline.net" = "paycom"
 
 [url_templates]
 "greenhouse" = "https://boards.greenhouse.io/$company"
