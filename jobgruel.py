@@ -51,7 +51,7 @@ class JobGruel(Gruel):
         ]
         self.already_added_listings = 0
 
-    def get_page(
+    def request(
         self, url: str, method: str = "get", headers: dict[str, str] = {}
     ) -> requests.Response:
         """Returns a `request.Response` object for the given `url`.
@@ -60,7 +60,7 @@ class JobGruel(Gruel):
 
         Logs the response status code and the resolved url if different from the provided `url`.
         """
-        response = super().get_page(url, method, headers)
+        response = super().request(url, method, headers)
         if response.status_code == 404:
             self.logger.error(f"{url} returned status code 404")
         else:
@@ -163,7 +163,7 @@ class BambooGruel(JobGruel):
     """`JobGruel` subclass for BambooHR job boards."""
 
     def get_parsable_items(self) -> list[ParsableItem]:
-        return self.get_page(f"{self.board.url}/list").json()["result"]
+        return self.request(f"{self.board.url}/list").json()["result"]
 
     def parse_item(self, item: dict) -> models.Listing | None:
         try:
@@ -223,7 +223,7 @@ class WorkableGruel(JobGruel):
     """`JobGruel` subclass for Workable job boards."""
 
     def get_parsable_items(self) -> list[ParsableItem]:
-        return self.get_page(
+        return self.request(
             f"https://apply.workable.com/api/v3/accounts/{self.board.url[self.board.url.rfind('/')+1:]}/jobs",
             "post",
         ).json()["results"]
@@ -361,7 +361,7 @@ class SmartrecruiterGruel(JobGruel):
                 soup = self.get_soup(self.board.url)
                 listings.extend(soup.find_all("a", class_="link--block details"))
             else:
-                response = self.get_page(f"{self.api_endpoint}{page_count}")
+                response = self.request(f"{self.api_endpoint}{page_count}")
                 if not response.text:
                     break
                 elif response.status_code == 404:
