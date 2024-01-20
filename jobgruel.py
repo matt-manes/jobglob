@@ -12,10 +12,7 @@ from seleniumuser import User
 
 import models
 from jobbased import JobBased
-from pathier import Pathier, Pathish
-import loggi
 
-root = Pathier(__file__).parent
 
 """ Subclasses of `Gruel` scraper engine.
 
@@ -596,6 +593,33 @@ class PaycomGruel(JobGruel):
             listing.position = item["title"]
             listing.location = item["location"]["description"]
             listing.url = f"{self.base_url}{item['url']}"
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
+            self.fail_count += 1
+            return None
+
+
+class PaylocityGruel(JobGruel):
+    """`JobGruel` subclass for Paylocity job boards."""
+
+    def get_parsable_items(self) -> list[dict]:
+        soup = self.get_soup(self.board.url)
+        # Look for `<script> window.pageData = `
+        for script in soup.find_all("script"):
+            text = self.clean_string(script.text)
+            if text.startswith("window.pageData "):
+                text = text[text.find("{") : text.rfind(";")]
+                return json.loads(text)["Jobs"]
+        raise RuntimeError("Could not find `window.pageData` script.")
+
+    def parse_item(self, item: dict) -> models.Listing | None:
+        try:
+            listing = self.new_listing()
+            listing.position = item["JobTitle"]
+            listing.location = item["LocationName"]
+            listing.url = f"https://recruiting.paylocity.com/Recruiting/Jobs/Details/{item['JobId']}"
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item:")
