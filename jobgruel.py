@@ -7,7 +7,6 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
-from gruel.gruel import ParsableItem
 from seleniumuser import User
 
 import models

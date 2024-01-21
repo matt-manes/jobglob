@@ -6,7 +6,7 @@ from noiftimer import Timer
 from pathier import Pathier
 from printbuddies import print_in_place
 
-from jobglob import JobGlob, get_inactive_scrapers
+import jobglob
 
 root = Pathier(__file__).parent
 
@@ -123,15 +123,9 @@ class JobGlobDaemon:
         """Call to run indefinitely."""
         while True:
             self.nap()
-            jobglob = JobGlob(
-                ["JobScraper"],
-                ["*template.py"] + [f"*{name}.py" for name in get_inactive_scrapers()],
-                root / "scrapers",
-            )
             print(f"Brewing at {datetime.now():%m/%d %I:%M %p}")
-            jobglob.brew()
+            jobglob.main()
             self.last_glob_time = datetime.now()
-            del jobglob
 
 
 def main():

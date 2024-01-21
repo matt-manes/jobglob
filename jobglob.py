@@ -1,8 +1,7 @@
 from datetime import datetime
 
 import quickpool
-from gruel import Gruel
-from gruel.brewer import Brewer
+from gruel import Brewer, GruelFinder
 from noiftimer import Timer
 from pathier import Pathier
 
@@ -58,7 +57,7 @@ class JobGlob(Brewer):
                 if error == "no_listings":
                     self.logger.info(message)
                 else:
-                    self.logprint(message)
+                    self.logger.logprint(message)
                     print()
 
     def postscrape_chores(self):
@@ -69,12 +68,12 @@ class JobGlob(Brewer):
             f"Total runtime: {Timer.format_time((datetime.now() - self.start_time).total_seconds())}"
         )
 
-    def scrape(self, scrapers: list[Gruel]):
+    def scrape(self):
         with JobBased() as db:
             listings = db.get_listings()
         execute = lambda scraper: scraper(listings).scrape()
         pool = quickpool.ThreadPool(
-            [execute] * len(scrapers), [(scraper,) for scraper in scrapers]
+            [execute] * len(self.scrapers), [(scraper,) for scraper in self.scrapers]
         )
         pool.execute()
 
@@ -87,11 +86,13 @@ def get_inactive_scrapers() -> list[str]:
 
 
 def main():
-    jobglob = JobGlob(
+    finder = GruelFinder(
         ["JobScraper"],
         ["*template.py"] + [f"*{name}.py" for name in get_inactive_scrapers()],
         root / "scrapers",
     )
+    scrapers = finder.find()
+    jobglob = JobGlob(scrapers)
     jobglob.brew()
 
 
