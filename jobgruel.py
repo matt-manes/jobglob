@@ -16,11 +16,25 @@ from jobbased import JobBased
 
 `JobGruel` is the primary subclass.
 
-The rest are subclasses of `JobGruel` for specific job boards like Greenhouse, Lever, BambooHR etc."""
+The rest are subclasses of `JobGruel` for specific job boards like Greenhouse, Lever, BambooHR etc.
+"""
 
 
 class JobGruel(Gruel):
-    """Primary job board scraping engine."""
+    """Primary job board scraping engine.
+
+    Classes inheriting from `JobGruel` must implement:
+
+    >>> get_parsable_items(self) -> list[ParsableItem]
+
+    and
+
+    >>> parse_item(self, item: ParsableItem) -> models.Listing | None
+
+    To ensure proper loading, a subclass name should match the name of the board in `board_meta.toml`,
+    but with the first letter capitalized and prepended to 'Gruel'.
+
+    e.g. For 'greenhouse.io' boards: `class GreenhouseGruel(JobGruel):`"""
 
     def __init__(
         self,
