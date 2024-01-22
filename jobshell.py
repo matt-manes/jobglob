@@ -1,10 +1,13 @@
 import os
 import webbrowser
 from datetime import datetime
+
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
+
 import board_detector
+import company_crawler
 import dump_data
 import helpers
 import jobglob
@@ -20,7 +23,8 @@ def num_days(date: datetime) -> int:
     return (datetime.now() - date).days
 
 
-def get_add_parser() -> argshell.ArgShellParser:
+def get_add_listing_parser() -> argshell.ArgShellParser:
+    """Returns an `add_listing` parser."""
     parser = argshell.ArgShellParser(prog="")
     parser.add_argument("position", type=str, help=" The job title of the listing. ")
     parser.add_argument("company", type=str, help=" The company the listing is for. ")
@@ -39,6 +43,7 @@ def get_add_parser() -> argshell.ArgShellParser:
 
 
 def get_add_board_parser() -> argshell.ArgShellParser:
+    """Returns a `add_board` parser."""
     parser = argshell.ArgShellParser()
     parser.add_argument("url", type=str, help=" Job board url.3 ")
     parser.add_argument("company", type=str, help=" Company name. ")
@@ -53,7 +58,7 @@ def get_add_board_parser() -> argshell.ArgShellParser:
 
 
 def get_toggle_scraper_parser() -> argshell.ArgShellParser:
-    """Returns a toggle_scraper parser."""
+    """Returns a `toggle_scraper` parser."""
     parser = argshell.ArgShellParser(
         "toggle_scraper", description="Activate or deactivate scrapers/boards."
     )
@@ -71,6 +76,13 @@ def get_toggle_scraper_parser() -> argshell.ArgShellParser:
         default=[],
         help=" A list of board ids or company stems to toggle.",
     )
+    return parser
+
+
+def get_crawl_company_parser() -> argshell.ArgShellParser:
+    """Returns a `crawl_company` parser."""
+    parser = company_crawler.get_company_crawler_parser()
+    parser.add_argument("homepage", type=str, help=""" The url to start crawling at.""")
     return parser
 
 
@@ -96,7 +108,7 @@ class JobShell(DBShell):
     ]
     common_commands = sorted(set(common_commands))
 
-    @argshell.with_parser(get_add_parser)
+    @argshell.with_parser(get_add_listing_parser)
     def do_add_listing(self, args: argshell.Namespace):
         """Add a job listing to the database."""
         with JobBased(self.dbpath) as db:
@@ -144,6 +156,14 @@ class JobShell(DBShell):
                 self.display(data)
             else:
                 print(f"Could not find records matching '%{company}%'.")
+
+    @argshell.with_parser(get_crawl_company_parser)
+    def do_crawl_company(self, args: argshell.Namespace):
+        """Crawl company homepage for job board urls."""
+        crawler = company_crawler.Crawler(
+            args.homepage, args.max_depth, args.max_time, args.max_hits
+        )
+        crawler.crawl()
 
     def do_dump(self, _: str):
         """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
@@ -275,12 +295,6 @@ class JobShell(DBShell):
             print(*urls, sep="\n")
         else:
             print(urls)
-
-    def preloop(self):
-        """Set any applications older than 30 days to rejected."""
-        super().preloop()
-        with JobBased(self.dbpath) as db:
-            db.mark_applications_older_than_30days_as_rejected()
 
 
 if __name__ == "__main__":
