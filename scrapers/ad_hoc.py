@@ -1,7 +1,7 @@
 import time
 
 from bs4 import Tag
-from gruel.gruel import ParsableItem
+from gruel import ParsableItem
 from pathier import Pathier
 from seleniumuser import User
 
