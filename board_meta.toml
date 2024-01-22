@@ -18,6 +18,7 @@ boards = [
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
 "boards.greenhouse.io" = "greenhouse"
+"boards.eu.greenhouse.io" = "greenhouse"
 "?gh_jid=" = "greenhouse"
 "jobs.lever.co" = "lever"
 "bamboohr" = "bamboo"
