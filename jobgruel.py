@@ -12,7 +12,6 @@ from seleniumuser import User
 import models
 from jobbased import JobBased
 
-
 """ Subclasses of `Gruel` scraper engine.
 
 `JobGruel` is the primary subclass.
@@ -24,11 +23,16 @@ class JobGruel(Gruel):
     """Primary job board scraping engine."""
 
     def __init__(
-        self, existing_listings: list[models.Listing] | None = None, *args, **kwargs
+        self,
+        existing_listings: list[models.Listing] | None = None,
+        company_stem: str | None = None,  # don't need this if `board` is provided
+        board: models.Board | None = None,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(company_stem)
+        # TODO if both `board` and `existing_listings` are provided, don't open connection to database
+        # Probably should put in separate function
         with JobBased() as db:
-            self.board = db.get_board(self.name)
+            self.board = board or db.get_board(self.name)
             # Providing `existing_listings` in the constructor
             # avoids every scraper needing to access the database
             if existing_listings:
