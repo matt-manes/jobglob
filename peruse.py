@@ -1,3 +1,4 @@
+import argparse
 import webbrowser
 from dataclasses import asdict
 
@@ -10,8 +11,6 @@ import models
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
-
-import argparse
 
 """ 
 Go through unseen job listings and mark them as seen after choosing to ignore them or add them to your pinned listings.
