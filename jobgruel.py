@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
+import helpers
 from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
 from seleniumuser import User
@@ -42,7 +43,9 @@ class JobGruel(Gruel):
         company_stem: str | None = None,  # don't need this if `board` is provided
         board: models.Board | None = None,
     ):
-        super().__init__(company_stem)
+        super().__init__(
+            helpers.name_to_stem(board.company.name) if board else company_stem
+        )
         # TODO if both `board` and `existing_listings` are provided, don't open connection to database
         # Probably should put in separate function
         with JobBased() as db:
