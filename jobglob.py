@@ -14,16 +14,19 @@ import jobgruel
 import models
 from board_detector import BoardDetector
 from jobbased import JobBased
+from config import Config
 
 root = Pathier(__file__).parent
+config = Config.load()
 
 
 class ScraperLoader:
     def __init__(self):
+        logs_dir = config.logs_dir
         self.board_detector = BoardDetector()
-        self.scrapers_path = root / "scrapers"
-        self.finder = GruelFinder(log_dir=root / "logs")
-        self.logger = loggi.getLogger("scrapeloader", root / "logs")
+        self.scrapers_path = config.scrapers_dir
+        self.finder = GruelFinder(log_dir=logs_dir)
+        self.logger = loggi.getLogger("scrapeloader", logs_dir)
 
     def log_class_loaded(self, class_: Type[Any], from_: Any):
         """Log "Loaded `{class_}` from `{from_}`." """

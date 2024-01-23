@@ -2,13 +2,15 @@ import sys
 
 from databased import Databased
 from pathier import Pathier
+from config import Config
 
 root = Pathier(__file__).parent
+config = Config.load()
 
 
-def init(db_name: str, silent_overwrite: bool = False):
+def init(silent_overwrite: bool = False):
     """Initialize and build database, populating with data from `sql/jobs_data.sql` if present."""
-    db_path = root / db_name
+    db_path = config.db_path
     if silent_overwrite:
         db_path.delete()
     if db_path.exists():
@@ -23,12 +25,12 @@ def init(db_name: str, silent_overwrite: bool = False):
             print(f"Deleting {db_path}")
             db_path.delete()
     print("Building database.")
-    with Databased(db_path) as db:
-        views = (root / "sql").glob("*_view.sql")
-        db.execute_script(root / "sql" / "schema.sql")
+    with Databased(db_path, log_dir=config.logs_dir) as db:
+        views = config.sql_dir.glob("*_view.sql")
+        db.execute_script(config.sql_dir / "schema.sql")
         for view in views:
             db.execute_script(view)
-        data_path = root / "sql" / "jobs_data.sql"
+        data_path = config.sql_dir / "jobs_data.sql"
         if data_path.exists():
             print("Inserting data.")
             db.execute_script(data_path)
@@ -36,8 +38,8 @@ def init(db_name: str, silent_overwrite: bool = False):
 
 def main():
     """ """
-    print(f"Creating database...")
-    init("jobs.db")
+    print(f"Creating database `{config.db_path.stem}`...")
+    init()
     input("Done, press enter to close.")
 
 

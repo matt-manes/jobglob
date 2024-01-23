@@ -8,11 +8,12 @@ from griddle import griddy
 from pathier import Pathier
 
 import models
+from config import Config
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
-
-logger = loggi.getLogger(Pathier(__file__).stem)
+config = Config.load()
+logger = loggi.getLogger(Pathier(__file__).stem, config.logs_dir)
 
 
 def is_alive(listing: models.Listing) -> bool | None:

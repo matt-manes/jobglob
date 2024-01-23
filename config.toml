@@ -1,0 +1,10 @@
+logs_dir = "logs"
+scrapers_dir = "scrapers"
+board_meta_path = "board_meta.toml"
+careers_page_stubs_path = "careers_page_stubs.txt"
+db_path = "jobs.db"
+sql_dir = "sql"
+templates_dir = "templates"
+
+[jobglob_daemon]
+glob_interval = 3600

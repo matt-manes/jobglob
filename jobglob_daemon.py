@@ -7,7 +7,9 @@ from pathier import Pathier
 from printbuddies import print_in_place
 
 import jobglob
+from config import Config
 
+config = Config.load()
 root = Pathier(__file__).parent
 
 
@@ -32,7 +34,9 @@ class JobGlobDaemon:
     @property
     def glob_interval(self) -> int:
         """Number of seconds between globbings."""
-        return 3600
+        # loading config instead of reading from the global `config`
+        # so glob interval can be updated without stopping and starting the daemon
+        return Config.load().jobglob_daemon.glob_interval
 
     @property
     def is_business_hours(self) -> bool:
@@ -73,7 +77,7 @@ class JobGlobDaemon:
     @property
     def logpath(self) -> Pathier:
         """Log path for `jobglob.log`."""
-        return root / "jobglob.log"
+        return config.logs_dir / "jobglob.log"
 
     @property
     def seconds_since_last_glob(self) -> float:
