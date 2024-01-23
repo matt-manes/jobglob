@@ -4,6 +4,7 @@ from noiftimer import time_it
 from pathier import Pathier
 
 from jobbased import JobBased
+from config import Config
 
 root = Pathier(__file__).parent
 
@@ -12,7 +13,8 @@ root = Pathier(__file__).parent
 def dump():
     """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
     tables = ["companies", "boards", "listings"]
-    dump_path = root / "sql" / "jobs_data.sql"
+    config = Config.load()
+    dump_path = config.sql_dir / "jobs_data.sql"
 
     def _dump():
         with JobBased() as db:

@@ -4,15 +4,17 @@ from databased import Databased
 from pathier import Pathier, Pathish
 
 import models
+from config import Config
 
 root = Pathier(__file__).parent
+config = Config.load()
 
 
 class JobBased(Databased):
     """Database interface for `jobs.db`."""
 
-    def __init__(self, dbpath: Pathish = "jobs.db", *args, **kwargs):
-        super().__init__(dbpath, *args, **kwargs)
+    def __init__(self, dbpath: Pathish = config.db_path, *args, **kwargs):
+        super().__init__(dbpath, log_dir=config.logs_dir, *args, **kwargs)
 
     def get_applications(self) -> list[models.Application]:
         """Returns a list of `models.Application` objects from the database."""

@@ -13,6 +13,8 @@ from printbuddies import ProgBar, Spinner
 from scrapetools import LinkScraper
 from younotyou import Matcher, younotyou
 
+from config import Config
+
 warnings.filterwarnings("ignore")
 
 root = Pathier(__file__).parent
@@ -39,7 +41,8 @@ class Crawler(Gruel):
 
         `max_hits`: Stop crawling after this many hits, if given.
         """
-        super().__init__(log_dir=root)
+        config = Config.load()
+        super().__init__(log_dir=config.logs_dir)
         self.scraped_urls: deque[str] = deque()
         self.new_urls: deque[str] = deque([homepage])
         self.board_urls: deque[str] = deque()
@@ -52,10 +55,10 @@ class Crawler(Gruel):
         if self.max_time:
             self.max_time *= 60
         self.board_stubs = [
-            f"*{board}*" for board in (root / "board_meta.toml").loads()["url_chunks"]
+            f"*{board}*" for board in config.board_meta_path.loads()["url_chunks"]
         ]
         self.career_page_stubs = Matcher(
-            [f"*{stub}*" for stub in (root / "careers_page_stubs.txt").split()],
+            [f"*{stub}*" for stub in config.careers_page_stubs_path.split()],
             case_sensitive=False,
         )
 

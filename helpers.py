@@ -7,13 +7,15 @@ import loggi.models
 from pathier import Pathier
 
 import board_detector
+from config import Config
 
 root = Pathier(__file__).parent
+config = Config.load()
 
 
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
-    """Create scraper file from template in `./scrapers` given a `url` and `company`."""
-    templates_path = root / "templates"
+    """Create scraper file from template and write to scrapers directory given a `url` and `company`."""
+    templates_path = config.templates_dir
     detector = board_detector.BoardDetector()
     if not board_type:
         board_type = detector.get_board_type_from_text(url)
@@ -28,7 +30,7 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
             .replace("JobGruel", f"{board_type.capitalize()}Gruel")
         )
     stem = company.lower().replace(" ", "_")
-    py_path = root / "scrapers" / f"{stem}.py"
+    py_path = config.scrapers_dir / f"{stem}.py"
     py_path.write_text(template)
     if not board_type:
         os.system(f"code -r {py_path}")
@@ -37,12 +39,12 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
 def load_log(company: str) -> loggi.models.Log:
     """Returns a `loggi.models.Log` object for the scraper associated with `company`."""
     stem = company.lower().replace(" ", "_")
-    return loggi.load_log(root / "gruel_logs" / f"{stem}.log")
+    return loggi.load_log(config.scraper_logs_dir / f"{stem}.log")
 
 
 def get_all_logs() -> Generator[loggi.models.Log, None, None]:
     """Generator yielding `loggi.models.Log` objects from `./gruel_logs`."""
-    for file in (root / "gruel_logs").glob("*.log"):
+    for file in config.scraper_logs_dir.glob("*.log"):
         yield loggi.load_log(file)
 
 
@@ -102,5 +104,5 @@ def stem_to_name(stem: str) -> str:
 
 def create_peruse_filters_from_template():
     """Create a blank `peruse_filters.toml` file from the template."""
-    template_path = root / "templates" / "peruse_filters_template.toml"
+    template_path = config.templates_dir / "peruse_filters_template.toml"
     template_path.copy(root / "peruse_filters.toml")

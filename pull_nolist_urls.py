@@ -1,15 +1,17 @@
 import loggi
 from pathier import Pathier
 
+from config import Config
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
+config = Config.load()
 
 
 def main():
     """Print scrapers that didn't find any listings on their last run."""
     event = (
-        loggi.load_log(root / "jobglob.log")
+        loggi.load_log(config.logs_dir / "jobglob.log")
         .filter_messages(["*no_listings*"])
         .events[-1]
     )

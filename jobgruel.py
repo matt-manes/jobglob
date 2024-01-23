@@ -5,14 +5,19 @@ from datetime import datetime
 from typing import Any
 
 import requests
-import helpers
 from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
+from pathier import Pathier, Pathish
 from seleniumuser import User
 
+import helpers
 import models
 from jobbased import JobBased
 
+root = Pathier(__file__).parent
+from config import Config
+
+config = Config.load()
 """ Subclasses of `Gruel` scraper engine.
 
 `JobGruel` is the primary subclass.
@@ -44,7 +49,8 @@ class JobGruel(Gruel):
         board: models.Board | None = None,
     ):
         super().__init__(
-            helpers.name_to_stem(board.company.name) if board else company_stem
+            helpers.name_to_stem(board.company.name) if board else company_stem,
+            log_dir=config.scraper_logs_dir,
         )
         # TODO if both `board` and `existing_listings` are provided, don't open connection to database
         # Probably should put in separate function

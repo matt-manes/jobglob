@@ -13,6 +13,7 @@ import helpers
 import jobglob
 import models
 import peruse
+from config import Config
 from jobbased import JobBased
 
 root = Pathier(__file__).parent
@@ -107,6 +108,7 @@ class JobShell(DBShell):
         "apps",
     ]
     common_commands = sorted(set(common_commands))
+    log_dir = Config.load().logs_dir
 
     @argshell.with_parser(get_add_listing_parser)
     def do_add_listing(self, args: argshell.Namespace):
@@ -280,12 +282,13 @@ class JobShell(DBShell):
 
     def do_trouble_shoot(self, file_stem: str):
         """Show scraper entry and open {file_stem}.py and {file_stem}.log."""
+        config = Config.load()
         self.do_open(file_stem)
         company = file_stem.replace("_", " ")
         with JobBased(self.dbpath) as db:
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
-        os.system(f"code scrapers/{file_stem}.py -r")
-        os.system(f"code gruel_logs/{file_stem}.log -r")
+        os.system(f"code {config.scrapers_dir}/{file_stem}.py -r")
+        os.system(f"code {config.scraper_logs_dir}/{file_stem}.log -r")
 
     def do_try_boards(self, company: str):
         """Just try all template urls and see what sticks given a company name."""
