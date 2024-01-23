@@ -1,7 +1,6 @@
 import random
 from collections import deque
 from datetime import datetime
-from types import ModuleType
 from typing import Any, Type
 
 import loggi
@@ -157,28 +156,30 @@ class JobGlob(Brewer):
     def scrape(self):
         with JobBased() as db:
             listings = db.get_listings()
-        execute = lambda scraper: scraper(listings).scrape()
+
+        def execute(scraper, kwargs):
+            scraper(listings, **kwargs).scrape()
+
         pool = quickpool.ThreadPool(
-            [execute] * len(self.scrapers), [(scraper,) for scraper in self.scrapers]
+            [execute] * len(self.scrapers),
+            [
+                (scraper, kwargs)
+                for scraper, kwargs in zip(self.scrapers, self.scraper_kwargs)
+            ],
         )
         pool.execute()
 
 
-def get_inactive_scrapers() -> list[str]:
-    """Return a list of scrapers marked `inactive` in the database."""
-    with JobBased() as db:
-        boards = db.get_inactive_boards()
-    return [helpers.name_to_stem(board.company.name) for board in boards]
-
-
 def main():
-    finder = GruelFinder(
-        ["JobScraper"],
-        ["*template.py"] + [f"*{name}.py" for name in get_inactive_scrapers()],
-        root / "scrapers",
-    )
-    scrapers = finder.find()
-    jobglob = JobGlob(scrapers)
+    loader = ScraperLoader()
+    scrapers = loader.load_active_scrapers()
+    classes = deque()
+    kwargs = deque()
+    for scraper in scrapers:
+        board, class_ = scraper
+        classes.append(class_)
+        kwargs.append({"board": board})
+    jobglob = JobGlob(classes, scraper_kwargs=kwargs, log_dir=root / "logs")
     jobglob.brew()
 
 
