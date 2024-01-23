@@ -197,7 +197,6 @@ class Crawler(Gruel):
         else:
             self.logger.logprint("No boards found.")
         super().postscrape_chores()
-        print(self._scrape_page.cache_info())
 
     def _shutdown(self):
         """Attempt to cancel remaining futures and wait for running futures to finish."""
