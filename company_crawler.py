@@ -123,10 +123,10 @@ class Crawler(Gruel):
         """Make certain substring swaps in `urls`.
 
         * `/js?` -> `?` (greenhouse)
-        * `bamboohr.com/js/embed.js` -> `bamboo.com/careers`"""
+        * `bamboohr.com/js/embed.js` -> `bamboohr.com/careers`"""
         swaps = [
             ("/js?", "?"),
-            ("bamboohr.com/js/embed.js", "bamboo.com/careers"),
+            ("bamboohr.com/js/embed.js", "bamboohr.com/careers"),
         ]
         for swap in swaps:
             urls = [url.replace(swap[0], swap[1]) for url in urls]
