@@ -406,23 +406,25 @@ e.g.
 jobs.db>add_scraper https://globalenergymonitor.bamboohr.com/careers "Global Energy Monitor"
 </pre>
 
-would create the necessary database entries and files for the scraper.  
+would create the necessary database entries and file for the scraper if necessary.  
+
 Generally, no additional code needs to be written for a new scraper if it uses one of the supported 3rd party job boards.  
-The current list of supported job boards (`$company` is a placeholder):
-- https://boards.greenhouse.io/$company
-- https://boards.greenhouse.io/embed/job_board?for=$company
-- https://$company.applytojob.com
-- https://jobs.ashbyhq.com/$company
-- https://$company.bamboohr.com/careers
-- https://$company.easyapply.co
-- https://jobs.jobvite.com/$company/jobs
-- https://jobs.lever.co/$company
-- https://$company.recruitee.com
-- https://careers.smartrecruiters.com/$company
-- https://apply.workable.com/$company
-- https://$company.breezy.hr
-- https://$company.wd1.myworkdayjobs.com
-- https://$company.teamtailor.com/jobs
+The current list of supported job boards:
+- Greenhouse
+- ApplyToJob
+- Ashby
+- BambooHR
+- EasyApply
+- Jobvite
+- Lever
+- Recruitee
+- SmartRecruiters
+- Workable
+- BreezyHR
+- Workday
+- TeamTailor
+- Paycom
+- Paylocity
 
 Scrapers for job boards not in this list will have a generated file at `./scrapers/{company}.py` that looks like:
 <pre>
@@ -474,4 +476,5 @@ if __name__ == "__main__":
 </pre>
 
 You will need to implement the `get_parsable_items` and `parse_item` methods.  
-Implementation examples can be found in the `jobgruel.py` file.
+Implementation examples can be found in the `jobgruel.py` file.  
+The scraper can be tested by directly executing the file or by using the `glob` command in `jobshell`.
