@@ -23,6 +23,7 @@ boards = [
 "jobs.lever.co" = "lever"
 "bamboohr" = "bamboo"
 "jobs.ashbyhq" = "ashby"
+"?ashby_jid" = "ashby"
 "apply.workable" = "workable"
 "easyapply.co" = "easyapply"
 "jobs.jobvite" = "jobvite"
