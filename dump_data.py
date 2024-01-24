@@ -1,12 +1,35 @@
+import re
+
 import quickpool
 from gitbetter import Git
 from noiftimer import time_it
-from pathier import Pathier
+from pathier import Pathier, Pathish
 
-from jobbased import JobBased
 from config import Config
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
+readme_path = root / "README.md"
+
+
+def update_readme() -> bool:
+    """Update the current board count in `README.md` if different.
+
+    Returns whether the count was updated or not."""
+    with JobBased() as db:
+        num_boards = db.count("scrapers", where="active = 1")
+    readme = readme_path.read_text()
+    current_boards = int(re.findall(r"\*Current board count\*: ([0-9]+)", readme)[0])
+    if num_boards != current_boards:
+        print(f"Updating board count in readme from {current_boards} to {num_boards}.")
+        readme = re.sub(
+            r"\*Current board count\*: [0-9]+",
+            f"*Current board count*: {num_boards}",
+            readme,
+        )
+        readme_path.write_text(readme)
+        return True
+    return False
 
 
 @time_it()
@@ -21,8 +44,13 @@ def dump():
             db.dump_data(dump_path, tables)
 
     quickpool.update_and_wait(_dump)
+    readme_updated = update_readme()
+
     git = Git()
-    git.commit_files([dump_path], "chore: update data")
+    files: list[Pathish] = [dump_path]
+    if readme_updated:
+        files.append(readme_path)
+    git.commit_files(files, "chore: update data")
 
 
 if __name__ == "__main__":
