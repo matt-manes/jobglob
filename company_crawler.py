@@ -311,8 +311,10 @@ def main(args: argshell.Namespace | None = None):
         if crawler.board_urls or crawler.urls_with_stubs:
             data = save_path.loads()
             if crawler.board_urls:
+                data.setdefault(line, {})
                 data[line]["board_urls"] = list(set(crawler.board_urls))
             elif crawler.urls_with_stubs:
+                data.setdefault(line, {})
                 data[line]["urls_with_stubs"] = crawler.urls_with_stubs
             save_path.dumps(data, indent=2, default=str)
 
