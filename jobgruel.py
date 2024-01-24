@@ -14,8 +14,9 @@ import helpers
 import models
 from jobbased import JobBased
 
-root = Pathier(__file__).parent
 from config import Config
+
+root = Pathier(__file__).parent
 
 config = Config.load()
 """ Subclasses of `Gruel` scraper engine.
@@ -52,23 +53,19 @@ class JobGruel(Gruel):
             helpers.name_to_stem(board.company.name) if board else company_stem,
             log_dir=config.scraper_logs_dir,
         )
-        # TODO if both `board` and `existing_listings` are provided, don't open connection to database
-        # Probably should put in separate function
-        with JobBased() as db:
-            self.board = board or db.get_board(self.name)
-            # Providing `existing_listings` in the constructor
-            # avoids every scraper needing to access the database
-            if existing_listings:
-                company_id = self.board.company.id_
-                listings = [
-                    listing
-                    for listing in existing_listings
-                    if listing.company.id_ == company_id
-                ]
-            else:
-                listings = db._get_listings(
-                    f"listings.company_id = {self.board.company.id_}"
-                )
+        # database connection only gets opened if `get_board` or `_get_listings` is called
+        db = JobBased(commit_on_close=False)
+        self.board = board or db.get_board(self.name)
+        listings = (
+            [
+                listing
+                for listing in existing_listings
+                if listing.company.id_ == self.board.company.id_
+            ]
+            if existing_listings
+            else db._get_listings(f"listings.company_id = {self.board.company.id_}")
+        )
+        db.close()
         self.existing_listing_urls = [listing.url for listing in listings] + [
             listing.scraped_url for listing in listings if listing.scraped_url
         ]
