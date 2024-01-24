@@ -94,6 +94,7 @@ class JobShell(DBShell):
     common_commands = [
         "schema",
         "jobglob",
+        "glob",
         "mark_applied",
         "quit",
         "mark_dead",
@@ -172,35 +173,28 @@ class JobShell(DBShell):
         print("Creating dump file...")
         dump_data.dump()
 
-    def do_find_boards(self, url: str):
-        """Try to detect job board urls from a company website."""
-        detector = board_detector.BoardDetector()
-        boards = []
-        boards = detector.scrape_page_for_boards(url)
-        if not boards:
-            careers_urls = detector.scrape_for_careers_page(url)
-            for url in careers_urls:
-                boards.extend(detector.scrape_page_for_boards(url))
-        if not boards:
-            print("Could not find any job boards.")
-        else:
-            print(f"Found {len(boards)} possible board urls:")
-            print(*boards, sep="\n")
-
-    def do_find_careers_page(self, base_url: str):
-        """Try to find the careers page given a company's base url."""
-        detector = board_detector.BoardDetector()
-        urls = detector.get_careers_page_by_brute_force(base_url)
-        if urls:
-            print(*urls, sep="\n")
-        else:
-            print("Valid urls not found.")
-
     def do_generate_peruse_filters_file(self, _: str):
         """Generate a file named `peruse_filters.toml` that is empty besides categories.
 
         Each category should be filled with a list of strings."""
         helpers.create_peruse_filters_from_template()
+
+    def do_glob(self, company: str):
+        """Run the scraper for the given company."""
+        stem = helpers.name_to_stem(company)
+        with JobBased() as db:
+            board = db.get_board(stem)
+        class_ = jobglob.ScraperLoader().get_scraper_class(board)
+        if not class_:
+            print(
+                f"No scraper class could be found for {company}"
+                + (f"({stem})" if stem != company else "")
+            )
+        else:
+            start = datetime.now() - timedelta(seconds=2)
+            scraper = class_(board=board)
+            scraper.scrape()
+            print(helpers.load_log(scraper.board.company.name).filter_dates(start))
 
     def do_help(self, cmd: str):
         """Display help messages."""
@@ -263,23 +257,6 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             for id_ in listing_ids.split():
                 db.reset_alive_status(int(id_))
-
-    def do_run_scraper(self, company: str):
-        """Run the scraper for the given company."""
-        stem = helpers.name_to_stem(company)
-        with JobBased() as db:
-            board = db.get_board(stem)
-        class_ = jobglob.ScraperLoader().get_scraper_class(board)
-        if not class_:
-            print(
-                f"No scraper class could be found for {company}"
-                + (f"({stem})" if stem != company else "")
-            )
-        else:
-            start = datetime.now() - timedelta(seconds=2)
-            scraper = class_(board=board)
-            scraper.scrape()
-            print(helpers.load_log(scraper.board.company.name).filter_dates(start))
 
     @argshell.with_parser(get_toggle_scraper_parser)
     def do_toggle_scraper(self, args: argshell.Namespace):
