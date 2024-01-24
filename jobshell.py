@@ -1,11 +1,9 @@
 import os
 import webbrowser
 from datetime import datetime, timedelta
-
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
-
 import board_detector
 import company_crawler
 import dump_data
@@ -83,14 +81,12 @@ def get_toggle_scraper_parser() -> argshell.ArgShellParser:
 def get_crawl_company_parser() -> argshell.ArgShellParser:
     """Returns a `crawl_company` parser."""
     parser = company_crawler.get_company_crawler_parser()
-    parser.add_argument("homepage", type=str, help=""" The url to start crawling at.""")
+    parser.add_argument("homepage", type=str, help=" The url to start crawling at.")
     return parser
 
 
 class JobShell(DBShell):
     _dbpath = Pathier("jobs.db")
-    intro = "Starting job_manager (enter help or ? for command info)..."
-    prompt = "jobshell>"
     common_commands = [
         "schema",
         "jobglob",
@@ -109,7 +105,9 @@ class JobShell(DBShell):
         "apps",
     ]
     common_commands = sorted(set(common_commands))
+    intro = "Starting job_manager (enter help or ? for command info)..."
     log_dir = Config.load().logs_dir
+    prompt = "jobshell>"
 
     @argshell.with_parser(get_add_listing_parser)
     def do_add_listing(self, args: argshell.Namespace):
@@ -141,9 +139,12 @@ class JobShell(DBShell):
                 print("That board already exists.")
             else:
                 db.add_board(args.url, args.company)
-                helpers.create_scraper_from_template(
-                    args.url, args.company, args.board_type
-                )
+                if not board_detector.BoardDetector().get_board_type_from_text(
+                    args.url
+                ):
+                    helpers.create_scraper_from_template(
+                        args.url, args.company, args.board_type
+                    )
 
     def do_apps(self, _: str):
         """Display submitted applications data."""
@@ -167,6 +168,19 @@ class JobShell(DBShell):
             args.homepage, args.max_depth, args.max_time, args.max_hits, args.debug
         )
         crawler.crawl()
+
+    def do_create_scraper_file(self, company: str):
+        """Create a scraper file from a template for the given company name or stem.
+
+        Use when a scraper exists in the database, but needs custom functionality."""
+        stem = helpers.name_to_stem(company)
+        with JobBased(self.dbpath) as db:
+            try:
+                board = db.get_board(stem)
+            except ValueError:
+                print(f"Could not find a board for '{company}' in the database.")
+            else:
+                helpers.create_scraper_from_template(board.url, board.company.name)
 
     def do_dump(self, _: str):
         """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
