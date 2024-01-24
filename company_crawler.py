@@ -306,9 +306,7 @@ def main(args: argshell.Namespace | None = None):
     for i, line in enumerate(companies, 1):
         print(f"Crawling company {i}/{num_crawls}")
         url, company = line.split(maxsplit=1)
-        crawler = Crawler(
-            url, args.max_depths, args.max_time, args.max_hits, args.debug
-        )
+        crawler = Crawler(url, args.max_depth, args.max_time, args.max_hits, args.debug)
         crawler.crawl()
         if crawler.board_urls or crawler.urls_with_stubs:
             data = save_path.loads()
