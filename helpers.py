@@ -13,6 +13,16 @@ root = Pathier(__file__).parent
 config = Config.load()
 
 
+def name_to_stem(name: str) -> str:
+    """Convert to lowercase and replace spaces with underscores."""
+    return name.lower().replace(" ", "_")
+
+
+def stem_to_name(stem: str) -> str:
+    """Replace underscores with spaces and capitalize first letters."""
+    return " ".join(word.capitalize() for word in stem.split("_"))
+
+
 def create_scraper_from_template(url: str, company: str, board_type: str | None = None):
     """Create scraper file from template and write to scrapers directory given a `url` and `company`."""
     templates_path = config.templates_dir
@@ -29,7 +39,7 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
             .read_text()
             .replace("JobGruel", f"{board_type.capitalize()}Gruel")
         )
-    stem = company.lower().replace(" ", "_")
+    stem = name_to_stem(company)
     py_path = config.scrapers_dir / f"{stem}.py"
     py_path.write_text(template)
     if not board_type:
@@ -90,16 +100,6 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
         elif error_exceptions.events:
             scrapers["misc_fails"].append(log.path.stem)
     return scrapers
-
-
-def name_to_stem(name: str) -> str:
-    """Convert to lowercase and replace spaces with underscores."""
-    return name.lower().replace(" ", "_")
-
-
-def stem_to_name(stem: str) -> str:
-    """Replace underscores with spaces and capitalize first letters."""
-    return " ".join(word.capitalize() for word in stem.split("_"))
 
 
 def create_peruse_filters_from_template():
