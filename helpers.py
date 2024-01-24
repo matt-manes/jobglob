@@ -41,6 +41,8 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
         )
     stem = name_to_stem(company)
     py_path = config.scrapers_dir / f"{stem}.py"
+    if py_path.exists():
+        raise FileExistsError(f"The file '{py_path}' already exists.")
     py_path.write_text(template)
     if not board_type:
         os.system(f"code -r {py_path}")
