@@ -74,6 +74,16 @@ class ScraperLoader:
             self.log_class_loaded(class_, url)
         return class_
 
+    def get_scraper_class(self, board: models.Board) -> Type[jobgruel.JobGruel] | None:
+        """Given `board`, return its `JobGruel` subclass."""
+        stem = helpers.name_to_stem(board.company.name)
+        file = self.scrapers_path / f"{stem}.py"
+        return (
+            self.get_class_from_file(file)
+            if file.exists()
+            else self.get_class_from_url(board.url)
+        )  # type: ignore
+
     def load_active_scrapers(
         self,
     ) -> deque[tuple[models.Board, Type[jobgruel.JobGruel]]]:
@@ -86,13 +96,7 @@ class ScraperLoader:
         random.shuffle(boards)
         scrapers = deque()
         for board in boards:
-            stem = helpers.name_to_stem(board.company.name)
-            file = self.scrapers_path / f"{stem}.py"
-            scraper_class = (
-                self.get_class_from_file(file)
-                if file.exists()
-                else self.get_class_from_url(board.url)
-            )
+            scraper_class = self.get_scraper_class(board)
             if scraper_class:
                 scrapers.append((board, scraper_class))
             else:
