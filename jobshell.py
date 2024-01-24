@@ -163,7 +163,7 @@ class JobShell(DBShell):
     def do_crawl_company(self, args: argshell.Namespace):
         """Crawl company homepage for job board urls."""
         crawler = company_crawler.Crawler(
-            args.homepage, args.max_depth, args.max_time, args.max_hits
+            args.homepage, args.max_depth, args.max_time, args.max_hits, args.debug
         )
         crawler.crawl()
 

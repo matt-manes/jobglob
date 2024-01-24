@@ -29,6 +29,7 @@ class Crawler(Gruel):
         max_depth: int | None = None,
         max_time: float | None = None,
         max_hits: int | None = None,
+        debug: bool = False,
     ):
         """
         #### :params:
@@ -46,6 +47,9 @@ class Crawler(Gruel):
         self.scraped_urls: deque[str] = deque()
         self.new_urls: deque[str] = deque([homepage])
         self.board_urls: deque[str] = deque()
+        # Help detect embedded boards by searching response text for stubs.
+        # Keys are urls and values are a set of stubs found on that url.
+        self.urls_with_stubs: dict[str, set] = {}
         self.max_threads: int = 3
         self.workers: list[Future] = []
         self.max_depth: int | None = max_depth
@@ -61,11 +65,8 @@ class Crawler(Gruel):
             [f"*{stub}*" for stub in config.careers_page_stubs_path.split()],
             case_sensitive=False,
         )
-
-    @property
-    def board_found(self) -> bool:
-        """Returns `True` if any potential board urls have been found."""
-        return len(self.board_urls) > 0
+        if debug:
+            self.logger.setLevel("DEBUG")
 
     def _get_finished_workers(self) -> list[Future]:
         """Returns a list of finished futures."""
@@ -143,6 +144,14 @@ class Crawler(Gruel):
             self.board_stubs,
             case_sensitive=False,
         )
+        if not board_urls:
+            for stub in self.board_stubs:
+                stub = stub.strip("*")
+                self.logger.debug(f"Looking for stub `{stub}`")
+                if stub in response.text:
+                    self.urls_with_stubs.setdefault(response.url, set())
+                    self.urls_with_stubs[response.url].add(stub)
+                    self.logger.info(f"Found {stub} on {response.url}.")
         return same_site_urls, board_urls
 
     @lru_cache(None)
@@ -162,7 +171,9 @@ class Crawler(Gruel):
                 if not site_url.startswith("http:")
                 and site_url not in [self.new_urls + self.scraped_urls]
             ]
-            self.logger.debug(f"Found {len(new_urls)} new urls on {url}")
+            self.logger.debug(
+                f"Found {len(new_urls)} new urls on {url}:\n" + "\n".join(new_urls)
+            )
             self._add_new_urls(new_urls)
 
     def _limits_exceeded(self) -> bool:
@@ -195,10 +206,19 @@ class Crawler(Gruel):
 
     def postscrape_chores(self):
         self.logger.logprint(f"Crawl completed in {self.timer.elapsed_str}.")
-        if self.board_found:
+        if self.board_urls:
             self.logger.logprint(f"Boards found:\n" + "\n".join(set(self.board_urls)))
-        else:
+        elif self.urls_with_stubs:
             self.logger.logprint("No boards found.")
+            self.logger.logprint(
+                f"Found urls with board stubs:\n"
+                + "\n".join(
+                    f"{url} - {', '.join(stubs)}"
+                    for url, stubs in self.urls_with_stubs.items()
+                )
+            )
+        else:
+            self.logger.logprint("No boards or stubs found.")
         super().postscrape_chores()
 
     def _shutdown(self):
@@ -261,6 +281,9 @@ def get_company_crawler_parser() -> argshell.ArgShellParser:
         default=None,
         help=""" The max hits to crawl for.""",
     )
+    parser.add_argument(
+        "--debug", action="store_true", help=""" Set logger to debug."""
+    )
     return parser
 
 
@@ -283,12 +306,17 @@ def main(args: argshell.Namespace | None = None):
     for i, line in enumerate(companies, 1):
         print(f"Crawling company {i}/{num_crawls}")
         url, company = line.split(maxsplit=1)
-        crawler = Crawler(url, args.max_depths, args.max_time, args.max_hits)
+        crawler = Crawler(
+            url, args.max_depths, args.max_time, args.max_hits, args.debug
+        )
         crawler.crawl()
-        if crawler.board_urls:
+        if crawler.board_urls or crawler.urls_with_stubs:
             data = save_path.loads()
-            data[line] = list(set(crawler.board_urls))
-            save_path.dumps(data, indent=2)
+            if crawler.board_urls:
+                data[line]["board_urls"] = list(set(crawler.board_urls))
+            elif crawler.urls_with_stubs:
+                data[line]["urls_with_stubs"] = crawler.urls_with_stubs
+            save_path.dumps(data, indent=2, default=str)
 
 
 if __name__ == "__main__":
