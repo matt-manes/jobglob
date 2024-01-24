@@ -32,6 +32,7 @@ boards = [
 "recruitee" = "recruitee"
 "breezy.hr" = "breezy"
 "myworkdayjobs.com" = "myworkday"
+"myworkdaysite.com" = "myworkday"
 "teamtailor.com" = "teamtailor"
 "paycomonline.net" = "paycom"
 "recruiting.paylocity.com" = "paylocity"
