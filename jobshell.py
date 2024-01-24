@@ -1,6 +1,6 @@
 import os
 import webbrowser
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import argshell
 from databased.dbshell import DBShell
@@ -263,6 +263,23 @@ class JobShell(DBShell):
         with JobBased(self.dbpath) as db:
             for id_ in listing_ids.split():
                 db.reset_alive_status(int(id_))
+
+    def do_run_scraper(self, company: str):
+        """Run the scraper for the given company."""
+        stem = helpers.name_to_stem(company)
+        with JobBased() as db:
+            board = db.get_board(stem)
+        class_ = jobglob.ScraperLoader().get_scraper_class(board)
+        if not class_:
+            print(
+                f"No scraper class could be found for {company}"
+                + (f"({stem})" if stem != company else "")
+            )
+        else:
+            start = datetime.now() - timedelta(seconds=2)
+            scraper = class_(board=board)
+            scraper.scrape()
+            print(helpers.load_log(scraper.board.company.name).filter_dates(start))
 
     @argshell.with_parser(get_toggle_scraper_parser)
     def do_toggle_scraper(self, args: argshell.Namespace):
