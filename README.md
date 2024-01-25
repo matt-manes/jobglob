@@ -422,6 +422,7 @@ The current list of supported job boards:
 - TeamTailor
 - Paycom
 - Paylocity
+- Dover
 
 Scrapers for job boards not in this list will have a generated file at `./scrapers/{company}.py` that looks like:
 <pre>

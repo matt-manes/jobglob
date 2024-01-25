@@ -691,3 +691,34 @@ class PaylocityGruel(JobGruel):
             self.logger.error(str(item))
             self.fail_count += 1
             return None
+
+
+class DoverGruel(JobGruel):
+    """`JobGruel` subclass for Dover job boards."""
+
+    def get_parsable_items(self) -> list[dict]:
+        # https://app.dover.io/{company}/careers/{board_id}
+        board_id = self.board.url[self.board.url.rfind("/") + 1 :]
+        url = f"https://app.dover.io/api/v1/careers-page/{board_id}/jobs"
+        return self.request(url).json()["results"]
+
+    def parse_item(self, item: dict) -> models.Listing | None:
+        try:
+            listing = self.new_listing()
+            listing.position = item["title"]
+            if item["locations"]:
+                listing.location = "\n".join(
+                    location["name"] for location in item["locations"]
+                )
+            anchor = ".io/"
+            company = self.board.url[
+                self.board.url.find(anchor)
+                + len(anchor) : self.board.url.find("/careers/")
+            ]
+            listing.url = f"https://app.dover.io/apply/{company}/{item['id']}"
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
+            self.fail_count += 1
+            return None
