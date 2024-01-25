@@ -167,6 +167,7 @@ class JobGlob(Brewer):
                     }
                 )
         if dead_pinned_listings:
+            print("Dead pinned listings:")
             print(griddy(dead_pinned_listings, "keys"))
 
     def logprint_errors(self):
