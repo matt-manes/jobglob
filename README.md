@@ -9,7 +9,7 @@ JobGlob can
 - Track listings you're interested in as well as listings you've applied to
 
 *Current board count*: 1505  
-*Active listings*: 41232
+*Active listings*: 40975
 
 ## Installation
 
