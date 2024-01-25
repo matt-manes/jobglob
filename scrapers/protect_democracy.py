@@ -2,10 +2,11 @@ from pathier import Pathier
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
-from jobgruel import RecruiteeGruel
-from gruel import ParsableItem
-import models
 from bs4 import Tag
+from gruel import ParsableItem
+
+import models
+from jobgruel import RecruiteeGruel
 
 
 class JobScraper(RecruiteeGruel):

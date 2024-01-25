@@ -10,8 +10,9 @@ class JobScraper(jobgruel.GreenhouseGruel):
 
 
 if __name__ == "__main__":
-    import helpers
     from datetime import datetime, timedelta
+
+    import helpers
 
     start = datetime.now() - timedelta(seconds=2)
     j = JobScraper()

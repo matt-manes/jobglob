@@ -1,12 +1,12 @@
 import random
 from collections import deque
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from typing import Any, Type
-from dataclasses import asdict
 
 import loggi
-from griddle import griddy
 import quickpool
+from griddle import griddy
 from gruel import Brewer, Gruel, GruelFinder
 from noiftimer import Timer
 from pathier import Pathier
@@ -15,8 +15,8 @@ import helpers
 import jobgruel
 import models
 from board_detector import BoardDetector
-from jobbased import JobBased
 from config import Config
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
 config = Config.load()

@@ -12,9 +12,8 @@ from seleniumuser import User
 
 import helpers
 import models
-from jobbased import JobBased
-
 from config import Config
+from jobbased import JobBased
 
 root = Pathier(__file__).parent
 

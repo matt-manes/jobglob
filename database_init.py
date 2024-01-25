@@ -2,6 +2,7 @@ import sys
 
 from databased import Databased
 from pathier import Pathier
+
 from config import Config
 
 root = Pathier(__file__).parent
