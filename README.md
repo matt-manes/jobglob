@@ -85,39 +85,36 @@ jobs.db>help
 
 Common commands (type help <topic>):
 ====================================
-add_scraper  jobglob       mark_rejected  pinned  select
-apps         mark_applied  peruse         quit    toggle_scraper
-backup       mark_dead     pin_listing    schema
+add_scraper  glob          mark_dead      pin_listing  schema
+apps         jobglob       mark_rejected  pinned       select
+backup       mark_applied  peruse         quit         toggle_scraper
 
 
 Documented commands (type help <topic>):
 ========================================
-add_column         generate_peruse_filters_file  scan
-add_listing        help                          schema
-add_scraper        jobglob                       script
-add_table          mark_applied                  select
-apps               mark_dead                     set_connection_timeout
-backup             mark_rejected                 set_detect_types
-company_exists     new_db                        set_enforce_foreign_keys
-count              open                          size
-customize          peruse                        sys
-dbpath             pin_listing                   tables
-delete             pinned                        toggle_scraper
-describe           properties                    trouble_shoot
-drop_column        query                         try_boards
-drop_table         quit                          update
-dump               rename_column                 use
-find_boards        rename_table                  vacuum
-find_careers_page  reset_alive_status            views
-flush_log          restore
+add_column                    glob                schema
+add_listing                   help                script
+add_scraper                   jobglob             select
+add_table                     mark_applied        set_commit_on_close
+apps                          mark_dead           set_connection_timeout
+backup                        mark_rejected       set_detect_types
+company_exists                new_db              set_enforce_foreign_keys
+count                         open                size
+crawl_company                 peruse              sys
+create_scraper_file           pin_listing         tables
+customize                     pinned              toggle_scraper
+dbpath                        properties          trouble_shoot
+delete                        query               try_boards
+describe                      quit                update
+drop_column                   rename_column       use
+drop_table                    rename_table        vacuum
+dump                          reset_alive_status  views
+flush_log                     restore
+generate_peruse_filters_file  scan
 
 Unrecognized commands will be executed as queries.
 Use the `query` command explicitly if you don't want to capitalize your key words.
 All transactions initiated by commands are committed immediately.
-
-jobs.db>help jobglob
-
-Scrape active job boards.
 
 jobs.db>
 </pre>
