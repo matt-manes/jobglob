@@ -295,7 +295,9 @@ class JobShell(DBShell):
         company = file_stem.replace("_", " ")
         with JobBased(self.dbpath) as db:
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
-        os.system(f"code {config.scrapers_dir}/{file_stem}.py -r")
+        scraper_file = config.scrapers_dir / f"{file_stem}.py"
+        if scraper_file.exists():
+            os.system(f"code {scraper_file}.py -r")
         os.system(f"code {config.scraper_logs_dir}/{file_stem}.log -r")
 
     def do_try_boards(self, company: str):
