@@ -66,10 +66,10 @@ class JobGruel(Gruel):
             else db._get_listings(f"listings.company_id = {self.board.company.id_}")
         )
         db.close()
-        self.existing_listing_urls = [listing.url for listing in listings] + [
-            listing.scraped_url for listing in listings if listing.scraped_url
-        ]
+        self.existing_listings = listings
+        self.existing_listing_urls = [listing.url for listing in listings]
         self.already_added_listings = 0
+        self.found_listings: list[models.Listing] = []
 
     def request(
         self, url: str, method: str = "get", headers: dict[str, str] = {}
@@ -95,6 +95,8 @@ class JobGruel(Gruel):
 
     def store_item(self, listing: models.Listing):
         """Add `listing` to the database if it doesn't already exist (based off `listing.url`)."""
+        listing.url = listing.url.strip("/")
+        self.found_listings.append(listing)
         if listing.url not in self.existing_listing_urls:
             with JobBased() as db:
                 listing.date_added = datetime.now()
@@ -108,6 +110,30 @@ class JobGruel(Gruel):
                         self.fail_count += 1
                     else:
                         self.already_added_listings += 1
+
+    def postscrape_chores(self):
+        # Mark listings from the database that aren't in found listings as dead,
+        # but only if there were no parse fails.
+        # Don't want to mark a listing as dead if it potentially failed to parse
+        num_dead = 0
+        if self.found_listings and not self.fail_count:
+            found_urls = [listing.url for listing in self.found_listings]
+            live_listings = [
+                listing for listing in self.existing_listings if listing.alive
+            ]
+            dead_listings = [
+                listing for listing in live_listings if listing.url not in found_urls
+            ]
+            num_dead = len(dead_listings)
+            if dead_listings:
+                with JobBased() as db:
+                    for listing in dead_listings:
+                        db.mark_dead(listing.id_)
+                        self.logger.info(
+                            f"Marking listing with id {listing.id_} as dead. ({listing.position} - {listing.company.name} - {listing.url})"
+                        )
+        self.logger.info(f"Marked {num_dead} listings as dead.")
+        super().postscrape_chores()
 
 
 class GreenhouseGruel(JobGruel):
@@ -129,13 +155,6 @@ class GreenhouseGruel(JobGruel):
                 listing.url = href.replace("http://", "https://", 1)
             else:
                 listing.url = "https://boards.greenhouse.io" + href
-            if (
-                "embed" in self.board.url
-                and listing.url.strip("/") not in self.existing_listing_urls
-            ):
-                # Sometimes these redirect to a different url than what the page says
-                # And they'll be marked dead when the check listings script runs
-                listing.resolve_url()
             span = item.find("span")
             if isinstance(span, Tag):
                 listing.location = span.text

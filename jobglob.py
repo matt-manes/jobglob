@@ -1,9 +1,11 @@
 import random
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Type
+from dataclasses import asdict
 
 import loggi
+from griddle import griddy
 import quickpool
 from gruel import Brewer, Gruel, GruelFinder
 from noiftimer import Timer
@@ -139,6 +141,34 @@ class JobGlob(Brewer):
             print("No new listings found.")
         print()
 
+    def check_dead_listings(self):
+        """Check for listings marked dead between the start of the glob and now."""
+        with JobBased() as db:
+            listings = db.get_dead_listings()
+            pinned_listings = db.get_pinned_dead_listings()
+        # 5s buffer to account for potential time diffs
+        start_time = self.start_time - timedelta(seconds=5)
+        listings = [
+            listing
+            for listing in listings
+            if listing.date_removed and start_time < listing.date_removed
+        ]
+        self.logger.logprint(f"Found {len(listings)} dead listings.")
+        dead_pinned_listings = []
+        listing_ids = [listing.id_ for listing in listings]
+        for listing in pinned_listings:
+            if listing.id_ in listing_ids:
+                dead_pinned_listings.append(
+                    {
+                        "id": listing.id_,
+                        "position": listing.position,
+                        "company": listing.company.name,
+                        "url": listing.url,
+                    }
+                )
+        if dead_pinned_listings:
+            print(griddy(dead_pinned_listings, "keys"))
+
     def logprint_errors(self):
         """Print and log scrapers that had errors grouped by error type."""
         errors = helpers.get_scrapers_with_errors(self.start_time)
@@ -155,6 +185,7 @@ class JobGlob(Brewer):
     def postscrape_chores(self):
         self.print_new_listings()
         self.logprint_errors()
+        self.check_dead_listings()
         super().postscrape_chores()
         print(
             f"Total runtime: {Timer.format_time((datetime.now() - self.start_time).total_seconds())}"

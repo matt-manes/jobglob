@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS
         position TEXT,
         location TEXT DEFAULT "Remote",
         url TEXT UNIQUE,
-        scraped_url TEXT DEFAULT NULL,
         company_id INTEGER REFERENCES companies (company_id) ON DELETE CASCADE ON UPDATE CASCADE,
         alive INTEGER DEFAULT 1,
         date_added TIMESTAMP,
