@@ -1,9 +1,11 @@
 import os
 import webbrowser
 from datetime import datetime, timedelta
+
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
+
 import board_detector
 import company_crawler
 import dump_data
@@ -11,6 +13,7 @@ import helpers
 import jobglob
 import models
 import peruse
+import shellparsers
 from config import Config
 from jobbased import JobBased
 
@@ -20,69 +23,6 @@ root = Pathier(__file__).parent
 def num_days(date: datetime) -> int:
     """Returns the number of days since 'date'."""
     return (datetime.now() - date).days
-
-
-def get_add_listing_parser() -> argshell.ArgShellParser:
-    """Returns an `add_listing` parser."""
-    parser = argshell.ArgShellParser(prog="")
-    parser.add_argument("position", type=str, help=" The job title of the listing. ")
-    parser.add_argument("company", type=str, help=" The company the listing is for. ")
-    parser.add_argument("url", type=str, help=" The url of the listing. ")
-    parser.add_argument(
-        "-l",
-        "--location",
-        type=str,
-        default="Remote",
-        help=' The location of the listing. Defaults to "Remote". ',
-    )
-    parser.add_argument(
-        "-a", "--applied", action="store_true", help=" Mark this listing as 'applied'. "
-    )
-    return parser
-
-
-def get_add_board_parser() -> argshell.ArgShellParser:
-    """Returns a `add_board` parser."""
-    parser = argshell.ArgShellParser()
-    parser.add_argument("url", type=str, help=" Job board url.3 ")
-    parser.add_argument("company", type=str, help=" Company name. ")
-    parser.add_argument(
-        "-b",
-        "--board_type",
-        type=str,
-        default=None,
-        help=" Specify a board type instead of trying to detect one. ",
-    )
-    return parser
-
-
-def get_toggle_scraper_parser() -> argshell.ArgShellParser:
-    """Returns a `toggle_scraper` parser."""
-    parser = argshell.ArgShellParser(
-        "toggle_scraper", description="Activate or deactivate scrapers/boards."
-    )
-    parser.add_argument(
-        "status",
-        choices=["a", "d"],
-        type=str,
-        default=None,
-        help=" Whether the boards should be activated (a) or deactivated (d).",
-    )
-    parser.add_argument(
-        "scrapers",
-        nargs="*",
-        type=str,
-        default=[],
-        help=" A list of board ids or company stems to toggle.",
-    )
-    return parser
-
-
-def get_crawl_company_parser() -> argshell.ArgShellParser:
-    """Returns a `crawl_company` parser."""
-    parser = company_crawler.get_company_crawler_parser()
-    parser.add_argument("homepage", type=str, help=" The url to start crawling at.")
-    return parser
 
 
 class JobShell(DBShell):
@@ -109,7 +49,7 @@ class JobShell(DBShell):
     log_dir = Config.load().logs_dir
     prompt = "jobshell>"
 
-    @argshell.with_parser(get_add_listing_parser)
+    @argshell.with_parser(shellparsers.get_add_listing_parser)
     def do_add_listing(self, args: argshell.Namespace):
         """Add a job listing to the database."""
         with JobBased(self.dbpath) as db:
@@ -130,7 +70,7 @@ class JobShell(DBShell):
                 listing = db._get_listings(f"url = '{args.url}'")[0]
                 db.add_application(listing.id_)
 
-    @argshell.with_parser(get_add_board_parser)
+    @argshell.with_parser(shellparsers.get_add_board_parser)
     def do_add_scraper(self, args: argshell.Namespace):
         """Add a scraper to the list."""
         with JobBased(self.dbpath) as db:
@@ -161,7 +101,7 @@ class JobShell(DBShell):
             else:
                 print(f"Could not find records matching '%{company}%'.")
 
-    @argshell.with_parser(get_crawl_company_parser)
+    @argshell.with_parser(shellparsers.get_crawl_company_parser)
     def do_crawl_company(self, args: argshell.Namespace):
         """Crawl company homepage for job board urls."""
         crawler = company_crawler.Crawler(
@@ -272,7 +212,7 @@ class JobShell(DBShell):
             for id_ in listing_ids.split():
                 db.reset_alive_status(int(id_))
 
-    @argshell.with_parser(get_toggle_scraper_parser)
+    @argshell.with_parser(shellparsers.get_toggle_scraper_parser)
     def do_toggle_scraper(self, args: argshell.Namespace):
         """Activate or deactivate scrapers/boards."""
         active = 1 if args.status == "a" else 0
