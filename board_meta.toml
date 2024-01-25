@@ -14,7 +14,8 @@ boards = [
     "teamtailor",
     "paycom",
     "paylocity",
-    "dover"
+    "dover",
+    "rippling"
 ]
 [url_chunks]
 "boards.greenhouse.io/embed" = "greenhouse_embed"
@@ -38,6 +39,7 @@ boards = [
 "paycomonline.net" = "paycom"
 "recruiting.paylocity.com" = "paylocity"
 "app.dover.io" = "dover"
+"ats.rippling.com" = "rippling"
 
 [url_templates]
 "greenhouse" = "https://boards.greenhouse.io/$company"
@@ -54,3 +56,4 @@ boards = [
 "breezy" = "https://$company.breezy.hr"
 "myworkday" = "https://$company.wd1.myworkdayjobs.com/careers"
 "teamtailor" = "https://$company.teamtailor.com/jobs"
+"rippling" = "https://ats.rippling.com/$company/jobs"

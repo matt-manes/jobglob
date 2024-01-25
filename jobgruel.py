@@ -722,3 +722,35 @@ class DoverGruel(JobGruel):
             self.logger.error(str(item))
             self.fail_count += 1
             return None
+
+
+class RipplingGruel(JobGruel):
+    """`JobGruel` subclass for Rippling job boards."""
+
+    def get_parsable_items(self) -> list[Tag]:
+        soup = self.get_soup(self.board.url)
+        return soup.find_all("div", class_="css-cq05mv")
+
+    def parse_item(self, item: Tag) -> models.Listing | None:
+        try:
+            listing = self.new_listing()
+            a = item.find("a")
+            assert isinstance(a, Tag)
+            listing.position = a.text
+            url = a.get("href")
+            assert isinstance(url, str)
+            listing.url = url
+            div = item.find("div", class_="css-mwvv03")
+            assert isinstance(div, Tag)
+            for subdiv in div.find_all("div"):
+                if subdiv.find("span", attrs={"data-icon": "LOCATION_OUTLINE"}):
+                    p = subdiv.find("p")
+                    assert isinstance(p, Tag)
+                    listing.location = p.text
+                    break
+            return listing
+        except Exception as e:
+            self.logger.exception("Failure to parse item:")
+            self.logger.error(str(item))
+            self.fail_count += 1
+            return None
