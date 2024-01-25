@@ -14,128 +14,7 @@ class JobBased(Databased):
     """Database interface for `jobs.db`."""
 
     def __init__(self, dbpath: Pathish = config.db_path, *args, **kwargs):
-        super().__init__(dbpath, log_dir=config.logs_dir, *args, **kwargs)
-
-    def get_applications(self) -> list[models.Application]:
-        """Returns a list of `models.Application` objects from the database."""
-        applied_listings = self._get_listings(
-            "listing_id IN (SELECT listing_id FROM applications)", "listing_id"
-        )
-        return [
-            models.Application(listing, datum["application_id"], datum["date_applied"])
-            for datum, listing in zip(
-                self.select(
-                    "applications",
-                    ["application_id", "date_applied"],
-                    order_by="listing_id",
-                ),
-                applied_listings,
-            )
-        ]
-
-    def get_boards(self) -> list[models.Board]:
-        """Returns a list of `models.Board` objects from the database."""
-        data = self.select(
-            "boards",
-            [
-                "board_id",
-                "url",
-                "boards.date_added AS b_date",
-                "boards.company_id",
-                "name",
-                "companies.date_added AS c_date",
-                "active",
-            ],
-            ["INNER JOIN companies ON boards.company_id = companies.company_id"],
-        )
-        return [
-            models.Board(
-                models.Company(datum["company_id"], datum["name"], datum["c_date"]),
-                datum["board_id"],
-                datum["url"],
-                datum["active"],
-                datum["b_date"],
-            )
-            for datum in data
-        ]
-
-    def get_companies(self) -> list[models.Company]:
-        """Returns a list of `models.Company` objects from the database."""
-        companies = self.select("companies", ["company_id", "name", "date_added"])
-        return [
-            models.Company(
-                company["company_id"], company["name"], company["date_added"]
-            )
-            for company in companies
-        ]
-
-    def get_company_names(self) -> list[str]:
-        """A list of company names from the database."""
-        return [company.name for company in self.get_companies()]
-
-    def get_dead_listings(self) -> list[models.Listing]:
-        """Returns a list of dead listings from the database."""
-        return self._get_listings("alive = 0")
-
-    def get_active_boards(self) -> list[models.Board]:
-        """Returns a list active boards."""
-        return [board for board in self.get_boards() if board.active]
-
-    def get_inactive_boards(self) -> list[models.Board]:
-        """Returns a list of boards that have been deactivated (no longer scraped)."""
-        return [board for board in self.get_boards() if not board.active]
-
-    def get_listings(self) -> list[models.Listing]:
-        """Returns a list of `models.Listing` objects from the database."""
-        return self._get_listings()
-
-    def get_live_applications(self) -> list[models.Application]:
-        """Returns a list of applied for positions where the listing is still up."""
-        return [app for app in self.get_applications() if app.listing.alive]
-
-    def get_live_listings(self) -> list[models.Listing]:
-        """Returns a list of job listings that are still up."""
-        return self._get_listings("alive = 1")
-
-    def get_pinned_dead_listings(self) -> list[models.Listing]:
-        """Returns a list of pinned listings that have been taken down."""
-        return self._get_listings(
-            "alive = 0 AND listing_id IN (SELECT listing_id FROM pinned_listings)"
-        )
-
-    def get_pinned_listings(self) -> list[models.Listing]:
-        """Returns a list of pinned listings."""
-        return self._get_listings(
-            "listing_id IN (SELECT listing_id FROM pinned_listings)"
-        )
-
-    def get_pinned_live_listings(self) -> list[models.Listing]:
-        """Returns a list of pinned listings that are still up."""
-        return self._get_listings(
-            "alive = 1 AND listing_id IN (SELECT listing_id FROM pinned_listings)"
-        )
-
-    def get_rejections(self) -> list[models.Rejection]:
-        """Returns a list of rejected applications."""
-        rejections = self.select("rejections", order_by="application_id")
-        ids = [rejection["application_id"] for rejection in rejections]
-        apps = [app for app in self.get_applications() if app.id_ in ids]
-        return [
-            models.Rejection(app, row["rejection_id"], row["date_rejected"])
-            for app, row in zip(apps, rejections)
-        ]
-
-    def get_unseen_listings(self) -> list[models.Listing]:
-        """Returns listings that haven't been viewed."""
-        return self._get_listings(
-            "listing_id NOT IN (SELECT listing_id FROM seen_listings)"
-        )
-
-    def get_unseen_live_listings(self) -> list[models.Listing]:
-        """Returns listings that haven't been viewed and are still up."""
-        return self._get_listings(
-            "alive = 1 AND listing_id NOT IN (SELECT listing_id FROM seen_listings)"
-        )
+        super().__init__(dbpath, *args, log_dir=config.logs_dir, **kwargs)
 
     def _get_listings(
         self, where: str = "1 = 1", order_by: str | None = None
@@ -223,6 +102,27 @@ class JobBased(Databased):
             ],
         )
 
+    def get_active_boards(self) -> list[models.Board]:
+        """Returns a list active boards."""
+        return [board for board in self.get_boards() if board.active]
+
+    def get_applications(self) -> list[models.Application]:
+        """Returns a list of `models.Application` objects from the database."""
+        applied_listings = self._get_listings(
+            "listing_id IN (SELECT listing_id FROM applications)", "listing_id"
+        )
+        return [
+            models.Application(listing, datum["application_id"], datum["date_applied"])
+            for datum, listing in zip(
+                self.select(
+                    "applications",
+                    ["application_id", "date_applied"],
+                    order_by="listing_id",
+                ),
+                applied_listings,
+            )
+        ]
+
     def get_board(self, company_name_stem: str) -> models.Board:
         """Returns a `model.Board` object from `company_name_stem`.
 
@@ -235,6 +135,42 @@ class JobBased(Databased):
             f"Could not retrieve a board for company stem `{company_name_stem}`"
         )
 
+    def get_boards(self) -> list[models.Board]:
+        """Returns a list of `models.Board` objects from the database."""
+        data = self.select(
+            "boards",
+            [
+                "board_id",
+                "url",
+                "boards.date_added AS b_date",
+                "boards.company_id",
+                "name",
+                "companies.date_added AS c_date",
+                "active",
+            ],
+            ["INNER JOIN companies ON boards.company_id = companies.company_id"],
+        )
+        return [
+            models.Board(
+                models.Company(datum["company_id"], datum["name"], datum["c_date"]),
+                datum["board_id"],
+                datum["url"],
+                datum["active"],
+                datum["b_date"],
+            )
+            for datum in data
+        ]
+
+    def get_companies(self) -> list[models.Company]:
+        """Returns a list of `models.Company` objects from the database."""
+        companies = self.select("companies", ["company_id", "name", "date_added"])
+        return [
+            models.Company(
+                company["company_id"], company["name"], company["date_added"]
+            )
+            for company in companies
+        ]
+
     def get_company_from_name(self, company_name: str) -> models.Company | None:
         """Returns a `models.Company` object from `company_name` (case insensitive) if it exists."""
         try:
@@ -243,6 +179,70 @@ class JobBased(Databased):
             return None
         return models.Company(
             company["company_id"], company["name"], company["date_added"]
+        )
+
+    def get_company_names(self) -> list[str]:
+        """A list of company names from the database."""
+        return [company.name for company in self.get_companies()]
+
+    def get_dead_listings(self) -> list[models.Listing]:
+        """Returns a list of dead listings from the database."""
+        return self._get_listings("alive = 0")
+
+    def get_inactive_boards(self) -> list[models.Board]:
+        """Returns a list of boards that have been deactivated (no longer scraped)."""
+        return [board for board in self.get_boards() if not board.active]
+
+    def get_listings(self) -> list[models.Listing]:
+        """Returns a list of `models.Listing` objects from the database."""
+        return self._get_listings()
+
+    def get_live_applications(self) -> list[models.Application]:
+        """Returns a list of applied for positions where the listing is still up."""
+        return [app for app in self.get_applications() if app.listing.alive]
+
+    def get_live_listings(self) -> list[models.Listing]:
+        """Returns a list of job listings that are still up."""
+        return self._get_listings("alive = 1")
+
+    def get_pinned_dead_listings(self) -> list[models.Listing]:
+        """Returns a list of pinned listings that have been taken down."""
+        return self._get_listings(
+            "alive = 0 AND listing_id IN (SELECT listing_id FROM pinned_listings)"
+        )
+
+    def get_pinned_listings(self) -> list[models.Listing]:
+        """Returns a list of pinned listings."""
+        return self._get_listings(
+            "listing_id IN (SELECT listing_id FROM pinned_listings)"
+        )
+
+    def get_pinned_live_listings(self) -> list[models.Listing]:
+        """Returns a list of pinned listings that are still up."""
+        return self._get_listings(
+            "alive = 1 AND listing_id IN (SELECT listing_id FROM pinned_listings)"
+        )
+
+    def get_rejections(self) -> list[models.Rejection]:
+        """Returns a list of rejected applications."""
+        rejections = self.select("rejections", order_by="application_id")
+        ids = [rejection["application_id"] for rejection in rejections]
+        apps = [app for app in self.get_applications() if app.id_ in ids]
+        return [
+            models.Rejection(app, row["rejection_id"], row["date_rejected"])
+            for app, row in zip(apps, rejections)
+        ]
+
+    def get_unseen_listings(self) -> list[models.Listing]:
+        """Returns listings that haven't been viewed."""
+        return self._get_listings(
+            "listing_id NOT IN (SELECT listing_id FROM seen_listings)"
+        )
+
+    def get_unseen_live_listings(self) -> list[models.Listing]:
+        """Returns listings that haven't been viewed and are still up."""
+        return self._get_listings(
+            "alive = 1 AND listing_id NOT IN (SELECT listing_id FROM seen_listings)"
         )
 
     def mark_applications_older_than_30days_as_rejected(self):
@@ -296,3 +296,9 @@ class JobBased(Databased):
                 row[col] = str(row[col])
             rows[i] = row
         return super().to_grid(rows)
+
+    def update_board_url(self, board_id: int, url: str) -> int:
+        """Update board with id `board_id` to `url`.
+
+        Returns the number of updated records."""
+        return self.update("boards", "url", url, f"board_id = {board_id}")
