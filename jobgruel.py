@@ -111,11 +111,10 @@ class JobGruel(Gruel):
                     else:
                         self.already_added_listings += 1
 
-    def postscrape_chores(self):
-        # Mark listings from the database that aren't in found listings as dead,
-        # but only if there were no parse fails.
-        # Don't want to mark a listing as dead if it potentially failed to parse
+    def mark_dead_listings(self):
+        """Mark listings from the database as dead if they aren't found in the scraped listings."""
         num_dead = 0
+        # Don't mark listings dead if scraper had a parse fail
         if self.found_listings and not self.fail_count:
             found_urls = [listing.url for listing in self.found_listings]
             live_listings = [
@@ -130,9 +129,34 @@ class JobGruel(Gruel):
                     for listing in dead_listings:
                         db.mark_dead(listing.id_)
                         self.logger.info(
-                            f"Marking listing with id {listing.id_} as dead. ({listing.position} - {listing.company.name} - {listing.url})"
+                            f"Marking listing with id {listing.id_} as dead. ({listing.position} - {listing.url})"
                         )
         self.logger.info(f"Marked {num_dead} listings as dead.")
+
+    def mark_resurrected_listings(self):
+        """Reset the alive status of a listing if the scraper found it and it was previously marked dead."""
+        num_resurrected = 0
+        found_urls = [listing.url for listing in self.found_listings]
+        dead_listings = [
+            listing for listing in self.existing_listings if not listing.alive
+        ]
+        resurrected_listings = [
+            listing for listing in dead_listings if listing.url in found_urls
+        ]
+        num_resurrected = len(resurrected_listings)
+        if resurrected_listings:
+            with JobBased() as db:
+                for listing in resurrected_listings:
+                    db.reset_alive_status(listing.id_)
+                    db.delete("seen_listings", f"listing_id = {listing.id_}")
+                    self.logger.info(
+                        f"Resurrecting listing with id {listing.id_}. ({listing.position} - {listing.url})"
+                    )
+        self.logger.info(f"Resurrected {num_resurrected} listings.")
+
+    def postscrape_chores(self):
+        self.mark_dead_listings()
+        self.mark_resurrected_listings()
         super().postscrape_chores()
 
 

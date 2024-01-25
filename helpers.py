@@ -70,6 +70,17 @@ def get_failed_scrapers(start_time: datetime) -> list[str]:
     return fails
 
 
+def get_resurrected_listings_count(start_time: datetime) -> int:
+    """Returns the number of resurrected listings logged since `start_time`."""
+    count = 0
+    for log in get_all_logs():
+        # message = 'Resurrected x listings.'
+        log = log.filter_dates(start_time).filter_messages(["Resurrected*"])
+        if log.events:
+            count += int(log.events[-1].message.split()[1])
+    return count
+
+
 def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
     """Returns scrapers that have errors after `start_time`.
 
