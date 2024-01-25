@@ -8,7 +8,8 @@ JobGlob can
 - Only show you listings you haven't already seen
 - Track listings you're interested in as well as listings you've applied to
 
-*Current board count*: 1505
+*Current board count*: 1505  
+*Active listings*: 41232
 
 ## Installation
 
@@ -33,23 +34,23 @@ Defaulting to database jobs.db
 Starting job_manager (enter help or ? for command info)...
 jobs.db>schema -c
 Getting database tables...
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| Table Name      | Columns                                                                                       | Number of Rows   |
-+=================+===============================================================================================+==================+
-| companies       | company_id, name, date_added                                                                  | 1184             |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| boards          | board_id, url, company_id, active, date_added                                                 | 1141             |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| listings        | listing_id, position, location, url, scraped_url, company_id, alive, date_added, date_removed | 47016            |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| seen_listings   | seen_id, listing_id                                                                           | 0                |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| pinned_listings | pinned_id, listing_id                                                                         | 0                |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| applications    | application_id, listing_id, date_applied                                                      | 0                |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
-| rejections      | rejection_id, application_id, date_rejected                                                   | 0                |
-+-----------------+-----------------------------------------------------------------------------------------------+------------------+
++-----------------+----------------------------------------------------------------------------------+------------------+
+| Table Name      | Columns                                                                          | Number of Rows   |
++=================+==================================================================================+==================+
+| companies       | company_id, name, date_added                                                     | 1184             |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| boards          | board_id, url, company_id, active, date_added                                    | 1141             |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| listings        | listing_id, position, location, url, company_id, alive, date_added, date_removed | 47016            |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| seen_listings   | seen_id, listing_id                                                              | 0                |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| pinned_listings | pinned_id, listing_id                                                            | 0                |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| applications    | application_id, listing_id, date_applied                                         | 0                |
++-----------------+----------------------------------------------------------------------------------+------------------+
+| rejections      | rejection_id, application_id, date_rejected                                      | 0                |
++-----------------+----------------------------------------------------------------------------------+------------------+
 Getting database views...
 +-------------+--------------------------------------------------------------------+------------------+
 | View Name   | Columns                                                            | Number of Rows   |
@@ -378,12 +379,9 @@ If you want to track which position's you've been rejected for, use the `mark_re
 
 ---
 
-You can use the script `check_listings.py` to check which listings are still up and which have been taken down.  
-If a listing's url returns a 404 status codes or returns a 200 status code but resolves to a different url,
-the listing will be updated as no longer listed in the database.  
-Running this script involves sending many more requests and can take significantly longer than running the main scraper.  
-As before, using a VPN for this is advisable.  
-*(I use task scheduler to run the script once a day at 3:30 am)*
+A listing already in the database will be marked dead if it is not found in the scraped listings when a scraper is run.  
+This check is skipped if the scraper encountered any parsing errors.  
+
 
 ## Extended Usage
 

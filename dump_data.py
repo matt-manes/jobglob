@@ -18,8 +18,11 @@ def update_readme() -> bool:
     Returns whether the count was updated or not."""
     with JobBased() as db:
         num_boards = db.count("scrapers", where="active = 1")
+        num_listings = db.count("listings", where="alive = 1")
     readme = readme_path.read_text()
     current_boards = int(re.findall(r"\*Current board count\*: ([0-9]+)", readme)[0])
+    current_listings = int(re.findall(r"\*Active listings\*: ([0-9]+)", readme)[0])
+    updated = False
     if num_boards != current_boards:
         print(f"Updating board count in readme from {current_boards} to {num_boards}.")
         readme = re.sub(
@@ -28,8 +31,19 @@ def update_readme() -> bool:
             readme,
         )
         readme_path.write_text(readme)
-        return True
-    return False
+        updated = True
+    if num_listings != current_listings:
+        print(
+            f"Updating listing count in readme from {current_listings} to {num_listings}."
+        )
+        readme = re.sub(
+            r"\*Active listings\*: ([0-9]+)",
+            f"*Active listings*: {num_listings}",
+            readme,
+        )
+        readme_path.write_text(readme)
+        updated = True
+    return updated
 
 
 @time_it()
