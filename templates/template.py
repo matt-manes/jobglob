@@ -37,9 +37,9 @@ class JobScraper(JobGruel):
 if __name__ == "__main__":
     from datetime import datetime, timedelta
 
-    import helpers
+    import logglob
 
     start = datetime.now() - timedelta(seconds=2)
     j = JobScraper()
     j.scrape()
-    print(helpers.load_log(j.board.company.name).filter_dates(start))
+    print(logglob.load_log(j.board.company.name).filter_dates(start))

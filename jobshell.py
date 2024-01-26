@@ -11,6 +11,7 @@ import company_crawler
 import dump_data
 import helpers
 import jobglob
+import logglob
 import models
 import peruse
 import shellparsers
@@ -148,7 +149,7 @@ class JobShell(DBShell):
             start = datetime.now() - timedelta(seconds=2)
             scraper = class_(board=board)
             scraper.scrape()
-            print(helpers.load_log(scraper.board.company.name).filter_dates(start))
+            print(logglob.load_log(scraper.board.company.name).filter_dates(start))
 
     def do_help(self, cmd: str):
         """Display help messages."""

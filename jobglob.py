@@ -13,6 +13,7 @@ from pathier import Pathier
 
 import helpers
 import jobgruel
+import logglob
 import models
 from board_detector import BoardDetector
 from config import Config
@@ -172,7 +173,7 @@ class JobGlob(Brewer):
 
     def check_resurrected_listings(self):
         """Check for resurrected listings and logprint the findings."""
-        count = helpers.get_resurrected_listings_count(
+        count = logglob.get_resurrected_listings_count(
             self.start_time - timedelta(seconds=5)
         )
         if count:
@@ -180,7 +181,7 @@ class JobGlob(Brewer):
 
     def logprint_errors(self):
         """Print and log scrapers that had errors grouped by error type."""
-        errors = helpers.get_scrapers_with_errors(self.start_time)
+        errors = logglob.get_scrapers_with_errors(self.start_time)
         for error, names in errors.items():
             if names:
                 message = f"{error}:\n"
