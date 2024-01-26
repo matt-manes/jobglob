@@ -589,7 +589,13 @@ class MyworkdayGruel(JobGruel):
                     soup = user.get_soup()
                 job_list = soup.find("ul", attrs={"role": "list"})
                 assert isinstance(job_list, Tag)
-                listings.extend(job_list.find_all("li", recursive=False))
+                listings.extend(
+                    [
+                        listing
+                        for listing in job_list.find_all("li", recursive=False)
+                        if listing.find("div", class_="css-qiqmbt")
+                    ]
+                )
         return listings
 
     def parse_item(self, item: ParsableItem) -> models.Listing | None:
