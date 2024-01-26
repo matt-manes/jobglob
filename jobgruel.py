@@ -68,7 +68,16 @@ class JobGruel(Gruel):
         self.existing_listings = listings
         self.existing_listing_urls = [listing.url for listing in listings]
         self.already_added_listings = 0
-        self.found_listings: list[models.Listing] = []
+        # self.found_listings: list[models.Listing] = []
+
+    @property
+    def had_failures(self) -> bool:
+        """`True` if getting parsable items, parsing items, or unexpected failures occured."""
+        return (
+            (self.fail_count > 0)
+            or self.failed_to_get_parsable_items
+            or self.unexpected_failure_occured
+        )
 
     def request(
         self, url: str, method: str = "get", headers: dict[str, str] = {}
@@ -95,7 +104,6 @@ class JobGruel(Gruel):
     def store_item(self, listing: models.Listing):
         """Add `listing` to the database if it doesn't already exist (based off `listing.url`)."""
         listing.url = listing.url.strip("/")
-        self.found_listings.append(listing)
         if listing.url not in self.existing_listing_urls:
             with JobBased() as db:
                 listing.date_added = datetime.now()
@@ -114,8 +122,9 @@ class JobGruel(Gruel):
         """Mark listings from the database as dead if they aren't found in the scraped listings."""
         num_dead = 0
         # Don't mark listings dead if scraper had a parse fail
-        if self.found_listings and not self.fail_count:
-            found_urls = [listing.url for listing in self.found_listings]
+        if self.parsed_items and not self.had_failures:
+            self.logger.info("Checking for dead listings.")
+            found_urls = [listing.url for listing in self.parsed_items]
             live_listings = [
                 listing for listing in self.existing_listings if listing.alive
             ]
@@ -135,7 +144,7 @@ class JobGruel(Gruel):
     def mark_resurrected_listings(self):
         """Reset the alive status of a listing if the scraper found it and it was previously marked dead."""
         num_resurrected = 0
-        found_urls = [listing.url for listing in self.found_listings]
+        found_urls = [listing.url for listing in self.parsed_items]
         dead_listings = [
             listing for listing in self.existing_listings if not listing.alive
         ]
