@@ -5,5 +5,6 @@ root = Pathier(__file__).parent
 from jobgruel import JobviteGruel
 
 
+# Url doesn't contain job board
 class JobScraper(JobviteGruel):
     ...
