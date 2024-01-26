@@ -62,7 +62,7 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
         assert log.path
         error_exceptions = log.filter_levels(["ERROR", "EXCEPTION"])
         if (
-            log.filter_levels(["WARNING"])
+            log.filter_levels(["WARNING", "EXCEPTION"])
             .filter_messages(["Board url * resolved to *"])
             .events
         ):

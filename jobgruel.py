@@ -68,7 +68,6 @@ class JobGruel(Gruel):
         self.existing_listings = listings
         self.existing_listing_urls = [listing.url for listing in listings]
         self.already_added_listings = 0
-        # self.found_listings: list[models.Listing] = []
 
     @property
     def had_failures(self) -> bool:
@@ -234,7 +233,11 @@ class BambooGruel(JobGruel):
     """`JobGruel` subclass for BambooHR job boards."""
 
     def get_parsable_items(self) -> list[ParsableItem]:
-        return self.request(f"{self.board.url}/list").json()["result"]
+        url = f"{self.board.url}/list"
+        response = self.request(url)
+        if response.url.strip("/") != url:
+            raise RuntimeError(f"Board url {url} resolved to {response.url}")
+        return response.json()["result"]
 
     def parse_item(self, item: dict) -> models.Listing | None:
         try:
