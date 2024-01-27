@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
 from pathier import Pathier, Pathish
 from seleniumuser import User
+from dataclasses import asdict
 
 import helpers
 import models
@@ -79,7 +80,13 @@ class JobGruel(Gruel):
         )
 
     def request(
-        self, url: str, method: str = "get", headers: dict[str, str] = {}
+        self,
+        url: str,
+        method: str = "get",
+        headers: dict[str, str] = {},
+        params: dict[str, str] = {},
+        data: dict[str, str] = {},
+        json_: Any | None = None,
     ) -> requests.Response:
         """Returns a `request.Response` object for the given `url`.
 
@@ -87,7 +94,7 @@ class JobGruel(Gruel):
 
         Logs the response status code and the resolved url if different from the provided `url`.
         """
-        response = super().request(url, method, headers)
+        response = super().request(url, method, headers, params, data, json_=json_)
         if response.status_code == 404:
             self.logger.error(f"{url} returned status code 404")
         else:
@@ -557,6 +564,20 @@ class BreezyGruel(JobGruel):
 class MyworkdayGruel(JobGruel):
     """`JobGruel` subclass for MyWorkDay job boards."""
 
+    @property
+    def api_url(self) -> str:
+        url = self.board.url
+        base = url[: url.find(".com") + 4]
+        anchor = url[url.rfind("/") + 1 :]
+        if "myworkdaysite" in url:
+            company_stem = url[
+                url.rfind("/", 0, url.find(anchor) - 1) + 1 : url.rfind("/")
+            ]
+        else:
+            company_stem = url.removeprefix("https://")
+            company_stem = company_stem[: company_stem.find(".")]
+        return f"{base}/wday/cxs/{company_stem}/{anchor}/jobs"
+
     def get_num_pages(self, user: User) -> int:
         num_pages = None
         attempts = 0
@@ -579,44 +600,35 @@ class MyworkdayGruel(JobGruel):
         return num_pages
 
     def get_parsable_items(self) -> list[ParsableItem]:
-        with User(True) as user:
-            user.get(self.board.url)
-            time.sleep(1)
-            num_pages = self.get_num_pages(user)
-            soup = user.get_soup()
-            listings = []
-            for page in range(1, num_pages + 1):
-                if page > 1:
-                    user.click("//button[@data-uxi-element-id='next']")
-                    time.sleep(1)
-                    soup = user.get_soup()
-                job_list = soup.find("ul", attrs={"role": "list"})
-                assert isinstance(job_list, Tag)
-                listings.extend(
-                    [
-                        listing
-                        for listing in job_list.find_all("li", recursive=False)
-                        if listing.find("div", class_="css-qiqmbt")
-                    ]
-                )
-        return listings
+        chunk = 0
+        listings_per_chunk = 20
+        next_chunk = lambda chunk: self.request(
+            self.api_url,
+            "post",
+            headers={
+                "Content-Type": "application/json",
+                "Accept-Encoding": "gzip, deflate",
+            },
+            json_={
+                "limit": str(listings_per_chunk),
+                "offset": str(chunk * listings_per_chunk),
+            },
+        ).json()
+        items = []
+        data = next_chunk(chunk)
+        total_listings = data["total"]
+        total_chunks = int(total_listings / listings_per_chunk) + 1
+        items.extend(data["jobPostings"])
+        for chunk in range(1, total_chunks):
+            items.extend(next_chunk(chunk)["jobPostings"])
+        return items
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: dict) -> models.Listing | None:
         try:
             listing = self.new_listing()
-            assert isinstance(item, Tag)
-            a = item.find("a", attrs={"data-automation-id": "jobTitle"})
-            assert isinstance(a, Tag)
-            url = self.board.url[
-                : self.board.url.rfind("/")
-                if self.board.url.endswith("careers")
-                else self.board.url.find("/", self.board.url.find(".com"))
-            ]
-            listing.url = f"{url}{a.get('href')}"
-            listing.position = a.text
-            dl = item.find("dl")
-            if isinstance(dl, Tag):
-                listing.location = dl.text.lstrip("locations")
+            listing.position = item["title"]
+            listing.url = f"{self.board.url.strip('/')}{item['externalPath']}"
+            listing.location = item["locationsText"]
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item:")
