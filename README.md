@@ -67,10 +67,6 @@ do_schema execution time: 28ms 922us
 jobs.db>
 </pre>
 
-*Note: Certain job board types require Selenium to run.  
-This means you'll need to have Firefox installed as well as the appropriate [Geckodriver](https://github.com/mozilla/geckodriver/releases) executable.  
-The Geckodriver executable should either be placed in the jobglob directory or the location of the executable needs to be added to your environment's PATH.*  
-
 ## Basic Usage
 
 ---

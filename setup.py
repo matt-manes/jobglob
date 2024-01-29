@@ -16,12 +16,7 @@ def main():
     ]:
         subprocess.run(command)
     config.scraper_logs_dir.mkdir(exist_ok=True, parents=True)
-    print("Some scrapers require Firefox and Geckodriver to be installed.")
-    print("Firefox: https://www.mozilla.org/en-US/firefox/browsers/")
-    print("Geckodriver: https://github.com/mozilla/geckodriver/releases")
-    print(
-        "When downloading geckodriver, either put the executable in this folder or add its location to your PATH."
-    )
+    print("Setup complete.")
     input("Press enter to close...")
 
 
