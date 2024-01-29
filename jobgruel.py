@@ -612,7 +612,7 @@ class MyworkdayGruel(JobGruel):
         data = next_chunk(chunk)
         total_listings = data["total"]
         total_chunks = int(total_listings / listings_per_chunk) + 1
-        items.extend(data["jobPostings"])
+        items.extend([listing for listing in data["jobPostings"] if "title" in listing])
         for chunk in range(1, total_chunks):
             items.extend(
                 [
