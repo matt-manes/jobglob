@@ -599,7 +599,13 @@ class MyworkdayGruel(JobGruel):
         total_chunks = int(total_listings / listings_per_chunk) + 1
         items.extend(data["jobPostings"])
         for chunk in range(1, total_chunks):
-            items.extend(next_chunk(chunk)["jobPostings"])
+            items.extend(
+                [
+                    listing
+                    for listing in next_chunk(chunk)["jobPostings"]
+                    if "title" in listing
+                ]
+            )
         return items
 
     def parse_item(self, item: dict) -> models.Listing | None:
