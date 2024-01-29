@@ -613,7 +613,7 @@ class MyworkdayGruel(JobGruel):
             listing = self.new_listing()
             listing.position = item["title"]
             listing.url = f"{self.board.url.strip('/')}{item['externalPath']}"
-            listing.location = item["locationsText"]
+            listing.location = item.get("locationsText", "Unlisted")
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item:")
