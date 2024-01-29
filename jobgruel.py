@@ -578,27 +578,6 @@ class MyworkdayGruel(JobGruel):
             company_stem = company_stem[: company_stem.find(".")]
         return f"{base}/wday/cxs/{company_stem}/{anchor}/jobs"
 
-    def get_num_pages(self, user: User) -> int:
-        num_pages = None
-        attempts = 0
-        max_attempts = 10
-        jobs_per_page = 20
-        soup = user.get_soup()
-        while num_pages is None and attempts < max_attempts:
-            try:
-                p = soup.find("p", attrs={"data-automation-id": "jobFoundText"})
-                assert isinstance(p, Tag)
-                num_jobs = int(p.text.split()[0])
-                num_pages = math.ceil(num_jobs / jobs_per_page)
-            except Exception as e:
-                time.sleep(1)
-                soup = user.get_soup()
-            finally:
-                attempts += 1
-        if not num_pages:
-            raise RuntimeError("Could not get num_pages")
-        return num_pages
-
     def get_parsable_items(self) -> list[ParsableItem]:
         chunk = 0
         listings_per_chunk = 20
