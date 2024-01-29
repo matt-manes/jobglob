@@ -202,7 +202,7 @@ class JobShell(DBShell):
             self.display(
                 db.select(
                     "pinned",
-                    ["l_id", "position", "company", "url", "age_days", "alive"],
+                    ["l_id", "a_id", "position", "company", "url", "age_days", "alive"],
                     where="alive = 1" if arg == "live" else "1 = 1",
                 )
             )
