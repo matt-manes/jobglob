@@ -130,7 +130,7 @@ class JobGruel(Gruel):
         # Don't mark listings dead if scraper had a parse fail
         if self.parsed_items and not self.had_failures:
             self.logger.info("Checking for dead listings.")
-            found_urls = [listing.url for listing in self.parsed_items]
+            found_urls = [listing.url for listing in self.parsed_items if listing]
             live_listings = [
                 listing for listing in self.existing_listings if listing.alive
             ]
@@ -150,7 +150,7 @@ class JobGruel(Gruel):
     def mark_resurrected_listings(self):
         """Reset the alive status of a listing if the scraper found it and it was previously marked dead."""
         num_resurrected = 0
-        found_urls = [listing.url for listing in self.parsed_items]
+        found_urls = [listing.url for listing in self.parsed_items if listing]
         dead_listings = [
             listing for listing in self.existing_listings if not listing.alive
         ]
