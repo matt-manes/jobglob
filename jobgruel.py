@@ -1,5 +1,4 @@
 import json
-import time
 from datetime import datetime
 from typing import Any
 
@@ -7,7 +6,6 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
 from pathier import Pathier
-from seleniumuser import User
 
 import helpers
 import models
@@ -264,32 +262,50 @@ class BambooGruel(JobGruel):
 
 
 class AshbyGruel(JobGruel):
-    """`JobGruel` subclass for Ashby job boards.
+    """`JobGruel` subclass for Ashby job boards."""
 
-    Requires Firefox and Geckodriver."""
+    @property
+    def api_url(self) -> str:
+        return "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
 
-    def get_parsable_items(self) -> list[ParsableItem]:
-        with User(True) as user:
-            user.get(self.board.url)
-            time.sleep(1)
-            soup = user.get_soup()
-        sections = soup.find_all("div", class_="ashby-job-posting-brief-list")
-        items = []
-        for section in sections:
-            items.extend(section.find_all("a"))
-        return items
+    @property
+    def api_operation_name(self) -> str:
+        return "ApiJobBoardWithTeams"
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    @property
+    def api_variables(self) -> dict:
+        return {
+            "organizationHostedJobsPageName": self.board.url[
+                self.board.url.rfind("/") + 1 :
+            ].replace("%20", " ")
+        }
+
+    @property
+    def api_query(self) -> str:
+        return "query ApiJobBoardWithTeams($organizationHostedJobsPageName: String!) {\n  jobBoard: jobBoardWithTeams(\n    organizationHostedJobsPageName: $organizationHostedJobsPageName\n  ) {\n    teams {\n      id\n      name\n      parentTeamId\n      __typename\n    }\n    jobPostings {\n      id\n      title\n      teamId\n      locationId\n      locationName\n      employmentType\n      secondaryLocations {\n        ...JobPostingSecondaryLocationParts\n        __typename\n      }\n      compensationTierSummary\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment JobPostingSecondaryLocationParts on JobPostingSecondaryLocation {\n  locationId\n  locationName\n  __typename\n}"
+
+    def get_parsable_items(self) -> list[dict]:
+        response = self.request(
+            self.api_url,
+            "post",
+            headers={
+                "Content-Type": "application/json",
+                "Accept-Encoding": "gzip, deflate",
+            },
+            json_={
+                "operationName": self.api_operation_name,
+                "variables": self.api_variables,
+                "query": self.api_query,
+            },
+        )
+        return response.json()["data"]["jobBoard"]["jobPostings"]
+
+    def parse_item(self, item: dict) -> models.Listing | None:
         try:
             listing = self.new_listing()
-            assert isinstance(item, Tag)
-            listing.url = f"https://jobs.ashbyhq.com{item.get('href')}"
-            position = item.find("h3")
-            assert isinstance(position, Tag)
-            listing.position = position.text
-            location = item.find("p")
-            if isinstance(location, Tag):
-                listing.location = location.text.split("•")[1].strip()
+            listing.position = item["title"]
+            listing.url = f"{self.board.url}/{item['id']}"
+            listing.location = item["locationName"]
             return listing
         except Exception as e:
             self.logger.exception("Failure to parse item:")
