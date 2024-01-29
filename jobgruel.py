@@ -1,5 +1,4 @@
 import json
-import math
 import time
 from datetime import datetime
 from typing import Any
@@ -7,9 +6,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup, Tag
 from gruel import Gruel, ParsableItem
-from pathier import Pathier, Pathish
+from pathier import Pathier
 from seleniumuser import User
-from dataclasses import asdict
 
 import helpers
 import models
@@ -576,6 +574,7 @@ class MyworkdayGruel(JobGruel):
         else:
             company_stem = url.removeprefix("https://")
             company_stem = company_stem[: company_stem.find(".")]
+        company_stem = company_stem.replace("-", "_")
         return f"{base}/wday/cxs/{company_stem}/{anchor}/jobs"
 
     def get_parsable_items(self) -> list[ParsableItem]:
