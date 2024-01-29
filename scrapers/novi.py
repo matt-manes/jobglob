@@ -7,7 +7,7 @@ from typing import Any
 from bs4 import Tag
 
 import models
-from jobgruel import JobGruel, ParsableItem
+from jobgruel import JobGruel
 
 
 class JobScraper(JobGruel):
@@ -32,14 +32,3 @@ class JobScraper(JobGruel):
             self.logger.error(str(item))
             self.fail_count += 1
             return None
-
-
-if __name__ == "__main__":
-    from datetime import datetime, timedelta
-
-    import logglob
-
-    start = datetime.now() - timedelta(seconds=2)
-    j = JobScraper()
-    j.scrape()
-    print(logglob.load_log(j.board.company.name).filter_dates(start))
