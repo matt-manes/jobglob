@@ -238,7 +238,7 @@ class JobShell(DBShell):
             self.display(db.select("scrapers", where=f"company LIKE '{company}'"))
         scraper_file = config.scrapers_dir / f"{file_stem}.py"
         if scraper_file.exists():
-            os.system(f"code {scraper_file}.py -r")
+            os.system(f"code {scraper_file} -r")
         os.system(f"code {config.scraper_logs_dir}/{file_stem}.log -r")
 
     def do_try_boards(self, company: str):
