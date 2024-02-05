@@ -10,6 +10,7 @@ import requests
 from gruel import Gruel
 from pathier import Pathier
 from printbuddies import ProgBar, Spinner
+from rich import print
 from scrapetools import LinkScraper
 from younotyou import Matcher, younotyou
 

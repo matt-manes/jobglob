@@ -10,6 +10,7 @@ from griddle import griddy
 from gruel import Brewer, Gruel, GruelFinder
 from noiftimer import Timer
 from pathier import Pathier
+from rich import print
 
 import helpers
 import jobgruel

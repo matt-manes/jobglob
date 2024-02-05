@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import argshell
 from databased.dbshell import DBShell
 from pathier import Pathier
+from rich import print
 
 import board_detector
 import company_crawler

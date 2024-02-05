@@ -5,6 +5,7 @@ from dataclasses import asdict
 import argshell
 from griddle import griddy
 from pathier import Pathier
+from rich import print
 
 import helpers
 import models
