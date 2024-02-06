@@ -255,12 +255,12 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -fl, --filter_locations
-                        Use `filter_out_location_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `location` won't be shown.
+                        Use `location_filters` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `location` won't be shown.
   -fp, --filter_positions
-                        Use `filter_out_position_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `position` won't be shown. Overrides `key_terms` arg.
-  -fu, --filter_urls    Use `filter_out_url_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with urls containing one of the terms won't be shown.
+                        Use `position_filters` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `position` won't be shown. Overrides `key_terms` arg.
+  -fu, --filter_urls    Use `url_filters` in `peruse_filters.toml` to filter listings. i.e. any listings with urls containing one of the terms won't be shown.
   -ds, --default_search
-                        Use `default_search_terms` in `persuse_filters.toml` in addition to any provided `key_terms` arguments.
+                        Use `default_search` in `persuse_filters.toml` in addition to any provided `key_terms` arguments.
   -a, --all             Equivalent to `peruse.py -ds -fl -fp -fu -nf
 </pre>
 
@@ -268,19 +268,19 @@ The `-fl`, `-fp`, `-fu`, and `-ds` arguments refer to a file that should have ju
 It should look like this:
 
 <pre>
-filter_out_position_terms = [
+position_filters = [
     
 ]
 
-filter_out_location_terms = [
+location_filters = [
     
 ]
 
-filter_out_url_terms = [
+url_filters = [
     
 ]
 
-default_search_terms = [
+default_search = [
     
 ]
 </pre>
@@ -289,21 +289,21 @@ The first three can be used to filter out listings and the bottom one can be use
 For example:
 
 <pre>
-filter_out_position_terms = [
+position_filters = [
     "senior",
     "manager"
 ]
 
-filter_out_location_terms = [
+location_filters = [
     "alabama",
     "england"
 ]
 
-filter_out_url_terms = [
+url_filters = [
     "-pune-india-
 ]
 
-default_search_terms = [
+default_search = [
     "python",
     "data",
     "backend"

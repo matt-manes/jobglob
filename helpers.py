@@ -51,4 +51,4 @@ def create_scraper_from_template(url: str, company: str, board_type: str | None 
 def create_peruse_filters_from_template():
     """Create a blank `peruse_filters.toml` file from the template."""
     template_path = config.templates_dir / "peruse_filters_template.toml"
-    template_path.copy(root / "peruse_filters.toml")
+    template_path.copy(config.peruse_filters_path)

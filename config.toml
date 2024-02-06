@@ -5,6 +5,7 @@ careers_page_stubs_path = "careers_page_stubs.txt"
 db_path = "jobs.db"
 sql_dir = "sql"
 templates_dir = "templates"
+peruse_filters_path = "peruse_filters.toml"
 
 [jobglob_daemon]
 glob_interval = 3600

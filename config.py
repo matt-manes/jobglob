@@ -21,6 +21,7 @@ class Config:
     db_path: Pathier
     sql_dir: Pathier
     templates_dir: Pathier
+    peruse_filters_path: Pathier
 
     @functools.cached_property
     def scraper_logs_dir(self) -> Pathier:

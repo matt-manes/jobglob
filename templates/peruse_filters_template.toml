@@ -1,15 +1,15 @@
-filter_out_position_terms = [
+position_filters = [
     
 ]
 
-filter_out_location_terms = [
+location_filters = [
     
 ]
 
-filter_out_url_terms = [
+url_filters = [
     
 ]
 
-default_search_terms = [
+default_search = [
     
 ]

@@ -7,12 +7,13 @@ from griddle import griddy
 from pathier import Pathier
 from rich import print
 
-import helpers
 import models
+from config import Config
 from jobbased import JobBased
+from peruse_filters import PeruseFilters
 
 root = Pathier(__file__).parent
-
+config = Config.load()
 """ 
 Go through unseen job listings and mark them as seen after choosing to ignore them or add them to your pinned listings.
 
@@ -41,7 +42,7 @@ def get_peruse_parser() -> argshell.ArgShellParser:
         "-fl",
         "--filter_locations",
         action="store_true",
-        help=""" Use `filter_out_location_terms` in `peruse_filters.toml` to filter listings. 
+        help=""" Use `location_filters` in `peruse_filters.toml` to filter listings. 
         i.e. any listings with these words in the job `location` won't be shown.""",
     )
 
@@ -49,7 +50,7 @@ def get_peruse_parser() -> argshell.ArgShellParser:
         "-fp",
         "--filter_positions",
         action="store_true",
-        help=""" Use `filter_out_position_terms` in `peruse_filters.toml` to filter listings. 
+        help=""" Use `position_filters` in `peruse_filters.toml` to filter listings. 
         i.e. any listings with these words in the job `position` won't be shown.
         Overrides `key_terms` arg.""",
     )
@@ -58,7 +59,7 @@ def get_peruse_parser() -> argshell.ArgShellParser:
         "-fu",
         "--filter_urls",
         action="store_true",
-        help=""" Use `filter_out_url_terms` in `peruse_filters.toml` to filter listings.
+        help=""" Use `url_filters` in `peruse_filters.toml` to filter listings.
     i.e. any listings with urls containing one of the terms won't be shown.""",
     )
 
@@ -66,7 +67,7 @@ def get_peruse_parser() -> argshell.ArgShellParser:
         "-ds",
         "--default_search",
         action="store_true",
-        help=""" Use `default_search_terms` in `persuse_filters.toml` in addition to any provided `key_terms` arguments. """,
+        help=""" Use `default_search` in `persuse_filters.toml` in addition to any provided `key_terms` arguments. """,
     )
 
     parser.add_argument(
@@ -102,16 +103,6 @@ def get_args() -> argshell.Namespace:
     args = get_peruse_parser().parse_args()
     args = peruse_postparser(args)
     return args
-
-
-def load_filters() -> dict[str, list]:
-    """Load filters from `peruse_filters.toml`.
-    Create an empty file from template if it doesn't exist."""
-    filter_path = root / "peruse_filters.toml"
-    if not filter_path.exists():
-        helpers.create_peruse_filters_from_template()
-    filters = (root / "peruse_filters.toml").loads()
-    return {key: [text.lower() for text in filters[key]] for key in filters}
 
 
 def filter_listings(
@@ -195,15 +186,13 @@ def main(args: argparse.Namespace):
     # ========================
     # filter unseen listings
     # ========================
-    filters = load_filters()
-    default_search = filters["default_search_terms"] if args.default_search else []
+    filters = PeruseFilters.load()
+    default_search = filters.default_search if args.default_search else []
     if args.filter_locations:
-        listings = filter_listings(
-            listings, "location", [], filters["filter_out_location_terms"]
-        )
+        listings = filter_listings(listings, "location", [], filters.location_filters)
     if args.filter_urls:
-        listings = filter_listings(listings, "url", [], filters["filter_out_url_terms"])
-    excludes = filters["filter_out_position_terms"] if args.filter_positions else []
+        listings = filter_listings(listings, "url", [], filters.url_filters)
+    excludes = filters.position_filters if args.filter_positions else []
     listings = filter_listings(
         listings, "position", args.key_terms + default_search, excludes
     )
