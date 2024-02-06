@@ -7,6 +7,8 @@ from pathier import Pathier
 from scrapetools import LinkScraper
 from younotyou import younotyou
 
+from board_meta import BoardMeta
+
 root = Pathier(__file__).parent
 
 
@@ -19,29 +21,29 @@ class BoardDetector:
 
     @property
     def boards(self) -> list[str]:
-        return self.meta["boards"]
+        return self.meta.boards
 
     @property
     def careers_page_stubs(self) -> list[str]:
         return self._careers_page_stubs
 
     @property
-    def meta(self) -> dict:
+    def meta(self) -> BoardMeta:
         return self._meta
 
     @property
     def url_chunk_mapping(self) -> dict:
         """Get url chunk to board type mapping."""
-        return self.meta["url_chunks"]
+        return self.meta.url_chunks
 
     @property
     def url_template_mapping(self) -> dict:
         """Get board type to url template mapping."""
-        return self.meta["url_templates"]
+        return self.meta.url_templates
 
     def load_meta(self):
         """Load `board_meta.toml`."""
-        self._meta = (root / "board_meta.toml").loads()
+        self._meta = BoardMeta.load()
 
     def load_careers_page_stubs(self):
         """Load `careers_page_stubs.txt`."""
