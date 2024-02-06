@@ -24,7 +24,7 @@ def get_peruse_parser() -> argshell.ArgShellParser:
     parser = argshell.ArgShellParser(
         description=""" Look through newly added job listings.
         If there is no `peruse_filters.toml` file, it will be created.
-        The fields in this file can be used to filter locations and positions by text as well as set up default search terms.
+        The fields in this file can be used to filter locations, positions, and urls by text as well as set up default search terms.
         All fields are case insensitive.
         """
     )
@@ -52,6 +52,14 @@ def get_peruse_parser() -> argshell.ArgShellParser:
         help=""" Use `filter_out_position_terms` in `peruse_filters.toml` to filter listings. 
         i.e. any listings with these words in the job `position` won't be shown.
         Overrides `key_terms` arg.""",
+    )
+
+    parser.add_argument(
+        "-fu",
+        "--filter_urls",
+        action="store_true",
+        help=""" Use `filter_out_url_terms` in `peruse_filters.toml` to filter listings.
+    i.e. any listings with urls containing one of the terms won't be shown.""",
     )
 
     parser.add_argument(
@@ -178,8 +186,10 @@ def main(args: argparse.Namespace):
     default_search = filters["default_search_terms"] if args.default_search else []
     if args.filter_locations:
         listings = filter_listings(
-            listings, "location", [], exclude_terms=filters["filter_out_location_terms"]
+            listings, "location", [], filters["filter_out_location_terms"]
         )
+    if args.filter_urls:
+        listings = filter_listings(listings, "url", [], filters["filter_out_url_terms"])
     excludes = filters["filter_out_position_terms"] if args.filter_positions else []
     listings = filter_listings(
         listings, "position", args.key_terms + default_search, excludes

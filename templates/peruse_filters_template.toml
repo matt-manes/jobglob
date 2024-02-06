@@ -6,6 +6,10 @@ filter_out_location_terms = [
     
 ]
 
+filter_out_url_terms = [
+    
+]
+
 default_search_terms = [
     
 ]
