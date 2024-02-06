@@ -185,7 +185,7 @@ class JobShell(DBShell):
             url = db.get_board(company).url
         webbrowser.open_new_tab(url)
 
-    @argshell.with_parser(peruse.get_peruse_parser, [peruse.lower_terms])
+    @argshell.with_parser(peruse.get_peruse_parser, [peruse.peruse_postparser])
     def do_peruse(self, args: argshell.Namespace):
         """Look through unseen job listings."""
         peruse.main(args)

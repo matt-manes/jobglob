@@ -244,9 +244,9 @@ By entering 'a', 'i', or 'd', this listing will not be shown to you next time yo
 
 <pre>
 jobs.db>peruse -h
-usage: jobshell.py [-h] [-fl] [-fp] [-ds] [-nf] [key_terms ...]
+usage: jobshell.py [-h] [-fl] [-fp] [-fu] [-ds] [-a] [key_terms ...]
 
-Look through newly added job listings. If there is no `peruse_filters.toml` file, it will be created. The fields in this file can be used to filter locations and positions by text as well as set up default search terms. All fields are case
+Look through newly added job listings. If there is no `peruse_filters.toml` file, it will be created. The fields in this file can be used to filter locations, positions, and urls by text as well as set up default search terms. All fields are case
 insensitive.
 
 positional arguments:
@@ -258,12 +258,13 @@ options:
                         Use `filter_out_location_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `location` won't be shown.
   -fp, --filter_positions
                         Use `filter_out_position_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with these words in the job `position` won't be shown. Overrides `key_terms` arg.
+  -fu, --filter_urls    Use `filter_out_url_terms` in `peruse_filters.toml` to filter listings. i.e. any listings with urls containing one of the terms won't be shown.
   -ds, --default_search
                         Use `default_search_terms` in `persuse_filters.toml` in addition to any provided `key_terms` arguments.
-  -nf, --newest_first   Go through listings starting with the most recent. Default is oldest first.
+  -a, --all             Equivalent to `peruse.py -ds -fl -fp -fu -nf
 </pre>
 
-The `-fl`, `-fp`, `-ds` arguments refer to a file that should have just been generated called `peruse_filters.toml`.  
+The `-fl`, `-fp`, `-fu`, and `-ds` arguments refer to a file that should have just been generated called `peruse_filters.toml`.  
 It should look like this:
 
 <pre>
@@ -275,12 +276,16 @@ filter_out_location_terms = [
     
 ]
 
+filter_out_url_terms = [
+    
+]
+
 default_search_terms = [
     
 ]
 </pre>
 
-The first two can be used to filter out listings and the bottom one can be used to search for listings.  
+The first three can be used to filter out listings and the bottom one can be used to search for listings.  
 For example:
 
 <pre>
@@ -294,6 +299,10 @@ filter_out_location_terms = [
     "england"
 ]
 
+filter_out_url_terms = [
+    "-pune-india-
+]
+
 default_search_terms = [
     "python",
     "data",
@@ -301,8 +310,11 @@ default_search_terms = [
 ]
 </pre>
 
-Now running `peruse -ds -fl -fp` will show listings that contain "python", "data", or "backend", but not if they contain "senior" or "manager".  
-Any listings with "alabama" or "england" in the `location` field will also be removed.
+Now running `peruse -ds -fl -fp -fu` will show listings that contain "python", "data", or "backend", 
+but not if they contain "senior" or "manager".  
+Any listings with "alabama" or "england" in the `location` field or `-pune-india-` in the url will also be removed.  
+Filtering urls is particularly useful for boards like MyWorkday where the `location` is often "n Locations", 
+but the url contains location info.  
 
 <pre>
 jobs.db>peruse -ds -fl -fp
@@ -419,6 +431,7 @@ The current list of supported job boards:
 - Paycom
 - Paylocity
 - Dover
+- Rippling
 
 Scrapers for job boards not in this list will have a generated file at `./scrapers/{company}.py` that looks like:
 <pre>

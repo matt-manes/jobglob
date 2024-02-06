@@ -70,11 +70,10 @@ def get_peruse_parser() -> argshell.ArgShellParser:
     )
 
     parser.add_argument(
-        "-nf",
-        "--newest_first",
+        "-a",
+        "--all",
         action="store_true",
-        help=""" Go through listings starting with the most recent.
-        Default is oldest first.""",
+        help=""" Equivalent to `peruse.py -ds -fl -fp -fu -nf""",
     )
 
     return parser
@@ -85,9 +84,23 @@ def lower_terms(args: argshell.Namespace) -> argshell.Namespace:
     return args
 
 
-def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(parents=[get_peruse_parser()], add_help=False)
-    args = lower_terms(parser.parse_args())  # type: ignore
+def peruse_postparser(args: argshell.Namespace) -> argshell.Namespace:
+    if args.all:
+        for arg in [
+            "default_search",
+            "filter_positions",
+            "filter_locations",
+            "filter_urls",
+            "newest_first",
+        ]:
+            setattr(args, arg, True)
+    args = lower_terms(args)
+    return args
+
+
+def get_args() -> argshell.Namespace:
+    args = get_peruse_parser().parse_args()
+    args = peruse_postparser(args)
     return args
 
 
