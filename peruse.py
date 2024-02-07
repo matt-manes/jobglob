@@ -71,6 +71,13 @@ def get_peruse_parser() -> argshell.ArgShellParser:
     )
 
     parser.add_argument(
+        "-nf",
+        "--newest_first",
+        action="store_true",
+        help=""" Show newest listings first.""",
+    )
+
+    parser.add_argument(
         "-a",
         "--all",
         action="store_true",
