@@ -158,7 +158,10 @@ class JobGruel(Gruel):
             with JobBased() as db:
                 for listing in resurrected_listings:
                     db.reset_alive_status(listing.id_)
-                    db.delete("seen_listings", f"listing_id = {listing.id_}")
+                    db.delete(
+                        "seen_listings",
+                        f"listing_id = {listing.id_} AND {listing.id_} NOT IN (SELECT listing_id FROM pinned_listings)",
+                    )
                     self.logger.info(
                         f"Resurrecting listing with id {listing.id_}. ({listing.position} - {listing.url})"
                     )
