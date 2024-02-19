@@ -10,12 +10,11 @@ import argshell
 import requests
 from gruel import Gruel, request
 from pathier import Pathier
-from printbuddies import ProgBar, Progress, Spinner, TimerColumn
-from quickpool import update_and_wait
+from printbuddies import Progress, TimerColumn
 from rich import print
+from rich.console import Console
 from scrapetools import LinkScraper
 from younotyou import Matcher, younotyou
-from noiftimer import Timer
 
 from config import Config
 
@@ -232,10 +231,16 @@ class Crawler(Gruel):
             self._cancel_workers()
         if running_workers := self._get_running_workers():
             print(f"Waiting for {len(running_workers)} workers to finish...")
-            with Spinner(width_ratio=0.15) as spinner:
-                while self._get_running_workers():
-                    spinner.display()
-                    time.sleep(0.1)
+            num_running: Callable[[list[Future[Any]]], str] = (
+                lambda n: f"[pink1]{len(n)} running workers..."
+            )
+            with Console().status(
+                num_running(running_workers),
+                spinner="arc",
+                spinner_style="deep_pink1",
+            ) as c:
+                while running_workers := self._get_running_workers():
+                    c.update(num_running(running_workers))
 
     def crawl(self):
         self.timer.start()
