@@ -4,16 +4,18 @@ from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from functools import lru_cache
-from typing import Any
+from typing import Any, Callable
 
 import argshell
 import requests
 from gruel import Gruel, request
 from pathier import Pathier
-from printbuddies import ProgBar, Spinner
+from printbuddies import ProgBar, Progress, Spinner, TimerColumn
+from quickpool import update_and_wait
 from rich import print
 from scrapetools import LinkScraper
 from younotyou import Matcher, younotyou
+from noiftimer import Timer
 
 from config import Config
 
@@ -241,17 +243,21 @@ class Crawler(Gruel):
             f"Starting crawl ({datetime.now():%H:%M:%S}) at {self.new_urls[0]}"
         )
         with ThreadPoolExecutor(self.max_threads) as executor:
-            with ProgBar(1, width_ratio=0.3) as bar:
+            columns = list(Progress.get_default_columns())
+            columns[3] = TimerColumn(True)
+            with Progress(*columns) as progress:
+                crawler = progress.add_task()
                 while (
                     self.new_urls or self._get_unfinished_workers()
                 ) and not self._limits_exceeded():
                     self._dispatch_workers(executor)
                     num_finished = len(self._get_finished_workers())
                     total = len(self.workers) + len(self.new_urls)
-                    bar.display(
-                        f"{bar.runtime}-{num_finished}/{total} urls",
-                        counter_override=num_finished,
-                        total_override=total,
+                    progress.update(
+                        crawler,
+                        total=total,
+                        completed=num_finished,
+                        description=f"{num_finished}/{total} urls",
                     )
                     time.sleep(0.1)
             self._shutdown()
