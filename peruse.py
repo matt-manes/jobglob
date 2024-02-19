@@ -119,7 +119,7 @@ def filter_listings(
     exclude_terms: list[str],
 ) -> list[models.Listing]:
     """Filter `listings` on the field specified by `filter_on`."""
-    filtered_listings = []
+    filtered_listings: list[models.Listing] = []
     for listing in listings:
         column = getattr(listing, filter_on).lower()
         if any(exclude in column for exclude in exclude_terms):

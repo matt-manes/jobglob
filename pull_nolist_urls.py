@@ -16,7 +16,7 @@ def main():
         .events[-1]
     )
     stems = [stem.strip() for stem in event.message.split()[1:]]
-    urls = []
+    urls: list[str] = []
     with JobBased() as db:
         for stem in stems:
             urls.append(db.get_board(stem).url)

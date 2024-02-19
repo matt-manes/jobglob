@@ -7,7 +7,7 @@ from typing import Any
 from bs4 import Tag
 
 import models
-from jobgruel import JobGruel, ParsableItem
+from jobgruel import JobGruel
 
 
 class JobScraper(JobGruel):

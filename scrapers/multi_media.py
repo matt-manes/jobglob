@@ -1,4 +1,5 @@
 from pathier import Pathier
+from typing import Any
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -7,7 +8,7 @@ from jobgruel import WorkableGruel
 
 
 class JobScraper(WorkableGruel):
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.url = (

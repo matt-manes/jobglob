@@ -7,15 +7,15 @@ from typing import Any
 from bs4 import Tag
 
 import models
-from jobgruel import JobGruel, ParsableItem
+from jobgruel import JobGruel
 
 
 class JobScraper(JobGruel):
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="position")
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)

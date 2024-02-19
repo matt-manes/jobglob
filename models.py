@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Callable
 
-import requests
 from pathier import Pathier
-from whosyouragent import whosyouragent
 
 root = Pathier(__file__).parent
 
@@ -68,7 +67,7 @@ class Listing:
 
     def prune_strings(self):
         """Remove extra whitespaces from `self.position` and `self.location` strings."""
-        prune = lambda s: " ".join(s.strip().split())
+        prune: Callable[[str], str] = lambda s: " ".join(s.strip().split())
         self.position = prune(self.position)
         self.location = prune(self.location)
 

@@ -1,4 +1,5 @@
 from pathier import Pathier
+from typing import Any
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -12,7 +13,7 @@ class JobScraper(JobGruel):
         return f"{self.board.url}/JobBoardView/LoadSearchResults"
 
     @property
-    def api_payload(self) -> dict:
+    def api_payload(self) -> dict[str, Any]:
         return {
             "opportunitySearch": {
                 "Top": 1000,
@@ -56,7 +57,7 @@ class JobScraper(JobGruel):
             },
         }
 
-    def get_parsable_items(self) -> list[dict]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         response = self.request(
             self.api_url,
             "post",
@@ -68,7 +69,7 @@ class JobScraper(JobGruel):
         )
         return response.json()["opportunities"]
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["Title"]

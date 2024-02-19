@@ -4,10 +4,11 @@ from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from functools import lru_cache
+from typing import Any
 
 import argshell
 import requests
-from gruel import Gruel
+from gruel import Gruel, request
 from pathier import Pathier
 from printbuddies import ProgBar, Spinner
 from rich import print
@@ -50,9 +51,9 @@ class Crawler(Gruel):
         self.board_urls: deque[str] = deque()
         # Help detect embedded boards by searching response text for stubs.
         # Keys are urls and values are a set of stubs found on that url.
-        self.urls_with_stubs: dict[str, set] = {}
+        self.urls_with_stubs: dict[str, set[str]] = {}
         self.max_threads: int = 3
-        self.workers: list[Future] = []
+        self.workers: list[Future[Any]] = []
         self.max_depth: int | None = max_depth
         self.max_time: float | None = max_time
         self.max_hits: int | None = max_hits
@@ -69,15 +70,15 @@ class Crawler(Gruel):
         if debug:
             self.logger.setLevel("DEBUG")
 
-    def _get_finished_workers(self) -> list[Future]:
+    def _get_finished_workers(self) -> list[Future[Any]]:
         """Returns a list of finished futures."""
         return [worker for worker in self.workers if worker.done()]
 
-    def _get_unfinished_workers(self) -> list[Future]:
+    def _get_unfinished_workers(self) -> list[Future[Any]]:
         """Returns a list of unfinished futures."""
         return [worker for worker in self.workers if not worker.done()]
 
-    def _get_running_workers(self) -> list[Future]:
+    def _get_running_workers(self) -> list[Future[Any]]:
         """Returns a list of currently executing futures."""
         return [worker for worker in self.workers if worker.running()]
 
@@ -159,7 +160,7 @@ class Crawler(Gruel):
     def _scrape_page(self, url: str):
         """Scrape `url` for job boards and more urls to scrape."""
         self.logger.info(f"Scraping {url}")
-        response = self.request(url, timeout=10, retry_on_fail=False)
+        response = request(url, timeout=10, retry_on_fail=False)
         same_site_urls, board_urls = self._extract_urls(response)
         if board_urls:
             self.logger.info(f"Found {len(board_urls)} board urls on {url}")
@@ -170,7 +171,7 @@ class Crawler(Gruel):
                 site_url
                 for site_url in same_site_urls
                 if not site_url.startswith("http:")
-                and site_url not in [self.new_urls + self.scraped_urls]
+                and site_url not in (self.new_urls + self.scraped_urls)
             ]
             self.logger.debug(
                 f"Found {len(new_urls)} new urls on {url}:\n" + "\n".join(new_urls)

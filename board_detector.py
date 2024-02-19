@@ -1,4 +1,5 @@
 from string import ascii_letters, digits
+from typing import Callable
 
 import quickpool
 import requests
@@ -32,12 +33,12 @@ class BoardDetector:
         return self._meta
 
     @property
-    def url_chunk_mapping(self) -> dict:
+    def url_chunk_mapping(self) -> dict[str, str]:
         """Get url chunk to board type mapping."""
         return self.meta.url_chunks
 
     @property
-    def url_template_mapping(self) -> dict:
+    def url_template_mapping(self) -> dict[str, str]:
         """Get board type to url template mapping."""
         return self.meta.url_templates
 
@@ -113,7 +114,7 @@ class BoardDetector:
 
         Returns a list of the urls that return a 200 status code and don't redirect to a different url.
         """
-        valid_urls = []
+        valid_urls: list[str] = []
         for url in urls:
             try:
                 response = self.request(url)
@@ -137,15 +138,17 @@ class BoardDetector:
         Returns a list of urls that appear valid."""
         # Slightly different from self.boards b/c this includes greenhouse_embed
         board_types = list(self.url_template_mapping.keys())
-        try_board = lambda company, board_type: self.get_valid_urls(
-            self.get_possible_urls(company, board_type)
+        try_board: Callable[[str, str], list[str] | None] = (
+            lambda company, board_type: self.get_valid_urls(
+                self.get_possible_urls(company, board_type)
+            )
         )
         pool = quickpool.ThreadPool(
             [try_board] * len(board_types),
             [(company, board_type) for board_type in board_types],
         )
         results = [result for result in pool.execute() if result]
-        candidate_urls = []
+        candidate_urls: list[str] = []
         for result in results:
             candidate_urls.extend(result)
         return candidate_urls

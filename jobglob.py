@@ -98,7 +98,7 @@ class ScraperLoader:
         with JobBased() as db:
             boards = db.get_active_boards()
         random.shuffle(boards)
-        scrapers = deque()
+        scrapers: deque[tuple[models.Board, Type[jobgruel.JobGruel]]] = deque()
         for board in boards:
             scraper_class = self.get_scraper_class(board)
             if scraper_class:
@@ -116,7 +116,7 @@ class JobGlob(Brewer):
 
     def group_by_company(self, listings: list[models.Listing]) -> dict[str, list[str]]:
         """Returns listing positions grouped by company."""
-        grouped_listings = {}
+        grouped_listings: dict[str, list[str]] = {}
         for listing in listings:
             if listing.company.name not in grouped_listings:
                 grouped_listings[listing.company.name] = [listing.position]
@@ -156,7 +156,7 @@ class JobGlob(Brewer):
             if listing.date_removed and start_time < listing.date_removed
         ]
         self.logger.logprint(f"Found {len(listings)} dead listings.")
-        dead_pinned_listings = []
+        dead_pinned_listings: list[dict[str, str | int]] = []
         listing_ids = [listing.id_ for listing in listings]
         for listing in pinned_listings:
             if listing.id_ in listing_ids:
@@ -203,11 +203,11 @@ class JobGlob(Brewer):
             f"Total runtime: {Timer.format_time((datetime.now() - self.start_time).total_seconds())}"
         )
 
-    def scrape(self):
+    def scrape(self) -> list[Any]:
         with JobBased() as db:
             listings = db.get_listings()
 
-        def execute(scraper, kwargs):
+        def execute(scraper: Type[jobgruel.JobGruel], kwargs: dict[str, Any]):
             scraper(listings, **kwargs).scrape()
 
         pool = quickpool.ThreadPool(
@@ -217,14 +217,14 @@ class JobGlob(Brewer):
                 for scraper, kwargs in zip(self.scrapers, self.scraper_kwargs)
             ],
         )
-        pool.execute()
+        return pool.execute()
 
 
 def main():
     loader = ScraperLoader()
     scrapers = loader.load_active_scrapers()
-    classes = deque()
-    kwargs = deque()
+    classes: deque[type[jobgruel.JobGruel]] = deque()
+    kwargs: deque[dict[str, models.Board]] = deque()
     for scraper in scrapers:
         board, class_ = scraper
         classes.append(class_)

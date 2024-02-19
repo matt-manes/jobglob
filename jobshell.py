@@ -152,13 +152,13 @@ class JobShell(DBShell):
             scraper.scrape()
             print(logglob.load_log(scraper.board.company.name).filter_dates(start))
 
-    def do_help(self, cmd: str):
+    def do_help(self, arg: str):
         """Display help messages."""
         print()
-        if not cmd:
+        if not arg:
             header = "Common commands (type help <topic>):"
             self.print_topics(header, self.common_commands, 15, 80)
-        super().do_help(cmd)
+        super().do_help(arg)
 
     def do_jobglob(self, _: str):
         """Scrape active job boards."""

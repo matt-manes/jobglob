@@ -11,8 +11,8 @@ config = Config.load()
 @dataclass
 class BoardMeta:
     boards: list[str]
-    url_chunks: dict
-    url_templates: dict
+    url_chunks: dict[str, str]
+    url_templates: dict[str, str]
 
     @classmethod
     def load(cls) -> Self:

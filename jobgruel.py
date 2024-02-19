@@ -1,10 +1,10 @@
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from gruel import Gruel, ParsableItem
+import gruel
 from pathier import Pathier
 
 import helpers
@@ -23,7 +23,7 @@ The rest are subclasses of `JobGruel` for specific job boards like Greenhouse, L
 """
 
 
-class JobGruel(Gruel):
+class JobGruel(gruel.Gruel):
     """Primary job board scraping engine.
 
     Classes inheriting from `JobGruel` must implement:
@@ -51,7 +51,7 @@ class JobGruel(Gruel):
         )
         # database connection only gets opened if `get_board` or `_get_listings` is called
         db = JobBased(commit_on_close=False)
-        self.board = board or db.get_board(self.name)
+        self.board = board if board else db.get_board(self.name)
         listings = (
             [
                 listing
@@ -80,8 +80,10 @@ class JobGruel(Gruel):
         url: str,
         method: str = "get",
         headers: dict[str, str] = {},
-        params: dict[str, str] = {},
-        data: dict[str, str] = {},
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        timeout: int | None = None,
+        retry_on_fail: bool = True,
         json_: Any | None = None,
     ) -> requests.Response:
         """Returns a `request.Response` object for the given `url`.
@@ -90,7 +92,9 @@ class JobGruel(Gruel):
 
         Logs the response status code and the resolved url if different from the provided `url`.
         """
-        response = super().request(url, method, headers, params, data, json_=json_)
+        response = gruel.request(
+            url, method, headers, params, data, timeout, retry_on_fail, json_=json_
+        )
         if response.status_code == 404:
             self.logger.error(f"{url} returned status code 404")
         else:
@@ -103,15 +107,15 @@ class JobGruel(Gruel):
         """Returns a `models.Listing` object that is only populated with this scraper's company model."""
         return models.Listing(self.board.company)
 
-    def store_item(self, listing: models.Listing):
+    def store_item(self, item: models.Listing):
         """Add `listing` to the database if it doesn't already exist (based off `listing.url`)."""
-        listing.url = listing.url.strip("/")
-        if listing.url not in self.existing_listing_urls:
+        item.url = item.url.strip("/")
+        if item.url not in self.existing_listing_urls:
             with JobBased() as db:
-                listing.date_added = datetime.now()
-                listing.prune_strings()
+                item.date_added = datetime.now()
+                item.prune_strings()
                 try:
-                    db.add_listing(listing)
+                    db.add_listing(item)
                     self.success_count += 1
                 except Exception as e:
                     if "UNIQUE constraint failed" not in str(e):
@@ -176,7 +180,7 @@ class JobGruel(Gruel):
 class GreenhouseGruel(JobGruel):
     """`JobGruel` subclass for Greenhouse job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="opening")
 
@@ -206,7 +210,7 @@ class GreenhouseGruel(JobGruel):
 class LeverGruel(JobGruel):
     """`JobGruel` subclass for Lever job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="posting")
 
@@ -238,14 +242,14 @@ class LeverGruel(JobGruel):
 class BambooGruel(JobGruel):
     """`JobGruel` subclass for BambooHR job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         url = f"{self.board.url}/list"
         response = self.request(url)
         if response.url.strip("/") != url:
             raise RuntimeError(f"Board url {url} resolved to {response.url}")
         return response.json()["result"]
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.url = f"{self.board.url}/{item['id']}"
@@ -276,7 +280,7 @@ class AshbyGruel(JobGruel):
         return "ApiJobBoardWithTeams"
 
     @property
-    def api_variables(self) -> dict:
+    def api_variables(self) -> dict[str, str]:
         return {
             "organizationHostedJobsPageName": self.board.url[
                 self.board.url.rfind("/") + 1 :
@@ -287,7 +291,7 @@ class AshbyGruel(JobGruel):
     def api_query(self) -> str:
         return "query ApiJobBoardWithTeams($organizationHostedJobsPageName: String!) {\n  jobBoard: jobBoardWithTeams(\n    organizationHostedJobsPageName: $organizationHostedJobsPageName\n  ) {\n    teams {\n      id\n      name\n      parentTeamId\n      __typename\n    }\n    jobPostings {\n      id\n      title\n      teamId\n      locationId\n      locationName\n      employmentType\n      secondaryLocations {\n        ...JobPostingSecondaryLocationParts\n        __typename\n      }\n      compensationTierSummary\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment JobPostingSecondaryLocationParts on JobPostingSecondaryLocation {\n  locationId\n  locationName\n  __typename\n}"
 
-    def get_parsable_items(self) -> list[dict]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         response = self.request(
             self.api_url,
             "post",
@@ -303,7 +307,7 @@ class AshbyGruel(JobGruel):
         )
         return response.json()["data"]["jobBoard"]["jobPostings"]
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["title"]
@@ -320,13 +324,13 @@ class AshbyGruel(JobGruel):
 class WorkableGruel(JobGruel):
     """`JobGruel` subclass for Workable job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         return self.request(
             f"https://apply.workable.com/api/v3/accounts/{self.board.url[self.board.url.rfind('/')+1:]}/jobs",
             "post",
         ).json()["results"]
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.url = f"https://apply.workable.com/{self.board.url[self.board.url.rfind('/')+1:]}/j/{item['shortcode']}"
@@ -348,13 +352,13 @@ class WorkableGruel(JobGruel):
 class EasyapplyGruel(JobGruel):
     """`JobGruel` subclass for Easyapply job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         listings = soup.find("div", attrs={"id": "list"})
         assert isinstance(listings, Tag)
         return listings.find_all("a", attrs={"target": "_blank"})
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -382,16 +386,16 @@ class EasyapplyGruel(JobGruel):
 class JobviteGruel(JobGruel):
     """`JobGruel` subclass for Jobvite job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         job_tables = soup.find_all("table", class_="jv-job-list")
-        listings = []
+        listings: list[Tag] = []
         for table in job_tables:
             if isinstance(table, Tag):
                 listings.extend(table.find_all("tr"))
         return listings
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -413,14 +417,14 @@ class JobviteGruel(JobGruel):
 class ApplytojobGruel(JobGruel):
     """`JobGruel` subclass for ApplyToJob job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         list_group = soup.find("ul", class_="list-group")
         if isinstance(list_group, Tag):
             return list_group.find_all("li", class_="list-group-item")
         return []
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -444,16 +448,16 @@ class ApplytojobGruel(JobGruel):
 class SmartrecruiterGruel(JobGruel):
     """`JobGruel` subclass for SmartRecruiters job boards."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         company_page = self.board.url[self.board.url.rfind("/") + 1 :]
         self.api_endpoint = (
             f"https://careers.smartrecruiters.com/{company_page}/api/more?page="
         )
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         page_count = 0
-        listings = []
+        listings: list[Tag] = []
         while True:
             if page_count == 0:
                 soup = self.get_soup(self.board.url)
@@ -469,7 +473,7 @@ class SmartrecruiterGruel(JobGruel):
             page_count += 1
         return listings
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -493,7 +497,7 @@ class SmartrecruiterGruel(JobGruel):
 class RecruiteeGruel(JobGruel):
     """`JobGruel` subclass for Recruitee job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         output = soup.find("output")
         if not isinstance(output, Tag):
@@ -502,7 +506,7 @@ class RecruiteeGruel(JobGruel):
         assert isinstance(div_grid, Tag)
         return div_grid.find_all("div", recursive=False)
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -527,11 +531,11 @@ class RecruiteeGruel(JobGruel):
 class RecruiteeAltGruel(JobGruel):
     """Alternative `JobGruel` subclass for Recruitee job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("div", class_="job")
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -553,11 +557,11 @@ class RecruiteeAltGruel(JobGruel):
 class BreezyGruel(JobGruel):
     """`JobGruel` subclass for Breezy job boards."""
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all("li", class_="position transition")
 
-    def parse_item(self, item: ParsableItem) -> models.Listing | None:
+    def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()
             assert isinstance(item, Tag)
@@ -596,10 +600,10 @@ class MyworkdayGruel(JobGruel):
         company_stem = company_stem.replace("-", "_")
         return f"{base}/wday/cxs/{company_stem}/{anchor}/jobs"
 
-    def get_parsable_items(self) -> list[ParsableItem]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         chunk = 0
         listings_per_chunk = 20
-        next_chunk = lambda chunk: self.request(
+        next_chunk: Callable[[int], dict[str, Any]] = lambda chunk: self.request(
             self.api_url,
             "post",
             headers={
@@ -611,7 +615,7 @@ class MyworkdayGruel(JobGruel):
                 "offset": str(chunk * listings_per_chunk),
             },
         ).json()
-        items = []
+        items: list[dict[str, Any]] = []
         data = next_chunk(chunk)
         total_listings = data["total"]
         total_chunks = int(total_listings / listings_per_chunk) + 1
@@ -626,7 +630,7 @@ class MyworkdayGruel(JobGruel):
             )
         return items
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["title"]
@@ -672,11 +676,11 @@ class TeamtailorGruel(JobGruel):
 class PaycomGruel(JobGruel):
     """`JobGruel` subclass for Paycom job boards."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.base_url = "https://www.paycomonline.net"
 
-    def get_parsable_items(self) -> list[dict]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         soup = self.get_soup(self.board.url)
         main_content = soup.find("div", attrs={"id": "main-content"})
         assert isinstance(main_content, Tag)
@@ -685,7 +689,7 @@ class PaycomGruel(JobGruel):
         data = json.loads(data_script)
         return data
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["title"]
@@ -702,7 +706,7 @@ class PaycomGruel(JobGruel):
 class PaylocityGruel(JobGruel):
     """`JobGruel` subclass for Paylocity job boards."""
 
-    def get_parsable_items(self) -> list[dict]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         soup = self.get_soup(self.board.url)
         # Look for `<script> window.pageData = `
         for script in soup.find_all("script"):
@@ -712,7 +716,7 @@ class PaylocityGruel(JobGruel):
                 return json.loads(text)["Jobs"]
         raise RuntimeError("Could not find `window.pageData` script.")
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["JobTitle"]
@@ -729,13 +733,13 @@ class PaylocityGruel(JobGruel):
 class DoverGruel(JobGruel):
     """`JobGruel` subclass for Dover job boards."""
 
-    def get_parsable_items(self) -> list[dict]:
+    def get_parsable_items(self) -> list[dict[str, Any]]:
         # https://app.dover.io/{company}/careers/{board_id}
         board_id = self.board.url[self.board.url.rfind("/") + 1 :]
         url = f"https://app.dover.io/api/v1/careers-page/{board_id}/jobs"
         return self.request(url).json()["results"]
 
-    def parse_item(self, item: dict) -> models.Listing | None:
+    def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()
             listing.position = item["title"]

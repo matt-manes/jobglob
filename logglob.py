@@ -2,9 +2,8 @@ from datetime import datetime
 from typing import Generator
 
 import loggi
-from pathier import Pathier, Pathish
+from pathier import Pathier
 
-import helpers
 from config import Config
 
 root = Pathier(__file__).parent
@@ -25,7 +24,7 @@ def get_all_logs() -> Generator[loggi.models.Log, None, None]:
 
 def get_failed_scrapers(start_time: datetime) -> list[str]:
     """Returns a list of scrapers whose last log message is an `ERROR` or `EXCEPTION`."""
-    fails = []
+    fails: list[str] = []
     for log in get_all_logs():
         if log.filter_dates(start_time).filter_levels(["ERROR", "EXCEPTION"]).events:
             assert log.path
@@ -50,7 +49,7 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
     Ouput is a dictionary where the error type is the key and the values are lists of scrapers.
 
     Error keys: `redirects`, `404s`, `no_listings`, `parse_fails`, and `misc_fails`."""
-    scrapers = {
+    scrapers: dict[str, list[str]] = {
         "redirects": [],
         "404s": [],
         "no_listings": [],

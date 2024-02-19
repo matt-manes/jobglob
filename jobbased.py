@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from databased import Databased
 from pathier import Pathier, Pathish
@@ -13,7 +14,7 @@ config = Config.load()
 class JobBased(Databased):
     """Database interface for `jobs.db`."""
 
-    def __init__(self, dbpath: Pathish = config.db_path, *args, **kwargs):
+    def __init__(self, dbpath: Pathish = config.db_path, *args: Any, **kwargs: Any):
         super().__init__(dbpath, *args, log_dir=config.logs_dir, **kwargs)
 
     def _get_listings(
@@ -289,13 +290,6 @@ class JobBased(Databased):
         self.query(
             f"UPDATE listings SET date_removed = NULL WHERE listing_id = {listing_id};"
         )
-
-    def to_grid(self, rows: list[dict]) -> str:
-        for i, row in enumerate(rows):
-            for col in row:
-                row[col] = str(row[col])
-            rows[i] = row
-        return super().to_grid(rows)
 
     def update_board_url(self, board_id: int, url: str) -> int:
         """Update board with id `board_id` to `url`.
