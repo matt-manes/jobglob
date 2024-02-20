@@ -72,7 +72,7 @@ jobs.db>
 ---
 ---
 
-The primary interface for running JobGlob tasks and interacting witht the database
+The primary interface for running JobGlob tasks and interacting with the database
 is the `jobshell.py` program mentioned above.  
 A list of commands or specific command help can be seen by using the `help` command:
 
