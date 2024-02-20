@@ -3,8 +3,8 @@ import webbrowser
 from dataclasses import asdict
 
 import argshell
-from griddle import griddy
 from pathier import Pathier
+from printbuddies import Grid
 from rich import print
 
 import models
@@ -160,7 +160,7 @@ def do_action(listing: models.Listing) -> bool | None:
                 print("oops")
 
 
-def show(listing: models.Listing):
+def show(listing: models.Listing, title: str):
     """Format and print a listing in the terminal."""
     line = asdict(listing)
     line = {
@@ -171,7 +171,13 @@ def show(listing: models.Listing):
         "date": line["date_added"],
         "url": line["url"],
     }
-    print(griddy([line], "keys"))
+    print(
+        Grid(
+            [line],
+            title,
+            cast_values_to_strings=True,
+        )
+    )
 
 
 def peruse(listings: list[models.Listing]):
@@ -179,8 +185,8 @@ def peruse(listings: list[models.Listing]):
     num_listings = len(listings)
     print(f"Unseen listings: {num_listings}")
     for i, listing in enumerate(listings, 1):
-        print(f"{i}/{num_listings}")
-        show(listing)
+        # print(f"{i}/{num_listings}")
+        show(listing, f"{i}/{num_listings}")
         if do_action(listing):
             break
 
