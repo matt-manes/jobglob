@@ -171,13 +171,7 @@ def show(listing: models.Listing, title: str):
         "date": line["date_added"],
         "url": line["url"],
     }
-    print(
-        Grid(
-            [line],
-            title,
-            cast_values_to_strings=True,
-        )
-    )
+    print(Grid([line], title, cast_values_to_strings=True, title_justify="left"))
 
 
 def peruse(listings: list[models.Listing]):
