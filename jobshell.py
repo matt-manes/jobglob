@@ -253,6 +253,7 @@ class JobShell(DBShell):
 
     @argshell.with_parser(shellparsers.get_update_board_url_parser)
     def do_update_board_url(self, args: argshell.Namespace):
+        """Update the board url for the given board id to the given url."""
         print(f"Updating url for board id `{args.id}` to `{args.url}`...")
         with JobBased(self.dbpath) as db:
             count = db.update_board_url(args.id, args.url)
