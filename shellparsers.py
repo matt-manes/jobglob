@@ -25,7 +25,7 @@ def get_add_listing_parser() -> argshell.ArgShellParser:
 def get_add_board_parser() -> argshell.ArgShellParser:
     """Returns a `add_board` parser."""
     parser = argshell.ArgShellParser()
-    parser.add_argument("url", type=str, help=" Job board url.3 ")
+    parser.add_argument("url", type=str, help=" Job board url. ")
     parser.add_argument("company", type=str, help=" Company name. ")
     parser.add_argument(
         "-b",
