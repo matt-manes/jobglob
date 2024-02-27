@@ -75,3 +75,18 @@ def get_scrapers_with_errors(start_time: datetime) -> dict[str, list[str]]:
         elif error_exceptions.events:
             scrapers["misc_fails"].append(log.path.stem)
     return scrapers
+
+
+def get_empty_boards() -> list[str]:
+    """Return the stems of scrapers that found no listings on their last run."""
+    empty_boards: list[str] = []
+    for log in get_all_logs():
+        if (
+            "get_parsable_items() returned 0 items"
+            in log.filter_messages(["*get_parsable_items() returned*"])
+            .events[::-1][0]
+            .message
+        ):
+            assert log.path
+            empty_boards.append(log.path.stem)
+    return sorted(empty_boards)

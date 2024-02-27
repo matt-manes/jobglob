@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import argshell
 from databased.dbshell import DBShell
+from noiftimer import time_it
 from pathier import Pathier
 from rich import print
 
@@ -128,6 +129,24 @@ class JobShell(DBShell):
         """Dump data for `companies`, `boards`, and `listings` tables to `sql/jobs_data.sql`."""
         print("Creating dump file...")
         dump_data.dump()
+
+    @time_it()
+    def do_empty_boards(self, _: str):
+        """Display scrapers that found no listings on their last run."""
+        with self.console.status(
+            "[pink1]Searching for empty boards...",
+            spinner_style="deep_pink1",
+            spinner="arc",
+        ):
+            empty_boards = logglob.get_empty_boards()
+        empty_boards = [helpers.stem_to_name(board) for board in empty_boards]
+        with JobBased(self.dbpath) as db:
+            """scrapers = db.select(
+                "listings_count", where="live_listings = 0"
+            )"""
+            scrapers = db.get_scrapers_from_companies(empty_boards)
+        self.display(scrapers)
+        self.console.print(f"[turquoise2]{len(scrapers)} [pink1]results.")
 
     def do_generate_peruse_filters_file(self, _: str):
         """Generate a file named `peruse_filters.toml` that is empty besides categories.

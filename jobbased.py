@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from databased import Databased
+from databased import Databased, Rows
 from pathier import Pathier, Pathish
 
 import models
@@ -296,3 +296,8 @@ class JobBased(Databased):
 
         Returns the number of updated records."""
         return self.update("boards", "url", url, f"board_id = {board_id}")
+
+    def get_scrapers_from_companies(self, companies: list[str]) -> Rows:
+        """Return rows from `scrapers` view for `companies`."""
+        companies_ = "'" + "','".join(companies) + "'"
+        return self.select("scrapers", where=f"company in ({companies_})")
