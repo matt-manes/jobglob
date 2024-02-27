@@ -141,9 +141,6 @@ class JobShell(DBShell):
             empty_boards = logglob.get_empty_boards()
         empty_boards = [helpers.stem_to_name(board) for board in empty_boards]
         with JobBased(self.dbpath) as db:
-            """scrapers = db.select(
-                "listings_count", where="live_listings = 0"
-            )"""
             scrapers = db.get_scrapers_from_companies(empty_boards)
         self.display(scrapers)
         self.console.print(f"[turquoise2]{len(scrapers)} [pink1]results.")
