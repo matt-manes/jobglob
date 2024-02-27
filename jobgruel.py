@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Callable
 
 import requests
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, ResultSet
 import gruel
 from pathier import Pathier
 
@@ -386,13 +386,49 @@ class EasyapplyGruel(JobGruel):
 class JobviteGruel(JobGruel):
     """`JobGruel` subclass for Jobvite job boards."""
 
+    def __init__(
+        self,
+        existing_listings: list[models.Listing] | None = None,
+        company_stem: str | None = None,
+        board: models.Board | None = None,
+    ):
+        super().__init__(existing_listings, company_stem, board)
+        self._location_tag = ""
+
+    @property
+    def location_tag(self) -> str:
+        """The location tag type.
+        Varies depending on the tag type of the job list container element."""
+        return self._location_tag
+
+    @location_tag.setter
+    def location_tag(self, tag: str):
+        self._location_tag = tag
+
     def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
-        job_tables = soup.find_all("table", class_="jv-job-list")
         listings: list[Tag] = []
+        job_tables: ResultSet[Any] | None = None
+        listing_tag = ""
+        container_tag = ""
+        for container_tag, listing_tag, location_tag in [
+            ("table", "tr", "td"),
+            ("div", "li", "div"),
+            ("ul", "li", "span"),
+        ]:
+            job_tables = soup.find_all(container_tag, class_="jv-job-list")
+            if job_tables:
+                self.location_tag = location_tag
+                break
+        if not job_tables:
+            raise RuntimeError(f"Could not find job table.")
         for table in job_tables:
             if isinstance(table, Tag):
-                listings.extend(table.find_all("tr"))
+                listings.extend(table.find_all(listing_tag))
+        if not listings and container_tag == "div":
+            for table in job_tables:
+                if isinstance(table, Tag):
+                    listings.extend(table.find_all("div", class_="jv-job-item"))
         return listings
 
     def parse_item(self, item: Tag) -> models.Listing | None:
@@ -403,7 +439,7 @@ class JobviteGruel(JobGruel):
             assert isinstance(a, Tag)
             listing.url = f"https://jobs.jobvite.com/careers{a.get('href')}"
             listing.position = a.text
-            td = item.find("td", class_="jv-job-list-location")
+            td = item.find(self.location_tag, class_="jv-job-list-location")
             if isinstance(td, Tag):
                 listing.location = td.text
             return listing
