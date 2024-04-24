@@ -8,8 +8,8 @@ JobGlob can
 - Only show you listings you haven't already seen
 - Track listings you're interested in as well as listings you've applied to
 
-*Current board count*: 1490  
-*Active listings*: 45672
+*Current board count*: 1491  
+*Active listings*: 46926
 
 ## Installation
 
