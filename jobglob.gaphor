@@ -146,7 +146,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>304.0</val>
+<val>343.0</val>
 </width>
 <height>
 <val>418.0</val>
@@ -623,7 +623,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>123.0</val>
+<val>136.0</val>
 </width>
 <height>
 <val>70.0</val>
@@ -656,7 +656,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>133.0</val>
+<val>146.0</val>
 </width>
 <height>
 <val>70.0</val>
@@ -689,7 +689,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>88.0</val>
+<val>98.0</val>
 </width>
 <height>
 <val>70.0</val>
@@ -780,16 +780,12 @@ controlflow {
 <ref refid="d8bf2256-000f-11ef-b753-a86daada6dc5"/>
 <ref refid="ef4e4102-000f-11ef-9bfa-a86daada6dc5"/>
 <ref refid="4fcd7c37-0010-11ef-818a-a86daada6dc5"/>
-<ref refid="6c00e957-0010-11ef-96dd-a86daada6dc5"/>
-<ref refid="a96d6dbe-0011-11ef-a900-a86daada6dc5"/>
 <ref refid="f3c2db33-0011-11ef-9359-a86daada6dc5"/>
 <ref refid="9e2834bc-0012-11ef-80c6-a86daada6dc5"/>
 <ref refid="c70ec091-001a-11ef-83ca-a86daada6dc5"/>
 <ref refid="e8e914ce-000f-11ef-a5cf-a86daada6dc5"/>
 <ref refid="535e396a-0010-11ef-97c7-a86daada6dc5"/>
 <ref refid="592c71a6-0010-11ef-9f51-a86daada6dc5"/>
-<ref refid="a0b57da3-0011-11ef-a9cb-a86daada6dc5"/>
-<ref refid="c14b4a73-0011-11ef-bc31-a86daada6dc5"/>
 <ref refid="2da7fd25-0012-11ef-a7fa-a86daada6dc5"/>
 <ref refid="a721505f-0012-11ef-b54f-a86daada6dc5"/>
 <ref refid="cede1f1b-001a-11ef-af47-a86daada6dc5"/>
@@ -804,7 +800,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>304.0</val>
+<val>343.0</val>
 </width>
 <height>
 <val>432.0</val>
@@ -847,7 +843,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>300.0</val>
+<val>337.0</val>
 </width>
 <height>
 <val>76.0</val>
@@ -915,7 +911,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>218.0</val>
+<val>246.0</val>
 </width>
 <height>
 <val>238.0</val>
@@ -1186,7 +1182,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>669.0</val>
+<val>749.0</val>
 </width>
 <height>
 <val>220.0</val>
@@ -1340,7 +1336,7 @@ controlflow {
 <val>(1.0, 0.0, 0.0, 1.0, 980.682655294582, 400.0)</val>
 </matrix>
 <points>
-<val>[(-89.0, 2.0), (-211.182655294582, 2.0)]</val>
+<val>[(-89.0, 2.0), (-172.182655294582, 2.0)]</val>
 </points>
 <head-connection>
 <ref refid="8e6f88a8-000e-11ef-b0dc-a86daada6dc5"/>
@@ -1429,7 +1425,6 @@ controlflow {
 <ref refid="7c9f9bbc-000f-11ef-b0af-a86daada6dc5"/>
 <ref refid="88e25e67-000f-11ef-a9d1-a86daada6dc5"/>
 <ref refid="9ab1e3a9-000f-11ef-be4e-a86daada6dc5"/>
-<ref refid="502e83d2-0013-11ef-ba76-a86daada6dc5"/>
 <ref refid="c5f80d87-000f-11ef-a75c-a86daada6dc5"/>
 <ref refid="c89de5b3-000f-11ef-a3b6-a86daada6dc5"/>
 </reflist>
@@ -1464,7 +1459,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>112.0</val>
@@ -1543,7 +1538,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>148.0</val>
@@ -1647,7 +1642,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>174.0</val>
+<val>199.0</val>
 </width>
 <height>
 <val>202.0</val>
@@ -1770,7 +1765,7 @@ controlflow {
 <val>(1.0, 0.0, 0.0, 1.0, 928.0, 533.0)</val>
 </matrix>
 <points>
-<val>[(2.0, 0.0), (-136.0, 44.0)]</val>
+<val>[(2.0, 0.0), (-113.0, 44.0)]</val>
 </points>
 <head-connection>
 <ref refid="88e25e67-000f-11ef-a9d1-a86daada6dc5"/>
@@ -1848,7 +1843,7 @@ controlflow {
 <val>(1.0, 0.0, 0.0, 1.0, 929.0, 663.0)</val>
 </matrix>
 <points>
-<val>[(-15.0, -5.0), (-137.0, -73.0)]</val>
+<val>[(-15.0, -5.0), (-114.0, -73.0)]</val>
 </points>
 <head-connection>
 <ref refid="9ab1e3a9-000f-11ef-be4e-a86daada6dc5"/>
@@ -1904,12 +1899,6 @@ controlflow {
 </type>
 </Property>
 <Class id="d8befb50-000f-11ef-9140-a86daada6dc5">
-<comment>
-<reflist>
-<ref refid="6c00e956-0010-11ef-b28b-a86daada6dc5"/>
-<ref refid="a96d6dbd-0011-11ef-bf9e-a86daada6dc5"/>
-</reflist>
-</comment>
 <generalization>
 <reflist>
 <ref refid="ea64a557-000f-11ef-ab20-a86daada6dc5"/>
@@ -1961,7 +1950,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>190.0</val>
+<val>215.0</val>
 </width>
 <height>
 <val>220.0</val>
@@ -2020,7 +2009,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>162.0</val>
@@ -2171,7 +2160,7 @@ controlflow {
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>174.0</val>
+<val>199.0</val>
 </width>
 <height>
 <val>216.0</val>
@@ -2206,7 +2195,7 @@ controlflow {
 <val>(1.0, 0.0, 0.0, 1.0, 752.0, 791.0)</val>
 </matrix>
 <points>
-<val>[(1.0, 1.0), (-161.0, -21.0)]</val>
+<val>[(1.0, 1.0), (-138.0, -21.0)]</val>
 </points>
 <head-connection>
 <ref refid="d8bf2256-000f-11ef-b753-a86daada6dc5"/>
@@ -2336,128 +2325,6 @@ controlflow {
 <ref refid="9ab1bcb2-000f-11ef-8d8c-a86daada6dc5"/>
 </type>
 </Property>
-<Comment id="6c00e956-0010-11ef-b28b-a86daada6dc5">
-<annotatedElement>
-<reflist>
-<ref refid="d8befb50-000f-11ef-9140-a86daada6dc5"/>
-</reflist>
-</annotatedElement>
-<body>
-<val>Since most of the time we're dealing with more than one listing, it may be worth creating a custom container/array subclass for dealing with lists of listings.
-That way there could be a functions that would return a given attribute for each listing in the array instead of needing to manually extract them when needed with a loop.
-i.e. if `existing_listings` is an instance of this class:
-`urls = existing_listings.get_urls()`
-or implemented as a property
-`urls = existing_listings.urls`.
-</val>
-</body>
-<presentation>
-<reflist>
-<ref refid="6c00e957-0010-11ef-96dd-a86daada6dc5"/>
-</reflist>
-</presentation>
-</Comment>
-<CommentItem id="6c00e957-0010-11ef-96dd-a86daada6dc5">
-<matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 1034.0, 657.5)</val>
-</matrix>
-<top-left>
-<val>(0.0, 0.0)</val>
-</top-left>
-<width>
-<val>557.0</val>
-</width>
-<height>
-<val>169.0</val>
-</height>
-<diagram>
-<ref refid="e2017383-000b-11ef-8b43-a86daada6dc5"/>
-</diagram>
-<subject>
-<ref refid="6c00e956-0010-11ef-b28b-a86daada6dc5"/>
-</subject>
-</CommentItem>
-<CommentLineItem id="a0b57da3-0011-11ef-a9cb-a86daada6dc5">
-<diagram>
-<ref refid="e2017383-000b-11ef-8b43-a86daada6dc5"/>
-</diagram>
-<horizontal>
-<val>0</val>
-</horizontal>
-<orthogonal>
-<val>0</val>
-</orthogonal>
-<matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 941.0, 818.4986710688913)</val>
-</matrix>
-<points>
-<val>[(2.0, 0.0), (93.0, -84.5)]</val>
-</points>
-<head-connection>
-<ref refid="d8bf2256-000f-11ef-b753-a86daada6dc5"/>
-</head-connection>
-<tail-connection>
-<ref refid="6c00e957-0010-11ef-96dd-a86daada6dc5"/>
-</tail-connection>
-</CommentLineItem>
-<Comment id="a96d6dbd-0011-11ef-bf9e-a86daada6dc5">
-<annotatedElement>
-<reflist>
-<ref refid="d8befb50-000f-11ef-9140-a86daada6dc5"/>
-</reflist>
-</annotatedElement>
-<body>
-<val>Can't remember if I had a good reason to make `new_listing()` a `JobGruel` method instead of a class method of `Listings`.</val>
-</body>
-<presentation>
-<reflist>
-<ref refid="a96d6dbe-0011-11ef-a900-a86daada6dc5"/>
-</reflist>
-</presentation>
-</Comment>
-<CommentItem id="a96d6dbe-0011-11ef-a900-a86daada6dc5">
-<matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 1034.0, 857.0)</val>
-</matrix>
-<top-left>
-<val>(0.0, 0.0)</val>
-</top-left>
-<width>
-<val>325.0</val>
-</width>
-<height>
-<val>80.0</val>
-</height>
-<diagram>
-<ref refid="e2017383-000b-11ef-8b43-a86daada6dc5"/>
-</diagram>
-<subject>
-<ref refid="a96d6dbd-0011-11ef-bf9e-a86daada6dc5"/>
-</subject>
-</CommentItem>
-<CommentLineItem id="c14b4a73-0011-11ef-bc31-a86daada6dc5">
-<diagram>
-<ref refid="e2017383-000b-11ef-8b43-a86daada6dc5"/>
-</diagram>
-<horizontal>
-<val>0</val>
-</horizontal>
-<orthogonal>
-<val>0</val>
-</orthogonal>
-<matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 1031.0, 867.2493355344457)</val>
-</matrix>
-<points>
-<val>[(3.0, 18.45948451000038), (-88.0, 6.870483730923553)]</val>
-</points>
-<head-connection>
-<ref refid="a96d6dbe-0011-11ef-a900-a86daada6dc5"/>
-</head-connection>
-<tail-connection>
-<ref refid="d8bf2256-000f-11ef-b753-a86daada6dc5"/>
-</tail-connection>
-</CommentLineItem>
 <Class id="f3c28d3d-0011-11ef-abac-a86daada6dc5">
 <comment>
 <reflist>
@@ -2643,7 +2510,7 @@ There is no actual `Scraper` class in the code base.</val>
 <val>349.0</val>
 </width>
 <height>
-<val>80.0</val>
+<val>110.0</val>
 </height>
 <diagram>
 <ref refid="e2017383-000b-11ef-8b43-a86daada6dc5"/>
@@ -2675,40 +2542,6 @@ There is no actual `Scraper` class in the code base.</val>
 <ref refid="f3c2db33-0011-11ef-9359-a86daada6dc5"/>
 </tail-connection>
 </CommentLineItem>
-<Comment id="502e83d1-0013-11ef-b632-a86daada6dc5">
-<body>
-<val>These classes serve as the mappings between code and database schema.
-Because of table normalization, they more closely resemble database views rather than individual tables.
-These are `dataclasses`, so the constructors expect an argument for each attribute.
-i.e. company = Company(22, "Company Inc.", datestring)
-</val>
-</body>
-<presentation>
-<reflist>
-<ref refid="502e83d2-0013-11ef-ba76-a86daada6dc5"/>
-</reflist>
-</presentation>
-</Comment>
-<CommentItem id="502e83d2-0013-11ef-ba76-a86daada6dc5">
-<matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 598.0, 287.0)</val>
-</matrix>
-<top-left>
-<val>(0.0, 0.0)</val>
-</top-left>
-<width>
-<val>609.0</val>
-</width>
-<height>
-<val>115.0</val>
-</height>
-<diagram>
-<ref refid="6dd13f16-000f-11ef-9c41-a86daada6dc5"/>
-</diagram>
-<subject>
-<ref refid="502e83d1-0013-11ef-b632-a86daada6dc5"/>
-</subject>
-</CommentItem>
 <Package id="07c04e5d-0015-11ef-b7b1-a86daada6dc5">
 <name>
 <val>board_detector</val>
@@ -2765,7 +2598,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 1186.0, 441.0)</val>
 </matrix>
 <points>
-<val>[(-20.0, -13.0), (-103.0, -12.0)]</val>
+<val>[(-20.0, -13.0), (-56.0, -12.0)]</val>
 </points>
 <head-connection>
 <ref refid="4fd38d29-0014-11ef-8bff-a86daada6dc5"/>
@@ -2805,7 +2638,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>179.0</val>
+<val>196.0</val>
 </width>
 <height>
 <val>62.0</val>
@@ -2840,7 +2673,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>393.0</val>
+<val>440.0</val>
 </width>
 <height>
 <val>378.0</val>
@@ -3453,7 +3286,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>182.0</val>
 </width>
 <height>
-<val>65.0</val>
+<val>93.0</val>
 </height>
 <diagram>
 <ref refid="d3047bd3-0012-11ef-a734-a86daada6dc5"/>
@@ -3485,7 +3318,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>185.0</val>
+<val>210.0</val>
 </width>
 <height>
 <val>162.0</val>
@@ -3619,7 +3452,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 687.0, 331.0)</val>
 </matrix>
 <points>
-<val>[(3.0, 0.0), (-75.0, 0.0)]</val>
+<val>[(3.0, 0.0), (-50.0, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="359617f9-0014-11ef-acc8-a86daada6dc5"/>
@@ -3750,7 +3583,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>384.0</val>
+<val>416.0</val>
 </width>
 <height>
 <val>288.0</val>
@@ -4041,7 +3874,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>223.0</val>
 </width>
 <height>
-<val>50.0</val>
+<val>59.0</val>
 </height>
 <diagram>
 <ref refid="061521d1-000a-11ef-ae9c-a86daada6dc5"/>
@@ -4064,7 +3897,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 867.5424582841094, 842.0)</val>
 </matrix>
 <points>
-<val>[(5.0, 2.0), (-58.04245828410944, 2.0437956204380043)]</val>
+<val>[(5.0, 2.0), (-26.042458284109443, 2.0437956204380043)]</val>
 </points>
 <head-connection>
 <ref refid="f7b6f3ec-0016-11ef-8d6d-a86daada6dc5"/>
@@ -4161,8 +3994,8 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <ownedPresentation>
 <reflist>
 <ref refid="e66f3bb3-0018-11ef-bd3e-a86daada6dc5"/>
-<ref refid="fc884963-0018-11ef-aa14-a86daada6dc5"/>
 <ref refid="efffde4a-0018-11ef-bd62-a86daada6dc5"/>
+<ref refid="fc884963-0018-11ef-aa14-a86daada6dc5"/>
 <ref refid="5b35d88c-0019-11ef-9505-a86daada6dc5"/>
 <ref refid="6f81da07-0019-11ef-84bb-a86daada6dc5"/>
 <ref refid="b96705bf-0019-11ef-a8c2-a86daada6dc5"/>
@@ -4279,7 +4112,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>162.0</val>
@@ -4299,7 +4132,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>126.0</val>
@@ -4319,7 +4152,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>174.0</val>
+<val>199.0</val>
 </width>
 <height>
 <val>216.0</val>
@@ -4354,7 +4187,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 699.0, 451.0)</val>
 </matrix>
 <points>
-<val>[(5.0, 18.0), (-189.0, -137.0)]</val>
+<val>[(5.0, 18.0), (-166.0, -137.0)]</val>
 </points>
 <head-connection>
 <ref refid="95f08f67-0017-11ef-be30-a86daada6dc5"/>
@@ -4429,7 +4262,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 703.0, 469.0)</val>
 </matrix>
 <points>
-<val>[(1.0, 0.0), (-193.0, -11.0)]</val>
+<val>[(1.0, 0.0), (-170.0, -11.0)]</val>
 </points>
 <head-connection>
 <ref refid="95f08f67-0017-11ef-be30-a86daada6dc5"/>
@@ -4504,7 +4337,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 <val>(1.0, 0.0, 0.0, 1.0, 702.0, 471.0)</val>
 </matrix>
 <points>
-<val>[(2.0, 0.0), (-184.0, 167.0)]</val>
+<val>[(2.0, 0.0), (-159.0, 167.0)]</val>
 </points>
 <head-connection>
 <ref refid="95f08f67-0017-11ef-be30-a86daada6dc5"/>
@@ -4563,13 +4396,7 @@ i.e. company = Company(22, "Company Inc.", datestring)
 </reflist>
 </annotatedElement>
 <body>
-<val>Interfaces with the database engine.
-Good idea to avoid interacting with the database directly in the rest of code base and instead add the needed functionality to this class so as to keep the rest of the system and the actual choice of database decoupled.
-Function list is omitted, but contains things for adding companies, adding listings, getting listings, etc.
-This version inherits from `Databased`, which wraps the Python SQLite3 module.
-For cheddar the hierarchy would be something like:
-other_code-&gt;JobBased-&gt;ORM-&gt;PostGreSQL
-with JobBased likely being a child class of your ORM.</val>
+<val>Inherits from databased.Databased, wraps python sqlite layer.</val>
 </body>
 <presentation>
 <reflist>
@@ -4579,16 +4406,16 @@ with JobBased likely being a child class of your ORM.</val>
 </Comment>
 <CommentItem id="d1e41537-0017-11ef-817b-a86daada6dc5">
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 892.0, 330.5)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 848.8359375, 439.908203125)</val>
 </matrix>
 <top-left>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>327.0</val>
+<val>278.0439134482216</val>
 </width>
 <height>
-<val>296.0</val>
+<val>58.18359375</val>
 </height>
 <diagram>
 <ref refid="8d2ce864-0017-11ef-9ff0-a86daada6dc5"/>
@@ -4611,7 +4438,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 884.0, 466.0)</val>
 </matrix>
 <points>
-<val>[(8.0, 1.0271317829457303), (-80.0, 0.0)]</val>
+<val>[(-35.1640625, -0.7935829529884586), (-80.0, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="d1e41537-0017-11ef-817b-a86daada6dc5"/>
@@ -4661,7 +4488,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>343.0</val>
+<val>373.0</val>
 </width>
 <height>
 <val>184.0</val>
@@ -4681,7 +4508,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>374.0</val>
+<val>416.0</val>
 </width>
 <height>
 <val>288.0</val>
@@ -4716,7 +4543,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 727.0, 352.68965517241384)</val>
 </matrix>
 <points>
-<val>[(45.0, 268.31034482758616), (-116.0, 338.31034482758616)]</val>
+<val>[(45.0, 268.31034482758616), (-74.0, 338.31034482758616)]</val>
 </points>
 <head-connection>
 <ref refid="e66f3bb3-0018-11ef-bd3e-a86daada6dc5"/>
@@ -4779,7 +4606,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(-10.5, 0.0)</val>
 </top-left>
 <width>
-<val>414.0</val>
+<val>440.0</val>
 </width>
 <height>
 <val>474.0</val>
@@ -4848,7 +4675,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>190.0</val>
+<val>215.0</val>
 </width>
 <height>
 <val>234.0</val>
@@ -4876,7 +4703,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>158.0</val>
+<val>181.0</val>
 </width>
 <height>
 <val>162.0</val>
@@ -4939,7 +4766,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 773.0, 607.0)</val>
 </matrix>
 <points>
-<val>[(-1.0, -23.0), (-148.0, -428.0765306122449)]</val>
+<val>[(-1.0, -23.0), (-122.0, -428.0765306122449)]</val>
 </points>
 <head-connection>
 <ref refid="e66f3bb3-0018-11ef-bd3e-a86daada6dc5"/>
@@ -5017,7 +4844,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 1116.0, 572.0)</val>
 </matrix>
 <points>
-<val>[(-1.0, 0.0), (144.0, 0.0)]</val>
+<val>[(29.0, 0.0), (144.0, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="e66f3bb3-0018-11ef-bd3e-a86daada6dc5"/>
@@ -5260,7 +5087,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>372.0</val>
+<val>399.0</val>
 </width>
 <height>
 <val>166.0</val>
@@ -5280,7 +5107,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>669.0</val>
+<val>749.0</val>
 </width>
 <height>
 <val>234.0</val>
@@ -5355,7 +5182,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(0.0, 0.0)</val>
 </top-left>
 <width>
-<val>174.0</val>
+<val>199.0</val>
 </width>
 <height>
 <val>216.0</val>
@@ -5390,7 +5217,7 @@ with JobBased likely being a child class of your ORM.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 777.4272976680384, 1438.3251028806583)</val>
 </matrix>
 <points>
-<val>[(1.5727023319616364, 0.8172956250191419), (-160.7050754458162, 0.0)]</val>
+<val>[(1.5727023319616364, 0.8172956250191419), (-135.70507544581625, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="58c31f74-001a-11ef-972c-a86daada6dc5"/>
