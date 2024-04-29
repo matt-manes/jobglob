@@ -7,6 +7,7 @@ from databased.dbshell import DBShell
 from noiftimer import time_it
 from pathier import Pathier
 from rich import print
+from typing_extensions import override
 
 import board_detector
 import company_crawler
@@ -168,6 +169,7 @@ class JobShell(DBShell):
             scraper.scrape()
             print(logglob.load_log(scraper.board.company.name).filter_dates(start))
 
+    @override
     def do_help(self, arg: str):
         """Display help messages."""
         print()

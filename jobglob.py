@@ -11,6 +11,7 @@ from gruel import Brewer, Gruel, GruelFinder
 from noiftimer import Timer
 from pathier import Pathier
 from rich import print
+from typing_extensions import override
 
 import helpers
 import jobgruel
@@ -109,6 +110,7 @@ class ScraperLoader:
 
 
 class JobGlob(Brewer):
+    @override
     def prescrape_chores(self):
         with JobBased() as db:
             self.num_listings = db.count("listings")
@@ -193,6 +195,7 @@ class JobGlob(Brewer):
                     self.logger.logprint(message)
                     print()
 
+    @override
     def postscrape_chores(self):
         self.print_new_listings()
         self.logprint_errors()
@@ -203,6 +206,7 @@ class JobGlob(Brewer):
             f"Total runtime: {Timer.format_time((datetime.now() - self.start_time).total_seconds())}"
         )
 
+    @override
     def scrape(self) -> list[Any]:
         with JobBased() as db:
             listings = db.get_listings()

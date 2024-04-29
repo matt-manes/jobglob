@@ -1,5 +1,7 @@
-from pathier import Pathier
 from typing import Any
+
+from pathier import Pathier
+from typing_extensions import override
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -57,6 +59,7 @@ class JobScraper(JobGruel):
             },
         }
 
+    @override
     def get_parsable_items(self) -> list[dict[str, Any]]:
         response = self.request(
             self.api_url,
@@ -69,6 +72,7 @@ class JobScraper(JobGruel):
         )
         return response.json()["opportunities"]
 
+    @override
     def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()

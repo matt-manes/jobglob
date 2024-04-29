@@ -6,5 +6,4 @@ from jobgruel import JobviteGruel
 
 
 # Url doesn't contain job board
-class JobScraper(JobviteGruel):
-    ...
+class JobScraper(JobviteGruel): ...

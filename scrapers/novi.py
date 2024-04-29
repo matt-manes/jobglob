@@ -1,4 +1,5 @@
 from pathier import Pathier
+from typing_extensions import override
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -11,12 +12,14 @@ from jobgruel import JobGruel
 
 
 class JobScraper(JobGruel):
+    @override
     def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         job_positions = soup.find("div", attrs={"id": "job_positions"})
         assert isinstance(job_positions, Tag)
         return job_positions.find_all("div", class_="col-lg-3 col-md-6 post-column")
 
+    @override
     def parse_item(self, item: Tag) -> models.Listing | None:
         try:
             listing = self.new_listing()

@@ -1,4 +1,5 @@
 from pathier import Pathier
+from typing_extensions import override
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -11,12 +12,14 @@ from jobgruel import JobGruel
 
 
 class JobScraper(JobGruel):
+    @override
     def get_parsable_items(self) -> list[Tag]:
         soup = self.get_soup(self.board.url)
         return soup.find_all(
             "a", attrs={"target": "_blank", "rel": "noreferrer noopener"}
         )
 
+    @override
     def parse_item(self, item: Tag) -> models.Listing | None:
         """Parse `item` and return parsed data.
 
@@ -44,14 +47,3 @@ class JobScraper(JobGruel):
             self.logger.error(str(item))
             self.fail_count += 1
             return None
-
-
-if __name__ == "__main__":
-    from datetime import datetime, timedelta
-
-    import logglob
-
-    start = datetime.now() - timedelta(seconds=2)
-    j = JobScraper()
-    j.scrape()
-    print(logglob.load_log(j.board.company.name).filter_dates(start))

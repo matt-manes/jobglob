@@ -14,6 +14,7 @@ from printbuddies import Progress, TimerColumn
 from rich import print
 from rich.console import Console
 from scrapetools import LinkScraper
+from typing_extensions import override
 from younotyou import Matcher, younotyou
 
 from config import Config
@@ -26,6 +27,7 @@ root = Pathier(__file__).parent
 class Crawler(Gruel):
     """Crawl a website for external job board links."""
 
+    @override
     def __init__(
         self,
         homepage: str,
@@ -207,6 +209,7 @@ class Crawler(Gruel):
                 self.workers.append(executor.submit(self._scrape_page, url))
                 i += 1
 
+    @override
     def postscrape_chores(self):
         self.logger.logprint(f"Crawl completed in {self.timer.elapsed_str}.")
         if self.board_urls:

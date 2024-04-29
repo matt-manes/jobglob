@@ -1,5 +1,7 @@
-from pathier import Pathier
 from typing import Any
+
+from pathier import Pathier
+from typing_extensions import override
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -8,6 +10,7 @@ from jobgruel import WorkableGruel
 
 
 class JobScraper(WorkableGruel):
+    @override
     def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
         try:
             listing = self.new_listing()

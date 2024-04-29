@@ -1,5 +1,6 @@
 from bs4 import Tag
 from pathier import Pathier
+from typing_extensions import override
 
 root = Pathier(__file__).parent
 (root.parent).add_to_PATH()
@@ -8,6 +9,7 @@ from jobgruel import GreenhouseGruel
 
 
 class JobScraper(GreenhouseGruel):
+    @override
     def parse_item(self, item: Tag) -> models.Listing | None:
         listing = super().parse_item(item)
         if listing:
