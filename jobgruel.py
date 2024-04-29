@@ -507,12 +507,10 @@ class ApplytojobGruel(JobGruel):
 class SmartrecruiterGruel(JobGruel):
     """`JobGruel` subclass for SmartRecruiters job boards."""
 
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+    @property
+    def api_endpoint(self) -> str:
         company_page = self.board.url[self.board.url.rfind("/") + 1 :]
-        self.api_endpoint = (
-            f"https://careers.smartrecruiters.com/{company_page}/api/more?page="
-        )
+        return f"https://careers.smartrecruiters.com/{company_page}/api/more?page="
 
     @override
     def get_parsable_items(self) -> list[Tag]:

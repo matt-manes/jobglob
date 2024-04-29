@@ -9,7 +9,7 @@ import jobgruel
 
 
 class JobScraper(jobgruel.SmartrecruiterGruel):
+    @property
     @override
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-        self.api_endpoint = "https://careers.smartrecruiters.com/Akuo/en---careers-akuo/api/groups?page="
+    def api_endpoint(self) -> str:
+        return "https://careers.smartrecruiters.com/Akuo/en---careers-akuo/api/groups?page="
