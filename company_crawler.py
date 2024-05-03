@@ -4,19 +4,19 @@ from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Callable
 
 import argshell
 import requests
 from gruel import Gruel, request
+import gruel
 from pathier import Pathier
 from printbuddies import Progress, TimerColumn
 from rich import print
 from rich.console import Console
 from scrapetools import LinkScraper
-from typing_extensions import override
+from typing_extensions import override, Any, Callable, Sequence
 from younotyou import Matcher, younotyou
-
+import loggi
 from config import Config
 
 warnings.filterwarnings("ignore")
@@ -24,7 +24,119 @@ warnings.filterwarnings("ignore")
 root = Pathier(__file__).parent
 
 
-class Crawler(Gruel):
+class BoardScraper(gruel.CrawlScraper):
+    def __init__(self, max_hits: int | None = None):
+        config = Config.load()
+        self.init_logger(loggi.LogName.FILENAME, config.logs_dir)
+        self.board_urls: deque[str] = deque()
+        self.urls_with_stubs: dict[str, set[str]] = {}
+        self.board_stubs = [
+            f"*{board}*" for board in config.board_meta_path.loads()["url_chunks"]
+        ]
+        self.career_page_stubs = Matcher(
+            [f"*{stub}*" for stub in config.careers_page_stubs_path.split()],
+            case_sensitive=False,
+        )
+        self.max_hits = max_hits
+
+    @property
+    def num_hits(self) -> int:
+        return len(set(self.board_urls))
+
+    @property
+    def max_hits_exceeded(self) -> bool | str:
+        if self.max_hits and self.num_hits >= self.max_hits:
+            return f"Max board hits of {self.max_hits} exceeded."
+        return False
+
+    @property
+    @override
+    def limits_exceeded(self) -> bool | str:
+        if message := self.max_hits_exceeded:
+            return message
+        return False
+
+    def fix_board_urls(self, urls: list[str]) -> list[str]:
+        """Make certain substring swaps in `urls`.
+
+        * `/js?` -> `?` (greenhouse)
+        * `bamboohr.com/js/embed.js` -> `bamboohr.com/careers`"""
+        swaps = [
+            ("/js?", "?"),
+            ("bamboohr.com/js/embed.js", "bamboohr.com/careers"),
+        ]
+        for swap in swaps:
+            urls = [url.replace(swap[0], swap[1]) for url in urls]
+        return urls
+
+    def get_parsable_items(self, source: gruel.Response) -> list[Any]:
+        linkscraper = source.get_linkscraper()
+        linkscraper.scrape_page()
+        same_site_urls = linkscraper.get_links(
+            "page", excluded_links=linkscraper.get_links("img"), same_site_only=True
+        )
+        board_urls = younotyou(
+            linkscraper.get_links(excluded_links=same_site_urls),
+            self.board_stubs,
+            case_sensitive=False,
+        )
+        self.logger.info(f"Found {len(board_urls)} board urls on `{source.url}`.")
+        if board_urls:
+            board_urls = self.fix_board_urls(board_urls)
+            for url in board_urls:
+                self.board_urls.append(url)
+        else:
+            for stub in self.board_stubs:
+                stub = stub.strip("*")
+                if stub in source.text:
+                    self.urls_with_stubs.setdefault(source.url, set())
+                    self.urls_with_stubs[source.url].add(stub)
+                    self.logger.info(f"Found `{stub}` on `{source.url}`.")
+        return []
+
+    @override
+    def scrape(self, source: gruel.Response, **kwargs: Any):
+        self.get_parsable_items(source)
+
+
+class UrlManager(gruel.UrlManager):
+    @override
+    def __init__(self):
+        super().__init__()
+        config = Config.load()
+        self.career_page_stubs = Matcher(
+            [f"*{stub}*" for stub in config.careers_page_stubs_path.split()],
+            case_sensitive=False,
+        )
+
+    @override
+    def add_urls(self, urls: Sequence[str]):
+        for url in urls:
+            # prioritize career/job pages
+            if url in self.career_page_stubs:
+                self._uncrawled.appendleft(url)
+            else:
+                self._uncrawled.append(url)
+
+
+class CompanyCrawler(gruel.Crawler):
+    @override
+    def __init__(self, scraper: BoardScraper, *args: Any, **kwargs: Any):
+        config = Config.load()
+        super().__init__(
+            scraper,
+            name=loggi.LogName.FILENAME,
+            log_dir=config.logs_dir,
+            url_manager_class=UrlManager,
+        )
+
+    @override
+    def postscrape_chores(self):
+        self.logger.logprint(f"Crawl completed in {self.timer.elapsed_str}.")
+        # if self.scraper.board_urls
+
+
+class Crawler2(Gruel):
     """Crawl a website for external job board links."""
 
     @override

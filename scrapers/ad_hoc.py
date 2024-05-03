@@ -1,5 +1,6 @@
 from typing import Any
 
+import gruel
 from pathier import Pathier
 from typing_extensions import override
 
@@ -60,33 +61,26 @@ class JobScraper(JobGruel):
         }
 
     @override
-    def get_parsable_items(self) -> list[dict[str, Any]]:
-        response = self.request(
-            self.api_url,
-            "post",
-            headers={
-                "Content-Type": "application/json",
-                "Accept-Encoding": "gzip, deflate",
-            },
-            json_=self.api_payload,
+    def get_source(self) -> gruel.Response:
+        headers = {
+            "Content-Type": "application/json",
+            "Accept-Encoding": "gzip, deflate",
+        }
+        return self.request(
+            self.api_url, "post", headers=headers, json=self.api_payload
         )
-        return response.json()["opportunities"]
+
+    @override
+    def get_parsable_items(self, source: gruel.Response) -> list[dict[str, Any]]:
+        return source.json()["opportunities"]
 
     @override
     def parse_item(self, item: dict[str, Any]) -> models.Listing | None:
-        try:
-            listing = self.new_listing()
-            listing.position = item["Title"]
-            if item["Locations"]:
-                listing.location = item["Locations"][0]["LocalizedDescription"]
-            else:
-                listing.location = "Unlisted"
-            listing.url = (
-                f"{self.board.url}/OpportunityDetail?opportunityId={item['Id']}"
-            )
-            return listing
-        except Exception as e:
-            self.logger.exception("Failure to parse item:")
-            self.logger.error(str(item))
-            self.fail_count += 1
-            return None
+        listing = self.new_listing()
+        listing.position = item["Title"]
+        if item["Locations"]:
+            listing.location = item["Locations"][0]["LocalizedDescription"]
+        else:
+            listing.location = "Unlisted"
+        listing.url = f"{self.board.url}/OpportunityDetail?opportunityId={item['Id']}"
+        return listing
