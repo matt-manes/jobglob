@@ -159,12 +159,12 @@ class JobGlob(Brewer):
         ]
         self.logger.logprint(f"Found {len(listings)} dead listings.")
         dead_pinned_listings: list[dict[str, str | int]] = []
-        listing_ids = [listing.id_ for listing in listings]
+        listing_ids = [listing.id for listing in listings]
         for listing in pinned_listings:
-            if listing.id_ in listing_ids:
+            if listing.id in listing_ids:
                 dead_pinned_listings.append(
                     {
-                        "id": listing.id_,
+                        "id": listing.id,
                         "position": listing.position,
                         "company": listing.company.name,
                         "url": listing.url,

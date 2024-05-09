@@ -62,10 +62,10 @@ class JobGruel(gruel.Gruel):
             [
                 listing
                 for listing in existing_listings
-                if listing.company.id_ == self.board.company.id_
+                if listing.company.id == self.board.company.id
             ]
             if existing_listings
-            else db._get_listings(f"listings.company_id = {self.board.company.id_}")
+            else db._get_listings(f"listings.company_id = {self.board.company.id}")
         )
         db.close()
         self.existing_listings = listings
@@ -117,9 +117,9 @@ class JobGruel(gruel.Gruel):
             if dead_listings:
                 with JobBased() as db:
                     for listing in dead_listings:
-                        db.mark_dead(listing.id_)
+                        db.mark_dead(listing.id)
                         self.logger.info(
-                            f"Marking listing with id {listing.id_} as dead. ({listing.position} - {listing.url})"
+                            f"Marking listing with id {listing.id} as dead. ({listing.position} - {listing.url})"
                         )
         self.logger.info(f"Marked {num_dead} listings as dead.")
 
@@ -137,9 +137,9 @@ class JobGruel(gruel.Gruel):
         if resurrected_listings:
             with JobBased() as db:
                 for listing in resurrected_listings:
-                    db.resurrect_listing(listing.id_)
+                    db.resurrect_listing(listing.id)
                     self.logger.info(
-                        f"Resurrecting listing with id {listing.id_}. ({listing.position} - {listing.url})"
+                        f"Resurrecting listing with id {listing.id}. ({listing.position} - {listing.url})"
                     )
         self.logger.info(f"Resurrected {num_resurrected} listings.")
 

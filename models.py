@@ -11,12 +11,12 @@ root = Pathier(__file__).parent
 class Company:
     """
     Fields:
-    * id_: int
+    * id: int
     * name: str
     * date_added: datetime
     """
 
-    id_: int = -1
+    id: int = -1
     name: str = ""
     date_added: datetime = datetime.now()
 
@@ -26,14 +26,14 @@ class Board:
     """
     Fields:
     * company: models.Company
-    * id_: int
+    * id: int
     * url: str
     * active: bool
     * date_added: datetime
     """
 
     company: Company
-    id_: int = -1
+    id: int = -1
     url: str = ""
     active: bool = True
     date_added: datetime = datetime.now()
@@ -44,7 +44,7 @@ class Listing:
     """
     Fields:
     * company: models.Company
-    * id_: int
+    * id: int
     * position: str
     * location: str
     * url: str
@@ -54,7 +54,7 @@ class Listing:
     """
 
     company: Company
-    id_: int = -1
+    id: int = -1
     position: str = ""
     location: str = ""
     url: str = ""
@@ -77,12 +77,12 @@ class Application:
     """
     Fields:
     * listing: models.Listing
-    * id_: int
+    * id: int
     * date_applied: datetime
     """
 
     listing: Listing
-    id_: int = -1
+    id: int = -1
     date_applied: datetime = datetime.now()
 
 
@@ -91,12 +91,12 @@ class Rejection:
     """
     Fields:
     * application: Application
-    * id_: int
+    * id: int
     * date_rejected: datetime
     """
 
     application: Application
-    id_: int = -1
+    id: int = -1
     date_rejected: datetime = datetime.now()
 
 

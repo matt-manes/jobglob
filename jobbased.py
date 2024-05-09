@@ -97,7 +97,7 @@ class JobBased(Databased):
                     listing.position,
                     listing.location,
                     listing.url,
-                    listing.company.id_,
+                    listing.company.id,
                     listing.date_added,
                 )
             ],
@@ -228,7 +228,7 @@ class JobBased(Databased):
         """Returns a list of rejected applications."""
         rejections = self.select("rejections", order_by="application_id")
         ids = [rejection["application_id"] for rejection in rejections]
-        apps = [app for app in self.get_applications() if app.id_ in ids]
+        apps = [app for app in self.get_applications() if app.id in ids]
         return [
             models.Rejection(app, row["rejection_id"], row["date_rejected"])
             for app, row in zip(apps, rejections)
@@ -249,17 +249,17 @@ class JobBased(Databased):
     def mark_applications_older_than_30days_as_rejected(self):
         """Mark any applications older than 30 days as rejected."""
         rejected_application_ids = [
-            rejection.application.id_ for rejection in self.get_rejections()
+            rejection.application.id for rejection in self.get_rejections()
         ]
         for application in self.get_applications():
             if (
-                application.id_ not in rejected_application_ids
+                application.id not in rejected_application_ids
                 and (datetime.now() - application.date_applied).days > 30
             ):
                 print(
-                    f"Marking application #{application.id_} for listing '{application.listing.id_}. {application.listing.position} -- {application.listing.company.name}' as rejected."
+                    f"Marking application #{application.id} for listing '{application.listing.id}. {application.listing.position} -- {application.listing.company.name}' as rejected."
                 )
-                self.mark_rejected(application.id_)
+                self.mark_rejected(application.id)
 
     def mark_dead(self, listing_id: int):
         """Mark listing with `listing_id` as dead."""

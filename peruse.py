@@ -141,12 +141,12 @@ def do_action(listing: models.Listing) -> bool | None:
         match action:
             case "a":
                 with JobBased() as db:
-                    db.pin_listing(listing.id_)
-                    db.mark_seen(listing.id_)
+                    db.pin_listing(listing.id)
+                    db.mark_seen(listing.id)
                 break
             case "d":
                 with JobBased() as db:
-                    db.mark_dead(listing.id_)
+                    db.mark_dead(listing.id)
                 break
             case "o":
                 webbrowser.open(listing.url)
@@ -154,7 +154,7 @@ def do_action(listing: models.Listing) -> bool | None:
                 return True
             case "i":
                 with JobBased() as db:
-                    db.mark_seen(listing.id_)
+                    db.mark_seen(listing.id)
                 break
             case _:
                 print("oops")
@@ -164,7 +164,7 @@ def show(listing: models.Listing, title: str):
     """Format and print a listing in the terminal."""
     line = asdict(listing)
     line = {
-        "id": line["id_"],
+        "id": line["id"],
         "position": line["position"],
         "company": line["company"]["name"],
         "location": line["location"],

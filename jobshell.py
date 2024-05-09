@@ -72,7 +72,7 @@ class JobShell(DBShell):
             )
             if args.applied:
                 listing = db._get_listings(f"url = '{args.url}'")[0]
-                db.add_application(listing.id_)
+                db.add_application(listing.id)
 
     @argshell.with_parser(shellparsers.get_add_board_parser)
     def do_add_scraper(self, args: argshell.Namespace):
@@ -246,7 +246,7 @@ class JobShell(DBShell):
                 except Exception as e:
                     company = db.get_company_from_name(helpers.stem_to_name(scraper))
                     assert company
-                    where = f"company_id = {company.id_}"
+                    where = f"company_id = {company.id}"
                 print(
                     f"{scraper} updated: {db.update('boards', 'active', active, where)}"
                 )
