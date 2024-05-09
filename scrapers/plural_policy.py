@@ -18,24 +18,14 @@ class JobScraper(JobGruel):
     @override
     def get_parsable_items(self, source: gruel.Response) -> list[Tag]:
         soup = source.get_soup()
-        return soup.find_all(
-            "a", attrs={"target": "_blank", "rel": "noreferrer noopener"}
-        )
+        return [
+            tag.find("a")
+            for tag in soup.find_all("p", class_="has-text-align-center")
+            if tag.find("a")
+        ]
 
     @override
     def parse_item(self, item: Tag) -> models.Listing | None:
-        """Parse `item` and return parsed data.
-
-        e.g.
-        >>> try:
-        >>>     parsed = {}
-        >>>     parsed["thing1"] = item["element"].split()[0]
-        >>>     self.successes += 1
-        >>>     return parsed
-        >>> except Exception:
-        >>>     self.logger.exception("message")
-        >>>     self.failures += 1
-        >>>     return None"""
         listing = self.new_listing()
         assert isinstance(item, Tag)
         listing.position = item.text
