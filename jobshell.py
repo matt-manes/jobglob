@@ -105,13 +105,16 @@ class JobShell(DBShell):
             else:
                 print(f"Could not find records matching '%{company}%'.")
 
-    @argshell.with_parser(shellparsers.get_crawl_company_parser)
+    @argshell.with_parser(
+        shellparsers.get_crawl_company_parser, [company_crawler.minutes_to_seconds]
+    )
     def do_crawl_company(self, args: argshell.Namespace):
         """Crawl company homepage for job board urls."""
-        crawler = company_crawler.Crawler(
-            args.homepage, args.max_depth, args.max_time, args.max_hits, args.debug
+        scraper = company_crawler.BoardScraper("", None, args.max_hits)
+        crawler = company_crawler.CompanyCrawler(
+            scraper, max_depth=args.max_depth, max_time=args.max_time
         )
-        crawler.crawl()
+        crawler.crawl(args.homepage)
 
     def do_create_scraper_file(self, company: str):
         """Create a scraper file from a template for the given company name or stem.

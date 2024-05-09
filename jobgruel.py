@@ -5,7 +5,7 @@ from functools import cached_property
 import gruel
 from bs4 import ResultSet, Tag
 from pathier import Pathier
-from typing_extensions import Any, Callable, override
+from typing_extensions import Any, Callable, Sequence, override
 
 import helpers
 import models
@@ -29,12 +29,15 @@ class JobGruel(gruel.Gruel):
     Classes inheriting from `JobGruel` must implement:
 
     @override
-    >>> get_parsable_items(self) -> list[ParsableItem]
+    >>> get_source(self)->Response
+
+    @override
+    >>> get_parsable_items(self) -> list[Any]
 
     and
 
     @override
-    >>> parse_item(self, item: ParsableItem) -> models.Listing | None
+    >>> parse_item(self, item: Any) -> models.Listing | None
 
     To ensure proper loading, a subclass name should match the name of the board in `board_meta.toml`,
     but with the first letter capitalized and prepended to 'Gruel'.
@@ -52,7 +55,7 @@ class JobGruel(gruel.Gruel):
             helpers.name_to_stem(board.company.name) if board else company_stem,
             log_dir=config.scraper_logs_dir,
         )
-        # database connection only gets opened if `get_board` or `_get_listings` is called
+        # Not using context manager so database connection only gets opened if `get_board` or `_get_listings` is called
         db = JobBased(commit_on_close=False)
         self.board = board if board else db.get_board(self.name)
         listings = (
@@ -75,24 +78,27 @@ class JobGruel(gruel.Gruel):
         return models.Listing(self.board.company)
 
     @override
-    def store_item(self, item: models.Listing | None):
-        """Add `listing` to the database if it doesn't already exist (based off `listing.url`)."""
-        if not item:
-            pass
-        else:
-            item.url = item.url.strip("/")
-            if item.url not in self.existing_listing_urls:
-                with JobBased() as db:
-                    item.date_added = datetime.now()
-                    item.prune_strings()
-                    try:
-                        db.add_listing(item)
-                        self.new_listings += 1
-                    except Exception as e:
-                        if "UNIQUE constraint failed" not in str(e):
-                            self.logger.exception("Error adding listing to database.")
-                        else:
-                            self.already_added_listings += 1
+    def store_items(self, items: Sequence[models.Listing | None]):
+        """Add listings to the database if it doesn't already exist (based off `listing.url`)."""
+        for item in items:
+            if not item:
+                pass
+            else:
+                item.url = item.url.strip("/")
+                if item.url not in self.existing_listing_urls:
+                    with JobBased() as db:
+                        item.date_added = datetime.now()
+                        item.prune_strings()
+                        try:
+                            db.add_listing(item)
+                            self.new_listings += 1
+                        except Exception as e:
+                            if "UNIQUE constraint failed" not in str(e):
+                                self.logger.exception(
+                                    "Error adding listing to database."
+                                )
+                            else:
+                                self.already_added_listings += 1
 
     def mark_dead_listings(self):
         """Mark listings from the database as dead if they aren't found in the scraped listings."""
@@ -131,11 +137,7 @@ class JobGruel(gruel.Gruel):
         if resurrected_listings:
             with JobBased() as db:
                 for listing in resurrected_listings:
-                    db.reset_alive_status(listing.id_)
-                    db.delete(
-                        "seen_listings",
-                        f"listing_id = {listing.id_} AND {listing.id_} NOT IN (SELECT listing_id FROM pinned_listings)",
-                    )
+                    db.resurrect_listing(listing.id_)
                     self.logger.info(
                         f"Resurrecting listing with id {listing.id_}. ({listing.position} - {listing.url})"
                     )
@@ -143,6 +145,7 @@ class JobGruel(gruel.Gruel):
 
     @override
     def postscrape_chores(self):
+        super().postscrape_chores()
         self.mark_dead_listings()
         self.mark_resurrected_listings()
         self.logger.info(f"Added {self.new_listings} new listings to the database.")
