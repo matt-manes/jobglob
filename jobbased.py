@@ -291,6 +291,14 @@ class JobBased(Databased):
             f"UPDATE listings SET date_removed = NULL WHERE listing_id = {listing_id};"
         )
 
+    def resurrect_listing(self, listing_id: int):
+        """Reset alive status and remove from `seen_listings` table."""
+        self.reset_alive_status(listing_id)
+        self.delete(
+            "seen_listings",
+            f"listing_id = {listing_id} AND {listing_id} NOT IN (SELECT listing_id FROM pinned_listings)",
+        )
+
     def update_board_url(self, board_id: int, url: str) -> int:
         """Update board with id `board_id` to `url`.
 
