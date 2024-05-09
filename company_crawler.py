@@ -82,8 +82,6 @@ class BoardScraper(gruel.CrawlScraper):
             "page", excluded_links=linkscraper.get_links("img"), same_site_only=True
         )
         # get urls that match any of the ones in `board_stubs`
-        # todo: add regex to get urls that aren't in an element property
-        # todo: may be better to implement in `LinkScraper` than here
         board_urls = younotyou(
             linkscraper.get_links(excluded_links=same_site_urls),
             self.board_stubs,
