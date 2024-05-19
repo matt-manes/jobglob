@@ -178,7 +178,7 @@ class CompanyCrawler(gruel.Crawler):
         custom_url_manager: UrlManager | None = None,
     ):
         super().__init__(
-            scraper,
+            [scraper],
             max_depth,
             max_time,
             name,
