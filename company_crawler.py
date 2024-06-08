@@ -155,10 +155,10 @@ class UrlManager(gruel.UrlManager, loggi.LoggerMixin):
         self.init_logger()
 
     @override
-    def add_urls(self, urls: Sequence[str]):
+    def add_urls(self, urls: Sequence[gruel.Url]):
         for url in urls:
             # prioritize career/job pages
-            if url in self.career_page_stubs:
+            if url.address in self.career_page_stubs:
                 self._uncrawled.appendleft(url)
             else:
                 self._uncrawled.append(url)
